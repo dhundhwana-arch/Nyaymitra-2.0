@@ -67,7 +67,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "It does not give legal decisions."
         ),
         lifespan=lifespan,
-        docs_url="/api/docs",
+        # Swagger UI loads its JS/CSS from a CDN, which the CSP blocks and which cannot
+        # work on an offline rural connection. The machine-readable schema is still
+        # served at /api/openapi.json; docs/API_DOCUMENTATION.md is the human reference.
+        docs_url=None,
         redoc_url=None,
         openapi_url="/api/openapi.json",
     )
@@ -108,6 +111,10 @@ def _mount_web(app: FastAPI, settings: Settings) -> None:
         @app.get("/styles.css", include_in_schema=False)
         def styles() -> FileResponse:
             return FileResponse(web_dir / "styles.css", media_type="text/css")
+
+        @app.get("/admin.js", include_in_schema=False)
+        def admin_js() -> FileResponse:
+            return FileResponse(web_dir / "admin.js", media_type="application/javascript")
 
         @app.get("/manifest.webmanifest", include_in_schema=False)
         def manifest() -> FileResponse:

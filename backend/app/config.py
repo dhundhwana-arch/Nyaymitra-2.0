@@ -97,6 +97,7 @@ class Settings:
     rate_limit_read: int = 120
     rate_limit_write: int = 30
     rate_limit_ai: int = 20
+    rate_limit_admin: int = 10
     trust_proxy_headers: bool = False
     log_level: str = "INFO"
     pii_retention_days: int = 180
@@ -151,6 +152,7 @@ def load_settings() -> Settings:
         rate_limit_read=_env_int("RATE_LIMIT_READ", 120),
         rate_limit_write=_env_int("RATE_LIMIT_WRITE", 30),
         rate_limit_ai=_env_int("RATE_LIMIT_AI", 20),
+        rate_limit_admin=_env_int("RATE_LIMIT_ADMIN", 10),
         trust_proxy_headers=_env_bool("TRUST_PROXY_HEADERS", False),
         log_level=(_env("LOG_LEVEL", "INFO") or "INFO").upper(),
         pii_retention_days=_env_int("PII_RETENTION_DAYS", 180),

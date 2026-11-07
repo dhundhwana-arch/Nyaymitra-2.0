@@ -11,6 +11,7 @@ Design notes
 from __future__ import annotations
 
 import hashlib
+import os
 import shutil
 import sqlite3
 from contextlib import contextmanager
@@ -37,6 +38,22 @@ def utcnow() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def harden_permissions(path: Path) -> None:
+    """Make a database file owner-only (0600) and its directory owner-only (0700).
+
+    Complaint records are personal data; another local account must not be able to
+    read the file even if it is inside a shared directory.
+    """
+    try:
+        if str(path) != ":memory:":
+            path.parent.mkdir(parents=True, exist_ok=True)
+            os.chmod(path.parent, 0o700)
+            if path.exists():
+                os.chmod(path, 0o600)
+    except OSError:  # pragma: no cover - exotic filesystems / Windows
+        pass
+
+
 def connect(db_path: Path | None = None) -> sqlite3.Connection:
     settings = get_settings()
     path = Path(db_path) if db_path is not None else settings.db_path
@@ -45,6 +62,7 @@ def connect(db_path: Path | None = None) -> sqlite3.Connection:
     conn = sqlite3.connect(
         str(path), timeout=15.0, isolation_level=None, check_same_thread=False
     )
+    harden_permissions(path)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA busy_timeout = 15000")
@@ -166,6 +184,7 @@ def backup_database(
     target = target_dir / f"nyaymitra-{stamp}.db"
     with sqlite3.connect(str(source)) as src, sqlite3.connect(str(target)) as dst:
         src.backup(dst)
+    harden_permissions(target)
     if verify:
         with sqlite3.connect(str(target)) as check:
             result = check.execute("PRAGMA integrity_check").fetchone()[0]

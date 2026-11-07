@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import io
 import logging
+import os
 import secrets
 import sqlite3
 from pathlib import Path
@@ -73,10 +74,18 @@ def save_upload(
     mime = check.mime or "application/octet-stream"
     stored_name = storage_name_for(mime)
     settings.storage_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(settings.storage_dir, 0o700)
+    except OSError:  # pragma: no cover - Windows
+        pass
     target = (settings.storage_dir / stored_name).resolve()
     if settings.storage_dir.resolve() not in target.parents:
         raise AppError("bad_request", "Invalid storage path.")
     target.write_bytes(content)
+    try:
+        os.chmod(target, 0o600)
+    except OSError:  # pragma: no cover - Windows
+        pass
 
     digest = hashlib.sha256(content).hexdigest()
     token = secrets.token_urlsafe(24)

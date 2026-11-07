@@ -95,6 +95,39 @@ def test_local_legacy_chunks_are_admin_only_and_quarantined(client, admin_header
     assert "NOT articles" in body["note"]
 
 
+def test_document_index_is_admin_only_and_metadata_only(client, admin_headers):
+    import io
+
+    from pypdf import PdfWriter
+
+    writer = PdfWriter()
+    writer.add_blank_page(width=100, height=100)
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    uploaded = client.post(
+        "/api/v1/documents",
+        files={"file": ("evidence.pdf", buffer.getvalue(), "application/pdf")},
+    )
+    assert uploaded.status_code == 201
+
+    assert client.get("/api/v1/admin/documents").status_code == 401
+    body = client.get("/api/v1/admin/documents", headers=admin_headers).json()
+    assert body["items"]
+    serialised = str(body)
+    assert "extracted_text" not in serialised
+    assert "owner_token_hash" not in serialised
+    assert body["items"][0]["sha256"]
+
+
+def test_database_and_storage_are_owner_only(settings):
+    import stat
+
+    mode = stat.S_IMODE(settings.db_path.stat().st_mode)
+    assert mode == 0o600, f"database file mode is {oct(mode)}"
+    directory = stat.S_IMODE(settings.db_path.parent.stat().st_mode)
+    assert directory == 0o700, f"database directory mode is {oct(directory)}"
+
+
 def test_verification_queue_lists_unchecked_content(client, admin_headers):
     body = client.get("/api/v1/admin/verification-queue", headers=admin_headers).json()
     assert body["articles"]
@@ -143,6 +176,35 @@ def test_rate_limit_returns_429(client, monkeypatch):
     finally:
         monkeypatch.delenv("NYAYMITRA_RATE_LIMIT_READ", raising=False)
         reset_settings_cache()
+
+
+def test_admin_endpoints_have_a_strict_rate_limit(monkeypatch):
+    """A guessed admin token must not be brute-forced at the public read rate."""
+    from fastapi.testclient import TestClient
+    from backend.app.config import get_settings, reset_settings_cache
+    from backend.app.main import create_app
+
+    monkeypatch.setenv("NYAYMITRA_RATE_LIMIT_ADMIN", "2")
+    reset_settings_cache()
+    try:
+        with TestClient(create_app(get_settings())) as limited:
+            for _ in range(2):
+                limited.get("/api/v1/admin/stats", headers={"X-Admin-Token": "wrong"})
+            blocked = limited.get("/api/v1/admin/stats", headers={"X-Admin-Token": "wrong"})
+            assert blocked.status_code == 429
+    finally:
+        monkeypatch.delenv("NYAYMITRA_RATE_LIMIT_ADMIN", raising=False)
+        reset_settings_cache()
+
+
+def test_chunked_body_without_length_is_refused(client):
+    response = client.post(
+        "/api/v1/ai/explain",
+        content=iter([b'{"question": "equality before law", "language": "en"}']),
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code in {411, 413}
+    assert response.json()["error"]["code"] in {"length_required", "payload_too_large"}
 
 
 def test_request_id_header_is_echoed(client):

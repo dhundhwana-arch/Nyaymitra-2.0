@@ -269,3 +269,14 @@ th { color: var(--gold-soft); font-size: 0.78rem; text-transform: uppercase; let
   body { background: #fff; color: #000; }
   .draft { border: 0; }
 }
+
+
+/* Layout helpers (CSP forbids inline style attributes). */
+.field-grow {
+  flex: 1 1 220px;
+  margin: 0;
+}
+
+.field-flush {
+  margin: 0;
+}

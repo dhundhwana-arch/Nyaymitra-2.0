@@ -21,8 +21,11 @@ from .security import client_ip, rate_limiter
 log = logging.getLogger("nyaymitra.http")
 
 
-def _classify(path: str, method: str) -> tuple[str, int]:
-    settings = get_settings()
+def _classify(path: str, method: str, settings: Settings) -> tuple[str, int]:
+    """Pick a rate-limit bucket. Admin paths get their own, much smaller bucket so a
+    stolen or guessed token cannot be brute-forced at the public read rate."""
+    if "/admin/" in path:
+        return "admin", settings.rate_limit_admin
     if "/ai/" in path:
         return "ai", settings.rate_limit_ai
     if method in {"GET", "HEAD", "OPTIONS"}:
@@ -60,7 +63,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "Cross-Origin-Opener-Policy": "same-origin",
             # No external script/style/font/CDN: the app is fully self-hosted.
             "Content-Security-Policy": (
-                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+                "default-src 'self'; script-src 'self'; style-src 'self'; "
                 "img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; "
                 "frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
             ),
@@ -73,6 +76,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class BodySizeLimitMiddleware(BaseHTTPMiddleware):
+    """Reject oversized bodies before they are buffered in memory.
+
+    ``Content-Length`` is checked for every request. A body sent with
+    ``Transfer-Encoding: chunked`` has no length we can trust, so mutating requests
+    without a declared length are refused rather than streamed into memory — browsers
+    and normal clients always send a length. Document uploads get the larger limit.
+    """
+
     def __init__(self, app, settings: Settings | None = None) -> None:
         super().__init__(app)
         self.settings = settings or get_settings()
@@ -81,12 +92,22 @@ class BodySizeLimitMiddleware(BaseHTTPMiddleware):
         limit = self.settings.max_body_bytes
         if request.url.path.endswith("/documents"):
             limit = self.settings.max_upload_bytes + 4096
+        rid = getattr(request.state, "request_id", "-")
         declared = request.headers.get("content-length")
         if declared and declared.isdigit() and int(declared) > limit:
-            rid = getattr(request.state, "request_id", "-")
             return JSONResponse(
                 status_code=413,
                 content=error_body("payload_too_large", f"Request body exceeds {limit} bytes.", rid),
+            )
+        chunked = "chunked" in request.headers.get("transfer-encoding", "").lower()
+        if chunked and request.method not in {"GET", "HEAD", "OPTIONS"}:
+            return JSONResponse(
+                status_code=411,
+                content=error_body(
+                    "length_required",
+                    "Send a Content-Length header: streaming bodies cannot be size-checked.",
+                    rid,
+                ),
             )
         return await call_next(request)
 
@@ -100,7 +121,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         path = request.url.path
         if path in {"/health", "/api/v1/health"} or path.startswith("/assets/"):
             return await call_next(request)
-        bucket, limit = _classify(path, request.method)
+        bucket, limit = _classify(path, request.method, self.settings)
         ip = client_ip(request, self.settings)
         allowed, retry_after = rate_limiter.hit(
             f"{bucket}:{ip}", limit, self.settings.rate_limit_window_s

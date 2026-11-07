@@ -89,6 +89,12 @@
             return [c.reference, c.category, c.status, c.district || '—', c.created_at];
           }));
 
+      var docs = await api('/admin/documents?limit=25');
+      $('#documentsPanel').innerHTML = '<p class="small muted">' + esc(docs.note) + '</p>' +
+        table(['id', 'file', 'type', 'size', 'sha256', 'extraction', 'created'], docs.items.map(function (d) {
+          return [d.id, d.original_name, d.mime_type, d.size_bytes, (d.sha256 || '').slice(0, 12), d.extraction_status, d.created_at];
+        }));
+
       var legacy = await api('/admin/legacy-chunks?limit=10');
       $('#legacyPanel').innerHTML = '<p class="small muted">' + esc(legacy.note) + '</p>' +
         table(['legacy id', 'label', 'script', 'excerpt'],

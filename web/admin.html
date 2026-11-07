@@ -19,7 +19,7 @@
       </a>
       <nav class="nav" aria-label="Admin navigation">
         <a href="/">Citizen app</a>
-        <a href="/api/docs">API</a>
+        <a href="/api/openapi.json">API schema</a>
       </nav>
     </div>
   </header>
@@ -35,7 +35,7 @@
           <code>X-Admin-Token</code> header.
         </p>
         <form id="authForm" class="row">
-          <div class="field" style="flex:1 1 260px;margin:0">
+          <div class="field field-grow">
             <label for="adminToken">Admin or monitor token</label>
             <input type="password" id="adminToken" autocomplete="off" required maxlength="200">
             <p class="hint">Kept only in this tab's memory (sessionStorage); never written to disk or logged.</p>
@@ -74,6 +74,14 @@
         <div class="card stack">
           <h2>Complaints (metadata only)</h2>
           <div id="complaintsPanel" aria-live="polite"></div>
+        </div>
+
+        <div class="card stack">
+          <h2>Uploaded documents (metadata only)</h2>
+          <p class="small muted">Extraction status shows whether text could be read from the file. A
+            scan with no text layer reports <code>ocr_unavailable</code> — it is never silently
+            treated as empty evidence.</p>
+          <div id="documentsPanel" aria-live="polite"></div>
         </div>
 
         <div class="card stack">

@@ -52,6 +52,25 @@ def complaint_index(limit: int = Query(50, ge=1, le=200), conn: sqlite3.Connecti
     }
 
 
+@router.get("/documents", dependencies=[Depends(read_only)])
+def document_index(
+    limit: int = Query(50, ge=1, le=200), conn: sqlite3.Connection = Depends(db_dependency)
+) -> dict:
+    rows = conn.execute(
+        """SELECT id, original_name, mime_type, size_bytes, sha256, extraction_status,
+                  ocr_confidence, created_at, complaint_id
+           FROM documents ORDER BY id DESC LIMIT ?""",
+        (limit,),
+    )
+    return {
+        "items": [dict(row) for row in rows],
+        "note": (
+            "Metadata only. Extracted text and file contents are never exposed to admins; "
+            "citizens retrieve their own document with the one-time token."
+        ),
+    }
+
+
 @router.get("/sources", dependencies=[Depends(read_only)])
 def sources(conn: sqlite3.Connection = Depends(db_dependency)) -> dict:
     rows = conn.execute(

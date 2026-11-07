@@ -864,10 +864,10 @@
           esc((part.part_no ? 'Part ' + part.part_no + ' — ' : '') + (part.part_title || '')) + '</option>';
       }).join('');
       container.innerHTML = '<section class="card stack"><h1>' + esc(t('libraryTitle')) + '</h1>' +
-        '<form id="libForm" class="row"><div class="field" style="flex:1 1 220px;margin:0">' +
+        '<form id="libForm" class="row"><div class="field field-grow">' +
         '<label class="sr-only" for="libQuery">' + esc(t('librarySearch')) + '</label>' +
         '<input type="search" id="libQuery" placeholder="' + esc(t('librarySearch')) + '"></div>' +
-        '<div class="field" style="margin:0"><label class="sr-only" for="libPart">' + esc(t('allParts')) + '</label>' +
+        '<div class="field field-flush"><label class="sr-only" for="libPart">' + esc(t('allParts')) + '</label>' +
         '<select id="libPart">' + options + '</select></div>' +
         '<button class="btn btn-primary" type="submit">' + esc(t('search')) + '</button></form>' +
         '<div id="libResults" aria-live="polite"></div></section>';

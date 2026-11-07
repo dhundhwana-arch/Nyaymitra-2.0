@@ -74,6 +74,35 @@ def test_assets_are_served_locally(client):
         assert response.status_code == 200, path
         assert content_type in response.headers["content-type"], path
     assert client.get("/admin").status_code == 200
+    assert client.get("/admin.js").status_code == 200
+
+
+def test_every_asset_referenced_by_the_pages_is_served(client):
+    """Regression: /admin was served but /admin.js was not registered, so the whole
+    admin console was dead in the browser while every unit test still passed."""
+    import re as _re
+
+    for page in ("/", "/admin"):
+        html = client.get(page).text
+        refs = set(_re.findall(r'(?:src|href)="(/[^"#]*)"', html))
+        assert refs, f"{page} references no assets"
+        for ref in refs:
+            response = client.get(ref)
+            assert response.status_code == 200, f"{page} references {ref} which returns {response.status_code}"
+
+
+def test_csp_forbids_inline_code_and_styles(client):
+    csp = client.get("/").headers["content-security-policy"]
+    assert "unsafe-inline" not in csp
+    assert "unsafe-eval" not in csp
+    for name in ("app.js", "admin.js"):
+        text = (WEB / name).read_text(encoding="utf-8")
+        assert 'style="' not in text, f"{name} uses an inline style attribute (blocked by CSP)"
+
+
+def test_api_docs_page_is_not_a_broken_cdn_page(client):
+    assert client.get("/api/docs").status_code == 404
+    assert client.get("/api/openapi.json").status_code == 200
 
 
 def test_frontend_has_no_third_party_assets():

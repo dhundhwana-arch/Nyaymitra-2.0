@@ -36,6 +36,7 @@ def test_environment(tmp_path_factory: pytest.TempPathFactory) -> Path:
             "NYAYMITRA_RATE_LIMIT_READ": "1000",
             "NYAYMITRA_RATE_LIMIT_WRITE": "1000",
             "NYAYMITRA_RATE_LIMIT_AI": "1000",
+            "NYAYMITRA_RATE_LIMIT_ADMIN": "1000",
             "NYAYMITRA_LOG_LEVEL": "WARNING",
         }
     )
