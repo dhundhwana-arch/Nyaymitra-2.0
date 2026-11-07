@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>NYAYMITRA — administration</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <a class="skip-link" href="#adminMain">Skip to main content</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">न्या</span>
+        <span class="brand-text"><span class="brand-name">NYAYMITRA<span>-AI</span></span>
+          <span class="brand-tag">Administration &amp; monitoring</span></span>
+      </a>
+      <nav class="nav" aria-label="Admin navigation">
+        <a href="/">Citizen app</a>
+        <a href="/api/docs">API</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="adminMain" tabindex="-1">
+    <div class="wrap stack">
+      <section class="card stack">
+        <h1>Administration</h1>
+        <p class="small muted">
+          Read-only monitoring is available with the monitor token. Verifying sources and taking database
+          backups require the admin token. Tokens are configured by the operator through
+          <code>NYAYMITRA_ADMIN_TOKEN</code> / <code>NYAYMITRA_MONITOR_TOKEN</code> and are sent in the
+          <code>X-Admin-Token</code> header.
+        </p>
+        <form id="authForm" class="row">
+          <div class="field" style="flex:1 1 260px;margin:0">
+            <label for="adminToken">Admin or monitor token</label>
+            <input type="password" id="adminToken" autocomplete="off" required maxlength="200">
+            <p class="hint">Kept only in this tab's memory (sessionStorage); never written to disk or logged.</p>
+          </div>
+          <button class="btn btn-primary" type="submit">Sign in</button>
+        </form>
+        <div id="authStatus" aria-live="polite"></div>
+      </section>
+
+      <section id="adminPanels" class="stack hidden">
+        <div class="card stack">
+          <h2>Service statistics</h2>
+          <div id="statsPanel" aria-live="polite"></div>
+          <div class="row">
+            <button class="btn btn-sm btn-ghost" type="button" id="refreshBtn">Refresh</button>
+            <button class="btn btn-sm btn-ghost" type="button" id="backupBtn">Create database backup</button>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <h2>Human verification queue</h2>
+          <p class="small muted">Nothing here may be shown to citizens as verified until a named reviewer signs it off.</p>
+          <div id="queuePanel" aria-live="polite"></div>
+        </div>
+
+        <div class="card stack">
+          <h2>Recent queries (redacted)</h2>
+          <div id="queriesPanel" aria-live="polite"></div>
+        </div>
+
+        <div class="card stack">
+          <h2>Errors</h2>
+          <div id="errorsPanel" aria-live="polite"></div>
+        </div>
+
+        <div class="card stack">
+          <h2>Complaints (metadata only)</h2>
+          <div id="complaintsPanel" aria-live="polite"></div>
+        </div>
+
+        <div class="card stack">
+          <h2>Quarantined legacy import</h2>
+          <div id="legacyPanel" aria-live="polite"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap"><p class="tiny">Administration area. Access is logged in the audit trail.</p></div>
+  </footer>
+  <div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
+  <script src="/admin.js" defer></script>
+</body>
+</html>

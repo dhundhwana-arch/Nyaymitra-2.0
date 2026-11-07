@@ -1,3 +1,13 @@
-fastapi==0.110.0
-uvicorn==0.28.0
-pydantic==2.6.4
+# Runtime dependencies (pinned).
+# Install from the repository root:
+#   python -m venv .venv && . .venv/bin/activate
+#   pip install -r backend/requirements.txt
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+email-validator==2.2.0
+python-multipart==0.0.20
+pypdf==5.1.0
+httpx==0.28.1
+
+# Test-only tooling lives in backend/requirements-dev.txt

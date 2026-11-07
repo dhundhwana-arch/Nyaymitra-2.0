@@ -1,0 +1,13 @@
+{
+  "name": "NYAYMITRA 2.0 — Justice Access & Navigation",
+  "short_name": "NYAYMITRA",
+  "description": "Legal information, complaint drafting and government department navigation for citizens. Not a court, not a lawyer.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070c18",
+  "theme_color": "#070c18",
+  "lang": "gu",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
