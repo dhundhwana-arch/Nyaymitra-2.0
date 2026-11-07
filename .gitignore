@@ -34,3 +34,8 @@ data/raw/*
 .DS_Store
 .idea/
 .vscode/
+
+# Node (optional jsdom smoke test)
+node_modules/
+package-lock.json
+package.json
