@@ -45,7 +45,7 @@ jobs:
 
       - name: Database bootstrap from an empty directory
         run: |
-          rm -rf /tmp/ci-db
+          rm -rf /tmp/ci-db && mkdir -p /tmp/ci-db
           NYAYMITRA_DB_PATH=/tmp/ci-db/nyaymitra.db \
           NYAYMITRA_STORAGE_DIR=/tmp/ci-db/documents \
           NYAYMITRA_BACKUP_DIR=/tmp/ci-db/backups \
