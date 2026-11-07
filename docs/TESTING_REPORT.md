@@ -109,8 +109,24 @@ admin console were also exercised over HTTP with `curl` against the running serv
 | Screen reader (NVDA/TalkBack) | **NOT TESTED** | Requires a human with assistive technology |
 | Live AI provider | **NOT TESTED** | No API key; the fallback and rejection paths *are* tested |
 | Official Constitution PDF ingestion | **NOT TESTED** | No official PDF supplied; parser tested on fixture text |
-| GitHub Actions workflow | **NOT YET RUN** | Added in this branch; first run happens on push |
+| GitHub Actions workflow | **COMPLETE** | Run 42404987197 (push) and 42404988506 (pull_request) both green: pytest on 3.11 and 3.12 plus the frontend job |
 | Load/performance | **NOT TESTED** | No benchmark; single-process synchronous SQLite is the design limit |
+
+## 4a. Continuous integration
+
+`.github/workflows/ci.yml` ran on GitHub for this branch:
+
+```
+✓ pytest (python 3.11)       33s
+✓ pytest (python 3.12)       39s
+✓ frontend syntax checks (node 20)   9s
+```
+
+The pytest jobs run the full suite with coverage, then bootstrap a database from an empty
+directory (asserting 9 articles, 2,125 quarantined legacy rows and the FTS5 table) and perform a
+backup/restore round-trip. The frontend job runs `node --check` on both scripts and the smoke
+script, and greps for external asset references and inline style attributes. The only annotations
+were deprecation notices about the actions' Node runtime, not failures.
 
 ## 5. Manual test steps (for a reviewer with a browser)
 

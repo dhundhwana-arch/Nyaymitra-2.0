@@ -66,8 +66,9 @@ Honest list, in the order it is likely to bite.
 24. **No real-browser or device test.** jsdom journeys pass; layout, CSS breakpoints, font shaping,
     voice and screen readers are unverified (`docs/TESTING_REPORT.md` §4).
 25. **No load test.** Throughput and latency under concurrent users are unmeasured.
-26. **CI has not run yet** — the workflow is committed on this branch and will first execute on
-    push.
+26. **CI covers Linux only.** Runs 42404987197 / 42404988506 are green on Python 3.11 and 3.12
+    plus the Node checks, but there is no Windows/macOS job, so `run.bat` and the `chmod` calls are
+    untested on those platforms.
 27. **No monitoring integration** (no metrics endpoint, no alerting); observability is the admin
     console and JSON logs.
 28. **No i18n framework** — translations are a dictionary in `web/app.js`; adding a language means

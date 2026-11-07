@@ -55,7 +55,7 @@ Evidence column points at the test file(s) in `backend/tests/`.
 | 40 | Legal correctness of explanations, helplines, portals | REQUIRES HUMAN VERIFICATION | `/admin` verification queue |
 | 41 | Ingestion of an official Constitution document | COMPLETE AND TESTED (with fixture text) | `test_apply_writes_articles_and_report`; never run against a real PDF |
 | 42 | Legacy corpus preservation | COMPLETE AND TESTED | 2,125 rows in gzip + DB, never served (`test_legacy_rows_are_preserved`) |
-| 43 | CI (Python 3.11/3.12, node checks, bootstrap, backup) | COMPLETE (workflow added) | `.github/workflows/ci.yml` — first run happens on push |
+| 43 | CI (Python 3.11/3.12, node checks, bootstrap, backup) | COMPLETE AND TESTED | `.github/workflows/ci.yml`; runs 42404987197 and 42404988506 green |
 | 44 | Deployment guide, backups, rollback | COMPLETE (documented) | `docs/DEPLOYMENT_GUIDE.md` |
 
 ## Known dead ends removed in this round
