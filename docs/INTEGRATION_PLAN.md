@@ -133,3 +133,50 @@ storage/documents/               private uploaded files (git-ignored)
 * No storage of real citizen data in this public repository.
 * No claim of complete legal verification. Human expert sign-off is required
   (`docs/LEGAL_VERIFICATION_CHECKLIST.md`).
+
+---
+
+## 6. Execution addendum (branch `arena/812d6894-nyaymitra-2-0`)
+
+Phases 1–12 of the table are implemented. Outcome against the plan's own phases:
+
+| Phase | Delivered | Status |
+|---|---|---|
+| 1. Audit | `docs/REPOSITORY_AUDIT.md` (+ §14/§15 addenda) | COMPLETE |
+| 2. Archive and quarantine | `data/legacy/*.jsonl.gz` with sha256, `legacy_import_chunks`, `scripts/export_legacy.py` | COMPLETE AND TESTED |
+| 3. Database | 15 tables, FTS5, migrations + down-migrations, backup/restore | COMPLETE AND TESTED |
+| 4. Backend core | `create_app`, middleware, error envelope, health/ready/meta | COMPLETE AND TESTED |
+| 5. Legal data API | search, article detail, parts, coverage, provenance | COMPLETE AND TESTED |
+| 6. AI/RAG | provider abstraction, retrieval-first, citation validation, guard, offline composer | COMPLETE AND TESTED (live provider untested) |
+| 7. Citizen workflows | complaints (+preview, token access), documents, departments, feedback, glossary | COMPLETE AND TESTED |
+| 8. Admin | roles, stats, queues, audit, backups, document index, legacy quarantine | COMPLETE AND TESTED |
+| 9. Frontend | `web/` six routes, gu/en, accessible forms, admin console, PWA manifest | IMPLEMENTED AND TESTED IN JSDOM (no real device yet) |
+| 10. Security | token hashing, rate limits, upload validation, CSP, permissions, redaction | COMPLETE AND TESTED |
+| 11. Testing | 119 pytest tests, 90% coverage, jsdom journeys, CI workflow | COMPLETE (CI first run pending push) |
+| 12. Documentation | 12 documents in `docs/` + README | COMPLETE except legal sign-off, which is human work |
+
+### Design rules — compliance
+
+1. **Retrieval before generation** — `services/constitution.retrieve_for_ai` runs first; no rows and
+   no triage match produces an explicit "insufficient sources" answer.
+2. **No unsupported legal claims** — model output is validated against the retrieved set; failures
+   fall back and are flagged `degraded`.
+3. **Unverified is visible** — every citation and article carries `verification_status` and
+   `text_status`; `/meta` reports `verified_text: 0`.
+4. **Never invent text** — `text_en`/`text_gu` stay `NULL` until an official document is ingested;
+   the importer reports missing numbers rather than synthesising them.
+5. **No verdicts** — guard patterns in English and Gujarati reject guilt/outcome/impersonation.
+6. **Nothing is deleted** — legacy rows live in a gzip archive and a quarantined table, reachable
+   only through the admin endpoint that labels them as unusable.
+
+### Deviations from the plan
+
+* **Swagger UI disabled.** `/api/docs` would have loaded assets from a CDN, which the CSP blocks and
+  an offline deployment cannot reach. The schema stays at `/api/openapi.json`; the reference is
+  `docs/API_DOCUMENTATION.md`.
+* **Stricter admin rate-limit bucket added** (not in the original plan) after the audit showed the
+  admin token shared the public read limit.
+* **Chunked request bodies refused** rather than streamed, because their size cannot be verified
+  before buffering.
+* **`--workers 1` is a deployment requirement**, documented in `docs/DEPLOYMENT_GUIDE.md`, because
+  rate limiting is in-process and SQLite writes are serialised.

@@ -352,3 +352,41 @@ The full sequenced plan is in `docs/INTEGRATION_PLAN.md`; the essentials:
    admin, health — each with validation, rate limits and audit logging.
 8. **Delete nothing that is evidence.** Duplicates and dead generators are removed *after* their data is archived
    and the reason is recorded in the audit + legacy note.
+
+---
+
+## 14. Addendum — remediation status (2026-11-07, branch `arena/812d6894-nyaymitra-2-0`)
+
+Every finding in §6–§10 has been addressed on the branch; the table records *how* and *with what
+evidence*. "Tested" always means an automated test on this branch fails if the behaviour regresses.
+
+| Audit ID | Finding | Status | Evidence |
+|---|---|---|---|
+| B-1 | Historical "2125 verified articles" checkpoints unverifiable | **BLOCKED** — no artefact exists; the data was never analysed for accuracy | Quarantined; `docs/LEGAL_VERIFICATION_CHECKLIST.md` |
+| B-2 | Backend cannot be imported | Fixed | `backend/main.py` shim + `create_app()`; `test_legacy_entry_point_still_imports` |
+| B-3 | Frontend never calls the API | Fixed | `web/app.js`; jsdom journeys |
+| B-4 | No schema, no migrations | Fixed | `backend/migrations/001_initial.sql`; `test_migrations_are_idempotent` |
+| B-5 | Fabricated "remedy" strings presented as law | Fixed (content quarantined, never served) | `test_fabricated_legacy_remedy_text_is_never_exposed` |
+| S-1…S-12 | Security and integrity findings | Fixed except where documented as residual risk | `docs/SECURITY_AUDIT.md` §3–§5 |
+| §7.3 | Zero tests / zero CI | Fixed | 119 tests, 90% coverage, `.github/workflows/ci.yml` |
+| §8 | Verification workflow absent | Fixed | `PATCH /admin/articles/{id}/verification` with reviewer + date + text guard |
+| §9 | Fake login | Removed; replaced by token-scoped complaint access and admin/monitor roles | `docs/SECURITY_AUDIT.md` |
+| §10 | No sources or provenance | Fixed | `legal_sources` spine, `SourceRef` in responses |
+
+New defects found *during* remediation (not visible to static review) are listed in §15.
+
+## 15. Defects found after the audit, during testing
+
+| ID | Defect | Impact | Status |
+|---|---|---|---|
+| B-6 | `/admin` was served but `/admin.js` returned 404 | Admin console completely non-functional in a browser; unit tests still green | Fixed; test fetches every asset referenced by both pages |
+| B-7 | SQLite connections crossed threadpool threads | Every document upload raised `ProgrammingError` | Fixed with `check_same_thread=False` (one connection per request, used serially) |
+| B-8 | Verification guard checked `text_status != "not_available"` | An owner-written summary could be marked `verified` | Now requires `verified_source_text` |
+| B-9 | `SELECT d.*, s.*` in departments | Duplicate `id` columns, row access dependent on join order | Explicit column list |
+| B-10 | AI department fallback took the first three directory rows | An equality question was offered the cyber-crime cell | Fallback is the free-legal-aid channels |
+| B-11 | Document responses contained `created_at: ""` | Clients could not order uploads | Real timestamp read back from the database |
+| B-12 | CSP contained `'unsafe-inline'` for styles and the pages used inline `style` attributes | Weaker CSP than claimed | Allowance removed, styles moved to CSS classes |
+| B-13 | Admin endpoints shared the public read rate limit | Token brute-force at 120 requests/min | Dedicated 10/min admin bucket |
+| B-14 | Ownership tokens and database files were not permission-hardened | Personal data readable by other local users | `0600` files / `0700` directories, asserted in tests |
+
+Reproduction commands for every table row are in `docs/TESTING_REPORT.md`.
