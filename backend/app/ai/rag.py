@@ -83,7 +83,12 @@ def answer_question(
     rows = constitution.retrieve_for_ai(conn, question, limit=4)
     deps = departments.get_many(conn, [guide["department_key"]] if guide and guide["department_key"] else [])
     if not deps:
-        deps = [d for d in departments.list_departments(conn, limit=6)][:3]
+        # No category matched: suggest the free legal-aid channels only. Dumping the
+        # first three rows of the directory (cyber crime, land records) for a question
+        # about equality is misleading, so the fallback list is explicit.
+        deps = departments.get_many(
+            conn, ["nalsa-legal-aid", "dlsa-district", "tele-law-csc"]
+        )
 
     provider_info = describe(settings)
     provider_name = "offline"

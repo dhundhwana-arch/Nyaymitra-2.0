@@ -42,7 +42,9 @@ def connect(db_path: Path | None = None) -> sqlite3.Connection:
     path = Path(db_path) if db_path is not None else settings.db_path
     if str(path) != ":memory:":
         path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(path), timeout=15.0, isolation_level=None)
+    conn = sqlite3.connect(
+        str(path), timeout=15.0, isolation_level=None, check_same_thread=False
+    )
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA busy_timeout = 15000")

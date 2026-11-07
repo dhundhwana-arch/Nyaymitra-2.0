@@ -11,46 +11,20 @@ NOTICE = (
 )
 
 
-def _shape(row: sqlite3.Row, source: sqlite3.Row | None) -> dict[str, Any]:
-    return {
-        "department_key": row["department_key"],
-        "name_en": row["name_en"],
-        "name_gu": row["name_gu"],
-        "jurisdiction": row["jurisdiction"],
-        "purpose_en": row["purpose_en"],
-        "purpose_gu": row["purpose_gu"],
-        "portal_url": row["portal_url"],
-        "portal_label": row["portal_label"],
-        "helpline": row["helpline"],
-        "verification_status": row["verification_status"],
-        "verified_on": row["verified_on"],
-        "source": (
-            {
-                "source_key": source["source_key"],
-                "title": source["title"],
-                "publisher": source["publisher"],
-                "source_type": source["source_type"],
-                "url": source["url"],
-                "document_ref": source["document_ref"],
-                "published_on": source["published_on"],
-                "retrieved_on": source["retrieved_on"],
-                "last_checked_at": row["verified_on"],
-            }
-            if source
-            else None
-        ),
-    }
-
-
 def list_departments(
     conn: sqlite3.Connection,
     *,
     jurisdiction: str | None = None,
     limit: int = 50,
 ) -> list[dict]:
+    # Explicit column list: ``d.*, s.*`` produced two ``id`` columns and made row
+    # access depend on join order.
     sql = (
-        "SELECT d.*, s.* , d.id AS dept_id FROM departments d "
-        "LEFT JOIN legal_sources s ON s.id = d.source_id"
+        "SELECT d.department_key, d.name_en, d.name_gu, d.jurisdiction, d.purpose_en,"
+        " d.purpose_gu, d.portal_url, d.portal_label, d.helpline, d.verification_status,"
+        " d.verified_on, s.source_key, s.title, s.publisher, s.source_type, s.url,"
+        " s.document_ref, s.published_on, s.retrieved_on"
+        " FROM departments d LEFT JOIN legal_sources s ON s.id = d.source_id"
     )
     args: list[Any] = []
     if jurisdiction:

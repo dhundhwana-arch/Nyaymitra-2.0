@@ -125,7 +125,7 @@ def update_verification(
                 "bad_request",
                 "Verifying an article requires checked_by (the reviewer) and last_checked_at.",
             ).to_http()
-        if row["text_status"] == "not_available":
+        if row["text_status"] != "verified_source_text":
             raise AppError(
                 "conflict",
                 "Cannot verify an article whose authoritative text has not been loaded.",

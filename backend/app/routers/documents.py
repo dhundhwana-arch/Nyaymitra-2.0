@@ -37,7 +37,6 @@ async def upload_document(
         content=chunk,
         document_kind=document_kind,
     )
-    record["created_at"] = ""
     return record
 
 

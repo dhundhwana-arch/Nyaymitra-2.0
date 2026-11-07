@@ -105,6 +105,9 @@ def save_upload(
             confidence,
         ),
     )
+    created_at = conn.execute(
+        "SELECT created_at FROM documents WHERE id = ?", (cur.lastrowid,)
+    ).fetchone()["created_at"]
     return {
         "id": int(cur.lastrowid),
         "original_name": sanitize_original_name(filename),
@@ -113,7 +116,7 @@ def save_upload(
         "sha256": digest,
         "extraction_status": status,
         "ocr_confidence": confidence,
-        "created_at": "",
+        "created_at": created_at,
         "access_token": token,
     }
 
