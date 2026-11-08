@@ -124,3 +124,47 @@ focus, 44 px targets and a reduced-motion path.
 * **New corpus** — add a `legal_sources` row, then run `scripts/ingest_constitution.py --apply`.
 * **New document format** — extend `ALLOWED` magic signatures in `security.py` and extraction in
   `services/documents.py`; both have tests that fail loudly otherwise.
+
+## 8. Duplicate submissions (complaints)
+
+The wizard generates one `client_request_id` per drafting session (UUID from
+`crypto.randomUUID`, with a `getRandomValues` fallback). The server stores it under a partial
+unique index, so a double-click, a timeout retry or a back-button resubmit returns
+**409 `conflict`** with the existing reference instead of creating a second complaint. For clients
+that send no key (curl, an older app), an identical payload inside `duplicate_window_s`
+(default 600 s) is treated the same way. A *new* key with identical text is allowed on purpose:
+a shared kiosk may file two identical complaints for two people. The retry never receives the
+access token — only its hash is stored, so nobody can obtain a token by replaying a request.
+
+## 9. Retention
+
+`services/retention.py` enforces `NYAYMITRA_PII_RETENTION_DAYS`: complaints older than the cutoff,
+their documents (rows *and* files, even if the file itself is newer), query logs and their answers
+are deleted. The audit trail is kept and the purge writes one audit row with counts only. File
+deletion is restricted to paths inside the storage directory; anything else is logged and skipped.
+`scripts/purge_data.py` is dry-run by default and is meant to run from cron once the owner has
+decided the retention period.
+
+## 10. Operational metrics
+
+`metrics.py` keeps a thread-safe counter map with no personal labels: HTTP totals by status class,
+rate-limit hits, AI insufficient-source/rejection/fallback counts, and uptime. It is exposed to the
+**monitor** role at `GET /api/v1/admin/metrics` and rendered in the admin console. It is a
+single-process signal, not a time series; logs remain the long-term record.
+
+## 11. Ingestion pipeline
+
+```
+document.pdf ─► read_pages()          page boundaries preserved
+             ─► parse_articles()      number, title, body, page range, Part, Chapter
+             ─► boundary_issues()     embedded headings, page headers, oversized bodies
+             ─► assess_quality()      blocks apply on duplicates/malformed/low OCR/boundaries
+             ─► conflict guard        never replaces non-empty or human-verified text
+             ─► write + ingest_runs   report JSON, status completed | completed_with_warnings
+             ─► constitution_coverage.py   loaded / with-text / verified counts, missing ranges
+```
+
+The quality gate is advisory in the library and enforced by the CLI: `--apply` exits 3 unless
+`--force` is given, and a forced run is recorded as `completed_with_warnings` so the override stays
+visible. Extraction is never treated as verification: imported rows keep
+`verification_status = requires_human_verification`.

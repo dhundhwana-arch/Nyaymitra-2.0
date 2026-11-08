@@ -29,13 +29,18 @@ curl -s http://127.0.0.1:8000/api/openapi.json | python -m json.tool | less
 | `unauthorized` | 401 | Admin token missing or invalid |
 | `forbidden` | 403 | Valid token, insufficient role; or admin disabled |
 | `not_found` | 404 | Unknown resource (also returned for a wrong complaint token) |
-| `conflict` | 409 | Action not allowed in the current state (e.g. verifying without source text) |
+| `conflict` | 409 | Action not allowed in the current state (e.g. verifying without source text, duplicate complaint) |
 | `unsupported_media_type` | 415 | Upload type not allowed or content/type mismatch |
 | `payload_too_large` | 413 | Body or file over the limit |
 | `length_required` | 411 | Chunked body without `Content-Length` |
 | `rate_limited` | 429 | Rate limit exceeded; see `Retry-After` |
 | `provider_unavailable` | 503 | AI provider failed and `AI_FALLBACK_MODE=strict` |
 | `internal_error` | 500 | Unexpected failure; details are only in the server log |
+
+**Caching and privacy** — `/api/v1/complaints*`, `/api/v1/documents*`, `/api/v1/admin*` and
+`/admin` are always sent with `Cache-Control: no-store` and `Pragma: no-cache`. The public shell
+(`/`, `/styles.css`, `/app.js`) is cacheable. The API sets no cookies and no CORS headers, so
+there is no ambient credential for a CSRF attack to ride on.
 
 **Headers** — responses carry `X-Request-ID`, `X-Response-Time-ms` and the security headers
 (`Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
@@ -103,7 +108,7 @@ patterns), `model_rejected:*`, `provider_unavailable_fallback`, `no_verified_tex
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/complaints/preview` | Validates and returns the deterministic summary **without writing** |
-| POST | `/complaints` | Requires `confirmed: true`; returns reference + one-time token |
+| POST | `/complaints` | Requires `confirmed: true`; returns reference + one-time token; accepts `client_request_id` |
 | GET | `/complaints/{reference}?token=…` | Wrong token → generic 404 (no oracle) |
 
 ```bash
@@ -117,6 +122,22 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/complaints/preview \
 Preview returns `{summary, category, word_count, checks[]}` where `checks` names missing fields
 (`missing_location`, `missing_incident_date`, …). The summary is extractive — built from the
 citizen's own words — and always states that it is not a legal decision.
+
+**Duplicate submissions.** Send `client_request_id` (8–64 characters, generated once per wizard
+session). Repeating the request with the same id returns:
+
+```json
+{"error": {"code": "conflict",
+           "message": "This complaint was already submitted. …",
+           "details": {"reason": "same_client_request_id",
+                       "reference": "NYM-KWTR3G", "retry_safe": false}}}
+```
+
+The existing reference is returned so the citizen can open the complaint with their token; the
+token itself is never returned twice (only its SHA-256 is stored). Without a
+`client_request_id`, an *identical* payload inside `DUPLICATE_WINDOW_S` (default 600) is treated
+as `identical_recent_submission`. A new id with identical text is allowed, so a shared kiosk can
+file two identical complaints for two people.
 
 ### Documents
 
@@ -147,6 +168,7 @@ citizen's own words — and always states that it is not a legal decision.
 | GET | `/admin/complaints` | monitor — metadata only, never text |
 | GET | `/admin/documents` | monitor — metadata only, never text or file |
 | GET | `/admin/sources` | monitor |
+| GET | `/admin/metrics` | monitor — in-process counters, uptime, AI fallback/rejection counts |
 | GET | `/admin/legacy-chunks` | monitor — quarantined legacy rows, clearly marked |
 | PATCH | `/admin/articles/{id}/verification` | **admin** — requires `checked_by` + `last_checked_at` + source text |
 | POST | `/admin/backup` | **admin** — creates and integrity-checks a backup |
@@ -166,6 +188,8 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/admin/backup -H "X-Admin-Token: $TO
 | `contact_phone` | Indian mobile/landline format, optional |
 | `contact_email` | validated; optional |
 | uploads | magic-byte must match declared type; max 10 MB |
+| `client_request_id` | optional, 8–64 chars, unique per complaint |
+| `duplicate_window_s` | server setting, default 600 s, applies only when no id is sent |
 | admin token | compared in constant time; 10 requests/min/IP |
 
 ## Versioning

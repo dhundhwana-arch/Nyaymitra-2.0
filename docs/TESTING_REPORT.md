@@ -9,23 +9,31 @@ Environment: Linux sandbox, Python 3.11.2, Node 22.22.3, SQLite 3.40, jsdom 25 (
 
 ```bash
 python -m pytest
-# 119 passed in 9.58s
+# 168 passed, 1 warning in 22.32s
 
 python -m pytest --cov=backend/app --cov-report=term-missing
-# TOTAL  2083 statements  204 missed  90%
+# TOTAL  2302 statements  210 missed  91%
 ```
 
-| Module group | Tests | Result |
+The single warning is Starlette's notice that `TestClient` currently uses `httpx` and will move to
+`httpx2`; it is reported, not suppressed, and has no effect on behaviour.
+
+| Test file | Tests | Result |
 |---|---:|---|
-| Startup, health, meta, static assets, a11y/CSP static checks | 15 | pass |
-| Constitution search/detail/coverage/provenance | 13 | pass |
-| AI: grounding, retrieval precision, guard, degradation, logging | 18 | pass |
-| Complaints: validation, summary, preview, token gating | 12 | pass |
-| Documents: type/size/name/token, attach, extraction status | 10 | pass |
-| Admin & security: roles, audit, backups, limits, redaction, permissions | 24 | pass |
-| DB, migrations, backups, seeding, ingestion | 14 | pass |
-| Departments & feedback | 5 | pass |
-| Frontend (jsdom journeys, separate script) | 12 checks | pass |
+| `test_admin_and_security.py` | 24 | pass |
+| `test_ai.py` | 19 | pass |
+| `test_ingest_pipeline.py` | 19 | pass |
+| `test_complaints.py` | 18 | pass |
+| `test_startup_and_frontend.py` | 18 | pass |
+| `test_db_and_ingest.py` | 17 | pass |
+| `test_constitution.py` | 14 | pass |
+| `test_documents.py` | 10 | pass |
+| `test_frontend_static.py` | 10 | pass |
+| `test_metrics_and_privacy.py` | 7 | pass |
+| `test_retention.py` | 7 | pass |
+| `test_departments_and_feedback.py` | 5 | pass |
+| **Total** | **168** | **all pass** |
+| Frontend jsdom journeys (separate script) | 14 checks | pass |
 
 Coverage by area: `security.py` 89%, `middleware.py` 99%, `guard.py` 93%, `rag.py` 92%,
 `textsearch.py` 96%, `routers/*` 78–100%, `openai_compatible.py` 40% (no API key — untested by
@@ -58,6 +66,19 @@ disabled and the AI tests re-run: **4 tests failed** (`test_model_answer_with_un
 * **Admin cannot brute-force cheaply.** The admin bucket returns 429 after its limit.
 * **Data survives.** Backup → integrity check → restore round-trip; seeding does not undo a human
   verification; all 2,125 legacy rows remain.
+* **A retry does not duplicate a complaint.** The same `client_request_id` returns 409 with the
+  original reference and never hands out a token; an identical payload without a key is caught by
+  the fingerprint window; two distinct sessions may still file identical text.
+* **Retention deletes what it says it deletes.** Dry run touches nothing; apply removes old
+  complaints, their documents and files, and old query logs, keeps recent rows, writes an audit
+  row with counts only, and refuses any path outside the storage directory.
+* **Personal data is not cacheable.** Complaint, document and admin responses carry
+  `Cache-Control: no-store`; the public shell stays cacheable; no response sets a cookie.
+* **Ingestion cannot silently destroy good text.** Existing non-empty text is not replaced; a
+  verified row is never touched even with `--replace-existing`; a re-run reports `unchanged`
+  instead of rewriting; a failed quality gate makes the CLI exit 3.
+* **Ingestion keeps provenance.** Page range, Part and Chapter are stored and exposed; boundary
+  problems (embedded heading, page header, oversized body) are reported before writing.
 
 ## 3. Frontend checks
 
@@ -109,7 +130,8 @@ admin console were also exercised over HTTP with `curl` against the running serv
 | Screen reader (NVDA/TalkBack) | **NOT TESTED** | Requires a human with assistive technology |
 | Live AI provider | **NOT TESTED** | No API key; the fallback and rejection paths *are* tested |
 | Official Constitution PDF ingestion | **NOT TESTED** | No official PDF supplied; parser tested on fixture text |
-| GitHub Actions workflow | **COMPLETE** | Run 42404987197 (push) and 42404988506 (pull_request) both green: pytest on 3.11 and 3.12 plus the frontend job |
+| GitHub Actions workflow | **COMPLETE** | Runs 42404987197 / 42404988506 green (pytest 3.11 + 3.12, frontend). The dependency-audit job was added after those runs; CI re-runs on this branch's next push |
+| Dependency vulnerabilities | **COMPLETE** | `pip-audit` found advisories in python-multipart, pypdf and starlette; all three were upgraded and the audit is now clean |
 | Load/performance | **NOT TESTED** | No benchmark; single-process synchronous SQLite is the design limit |
 
 ## 4a. Continuous integration
@@ -120,6 +142,7 @@ admin console were also exercised over HTTP with `curl` against the running serv
 ✓ pytest (python 3.11)       33s
 ✓ pytest (python 3.12)       39s
 ✓ frontend syntax checks (node 20)   9s
++ dependency audit job added afterwards (pip-audit, PyPI advisory service)
 ```
 
 The pytest jobs run the full suite with coverage, then bootstrap a database from an empty

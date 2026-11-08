@@ -55,6 +55,11 @@ NYAYMITRA_AI_MODEL=
 NYAYMITRA_AI_API_KEY=
 NYAYMITRA_AI_FALLBACK_MODE=offline_grounded
 
+# Retention window for complaint personal data (decide with the owner before enabling the cron).
+NYAYMITRA_PII_RETENTION_DAYS=180
+# A repeated identical complaint without a client id inside this window is treated as a retry.
+NYAYMITRA_DUPLICATE_WINDOW_S=600
+
 # Per IP per minute. 0 blocks the bucket (and disables the admin API).
 NYAYMITRA_RATE_LIMIT_READ=120
 NYAYMITRA_RATE_LIMIT_WRITE=30
@@ -193,8 +198,60 @@ Checklist before announcing a URL:
 - [ ] Backup run + restore rehearsed on a copy
 - [ ] Official Constitution documents ingested and reviewed — otherwise the banner will (correctly)
       tell every citizen that the text is not loaded
-- [ ] Retention decision recorded; purge job scheduled or explicitly deferred
+- [ ] Retention decision recorded; purge cron installed (`python scripts/purge_data.py` dry run
+      reviewed first)
+- [ ] `pip-audit --vulnerability-service pypi -r backend/requirements.txt` clean
+- [ ] `/api/v1/admin/metrics` scrapeable by the operator's monitoring
 - [ ] `docs/SECURITY_AUDIT.md` §6 checklist completed
+
+## 4.1 Migrations, retention and monitoring
+
+**Migrations.** Startup applies pending migrations automatically (recorded in `schema_migrations`).
+Three ship today:
+
+| Migration | Effect | Rollback |
+|---|---|---|
+| `001_initial` | Base schema, FTS5 triggers | `001_initial.down.sql` |
+| `002_complaint_idempotency` | `client_request_id`, `fingerprint`, partial unique index | `002_complaint_idempotency.down.sql` |
+| `003_article_source_pages` | `constitution_articles.source_pages` | `003_article_source_pages.down.sql` |
+
+On an upgrade: take a backup first (`python scripts/backup_db.py --label pre-upgrade`), then
+`python scripts/init_db.py --info` to see what will be applied. Rolling back schema changes is a
+manual step (`sqlite3 db < migrations/00X_*.down.sql` with the app stopped) — this is why the
+backup comes first. Rolling back a *deployment* (old code, new schema) is safe for 002/003 because
+both migrations are additive.
+
+**Retention cron.** After the owner decides the window:
+
+```cron
+# 03:15 daily: delete personal data older than the retention window, then audit it
+15 3 * * * cd /opt/nyaymitra && /opt/nyaymitra/.venv/bin/python scripts/purge_data.py --apply             >> /var/log/nyaymitra-purge.log 2>&1
+```
+
+Run it once without `--apply` first and read the JSON: it reports how many complaints, documents,
+query logs and files would be removed. The purge keeps the audit trail, keeps `error_log`, keeps
+`ingest_runs`, and cannot delete a file outside `NYAYMITRA_STORAGE_DIR`.
+
+**Monitoring.** `GET /api/v1/admin/metrics` (monitor token) returns in-process counters:
+
+```json
+{"uptime_s": 1284, "counters": {"http.requests_total": 412, "http.status_2xx": 401,
+ "http.status_4xx": 11, "http.rate_limited_total": 3, "ai.insufficient_sources_total": 7,
+ "ai.model_rejected_total": 1, "ai.provider_fallback_total": 2}}
+```
+
+Suggested alerts: `http.status_5xx > 0`, `http.rate_limited_total` climbing (someone is hammering
+the API), `ai.provider_fallback_total` climbing (the provider is failing), and uptime resets
+(a crash loop). `/health` is liveness, `/ready` is dependency readiness — point the uptime check at
+`/ready`. Note these counters are per worker: run one worker (see `KNOWN_LIMITATIONS.md` #19).
+
+**Dependency audit.** Before every deploy:
+
+```bash
+pip-audit --vulnerability-service pypi -r backend/requirements.txt
+```
+
+CI runs the same command; the last local run was clean.
 
 ## 5. Optional Docker
 

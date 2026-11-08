@@ -1,6 +1,8 @@
 # Database schema
 
-SQLite 3 (WAL, `foreign_keys=ON`, `busy_timeout=15000`). Schema is created by versioned SQL files
+SQLite 3 (WAL, `foreign_keys=ON`, `busy_timeout=15000`). Three migrations ship today:
+`001_initial`, `002_complaint_idempotency` (`client_request_id`, `fingerprint`, unique index) and
+`003_article_source_pages` (`source_pages`). Schema is created by versioned SQL files
 in `backend/migrations/`, applied in lexical order and recorded with a SHA-256 checksum in
 `schema_migrations`. Each has a `NNN_name.down.sql` sibling used by
 `python scripts/init_db.py --rollback-to N`.
@@ -49,6 +51,7 @@ connect, because the file holds personal data (complaints, contact details, docu
 | `verification_status` | `verified` \| `requires_human_verification` \| `unverified` \| `outdated` |
 | `checked_by`, `last_checked_at` | Required before `verified` is accepted |
 | `source_id`, `source_locator`, `source_url` | Provenance for this row |
+| `source_pages` | Page range in the supplied document (`12`, `12-14`; `1` for a text file) |
 
 The separation of `text_*` from `citizen_explanation_*` is the schema-level guarantee that a
 paraphrase can never be served as the article. `scripts/ingest_constitution.py` writes only
@@ -61,6 +64,8 @@ paraphrase can never be served as the article. `scripts/ingest_constitution.py` 
 | `reference` | `NYM-XXXXXX`, unique, derived from a random token, not sequential |
 | `access_token_hash` | SHA-256 hex — the token itself is shown once and never stored |
 | `consent_given` | Must be true; enforced by the API |
+| `client_request_id` | Optional idempotency key; partial unique index prevents duplicates |
+| `fingerprint` | SHA-256 of the substantive fields, used to detect an identical retry without a key |
 | `documents.owner_token_hash` | Same pattern for uploads |
 | `documents.extraction_status` | `extracted` \| `ocr_unavailable` \| `too_large` \| `extraction_failed` |
 | `documents.complaint_id` | FK with `ON DELETE SET NULL`; attaching requires the owner token |
@@ -75,6 +80,8 @@ as law. Kept for audit and honesty; the admin endpoint labels it as quarantined.
 
 `idx_articles_no`, `idx_articles_part`, `idx_articles_verification`, `uq_articles_no_part`,
 `idx_departments_key` (implicit unique), `idx_complaints_status`, `idx_complaints_created`,
+`uq_complaints_client_request` (partial unique on `client_request_id`),
+`idx_complaints_fingerprint`,
 `idx_documents_complaint`, `idx_query_logs_created`, `idx_error_at`, `idx_audit_at`,
 `idx_legacy_no`, plus FTS5's own structures.
 
@@ -90,10 +97,10 @@ threshold. Ranking uses `bm25(constitution_fts, 8, 5, 1, 1)` (label > titles > t
 | Data | Policy |
 |---|---|
 | Complaints, documents | Personal data. Access-token hashes only; no listing without a token |
+| Retention enforcement | `scripts/purge_data.py` (dry-run default) deletes complaints/documents/query logs older than `NYAYMITRA_PII_RETENTION_DAYS`; files are removed and the purge is audited |
 | `query_logs` | Question text redacted on write (phone, email, Aadhaar-like numbers, tokens), plus a SHA-256 hash for dedup |
 | `error_log` | Redacted message; no request bodies |
 | `legacy_import_chunks` | Quarantined, admin-only, retained for audit |
-| Retention | `NYAYMITRA_PII_RETENTION_DAYS` (default 180) is the documented target; **purge automation is not implemented** — see `KNOWN_LIMITATIONS.md` |
 
 ## Backup and restore
 

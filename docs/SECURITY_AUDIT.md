@@ -50,6 +50,17 @@ guaranteeing availability under DDoS (see residual risk R-6).
 | S-24 | Medium | Database, storage and backup files were created with default (0644) permissions | `harden_permissions()` forces `0600`/`0700`; test asserts the modes |
 | S-25 | Medium | `/api/docs` pointed at Swagger UI assets loaded from a CDN, which the CSP blocks and which leaks a request to a third party | Swagger UI disabled; schema remains at `/api/openapi.json` |
 
+## 3.1 Findings fixed in the final hardening pass (2026-11-08)
+
+| ID | Severity | Finding | Fix | Test evidence |
+|---|---|---|---|---|
+| S-26 | **High** | Three pinned packages had published advisories: `python-multipart` 0.0.20 (12), `pypdf` 5.1.0 (103, PDF parser), `starlette` 0.41.3 via fastapi 0.115.6 (14) | Upgraded: fastapi 0.162.2 (starlette 1.10.0), pypdf 7.0.0, python-multipart 0.0.33, uvicorn 0.54.0. Full suite re-run after the upgrade | `pip-audit --vulnerability-service pypi -r backend/requirements.txt` → *No known vulnerabilities found*; 168 tests green |
+| S-27 | Medium | Personal-data responses carried no cache directives, so a shared browser/kiosk or proxy could retain complaint text or an admin view | `Cache-Control: no-store` + `Pragma: no-cache` on `/api/v1/complaints*`, `/api/v1/documents*`, `/api/v1/admin*`, `/admin`; public shell remains cacheable | `test_sensitive_responses_are_not_cacheable`, `test_public_assets_remain_cacheable` |
+| S-28 | Medium | Document downloads could be rendered inline by the browser | `Content-Disposition: attachment` (via `FileResponse(filename=...)`) plus `no-store` | `test_document_download_is_an_attachment_and_not_cacheable` |
+| S-29 | Medium | A double-click or retry could create duplicate complaint records (data-quality and privacy issue: duplicated personal data with separate tokens) | Idempotency key with a partial unique index, plus a fingerprint window for clients without a key; retries return the existing reference and never a token | 5 tests in `test_complaints.py` |
+| S-30 | Low | Retention was configured but never enforced, so personal data could be kept indefinitely | `services/retention.py` + `scripts/purge_data.py` (dry-run default, audited, cannot delete outside the storage directory) | 7 tests in `test_retention.py` |
+| S-31 | Info | No evidence that CSRF/CORS exposure had been considered | Tests assert the API sets no cookies and no CORS headers, i.e. no ambient credential exists | `test_the_api_never_sets_cookies`, `test_no_cors_headers_are_advertised` |
+
 ## 4. Findings fixed earlier in this branch
 
 | ID | Severity | Finding | Fix |
@@ -69,12 +80,12 @@ guaranteeing availability under DDoS (see residual risk R-6).
 |---|---|---|---|
 | R-1 | Rate limiting is per process and in memory; multiple workers multiply limits | Single-process deployment target | Use Redis or a proxy limiter when scaling out; run **one** worker |
 | R-2 | No encryption at rest | SQLite + local disk; key management not in scope | Full-disk/volume encryption at the host; restrict filesystem access |
-| R-3 | PII retention purge is not automated | `NYAYMITRA_PII_RETENTION_DAYS` exists but no job uses it | Add a scheduled purge before any public deployment (see `KNOWN_LIMITATIONS.md`) |
+| R-3 | ~~Retention purge not automated~~ **partially closed** | The purge exists and is tested, but **nothing schedules it yet** | Install the cron entry in `DEPLOYMENT_GUIDE.md` §3 after the owner fixes the retention period |
 | R-4 | No malware scanning of uploads | No engine available offline | ClamAV integration if uploads are ever shared between users |
 | R-5 | PDF parsing runs in-process | Bounded (5 pages, 8 MB) but a hostile PDF still consumes CPU briefly | Run extraction in a worker with a timeout if uploads become public |
 | R-6 | No DDoS protection, no WAF | Application-level only | Put a CDN/WAF or reverse-proxy limiter in front for public use |
 | R-7 | Single shared admin token, no individual accounts, no MFA | Deliberate simplicity for a small operator | Add per-user accounts with TOTP before delegating access widely |
-| R-8 | No dependency scanning in CI | Only pinned versions | Enable Dependabot/`pip-audit` (network-dependent) |
+| R-8 | ~~No dependency scanning~~ **closed** | — | `pip-audit` runs in CI (job `security`); pins reviewed 2026-11-08 |
 | R-9 | Voice features use browser APIs with no privacy notice | Speech recognition may be cloud-backed in some browsers | Add a privacy note where voice is offered; text input always remains |
 
 ## 6. Verification checklist for an operator
@@ -88,7 +99,13 @@ curl -s -o /dev/null -w '%{http_code}\n' https://your-host/api/v1/admin/stats   
 stat -c '%a %n' data/nyaymitra.db storage/documents backups/*.db
 # no secrets in the repository
 git grep -nE 'sk-|AIza|ghp_|xoxb-' || echo clean
+# known vulnerabilities in the pinned runtime dependencies
+pip-audit --vulnerability-service pypi -r backend/requirements.txt
+# personal data must not be cacheable
+curl -sI https://your-host/api/v1/admin/stats | grep -i cache-control   # no-store
 ```
+
+Last audit run: **No known vulnerabilities found** (2026-11-08).
 
 ## 7. Disclosure
 

@@ -53,8 +53,10 @@ Honest list, in the order it is likely to bite.
     category and next steps.
 19. **Single process.** SQLite + in-memory rate limiting assume one worker; multiple workers break
     the rate limits and can lock the database.
-20. **No retention purge job.** `NYAYMITRA_PII_RETENTION_DAYS` is configured but nothing deletes
-    old complaints/documents yet.
+20. **Retention is implementable but not scheduled.** `scripts/purge_data.py` deletes old
+    complaints, documents and query logs (dry-run by default, audited, 7 tests), but the retention
+    period is an owner decision and no cron entry is installed. Until then, data is kept
+    indefinitely.
 21. **No e-mail/SMS notification**, so a citizen must keep the reference themselves.
 22. **No admin UI for editing seed content** — articles/departments are changed through the seed
     files or SQL; only verification state is editable in the console.
@@ -67,10 +69,11 @@ Honest list, in the order it is likely to bite.
     voice and screen readers are unverified (`docs/TESTING_REPORT.md` §4).
 25. **No load test.** Throughput and latency under concurrent users are unmeasured.
 26. **CI covers Linux only.** Runs 42404987197 / 42404988506 are green on Python 3.11 and 3.12
-    plus the Node checks, but there is no Windows/macOS job, so `run.bat` and the `chmod` calls are
-    untested on those platforms.
-27. **No monitoring integration** (no metrics endpoint, no alerting); observability is the admin
-    console and JSON logs.
+    plus the Node checks, and a `pip-audit` job now covers dependencies, but there is no
+    Windows/macOS job, so `run.bat` and the `chmod` calls are untested on those platforms.
+27. **Metrics exist, alerting does not.** `GET /api/v1/admin/metrics` exposes request, rate-limit
+    and AI-fallback counters in-process, and the admin console shows them; there is no scraper,
+    time series, or alert rule, and no external uptime check.
 28. **No i18n framework** — translations are a dictionary in `web/app.js`; adding a language means
     editing code.
 

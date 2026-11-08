@@ -48,6 +48,14 @@ python scripts/ingest_constitution.py \
 
 The importer:
 
+* is dry-run by default and refuses `--apply` (exit 3) when the quality gate fails: no articles
+  found, low text quality, duplicate numbers, missing titles, suspicious article boundaries, or
+  many very short bodies. `--force` overrides it and records the run as
+  `completed_with_warnings`;
+* never replaces existing non-empty text, and never touches a row a human has verified, even with
+  `--replace-existing`. Identical text on a re-run is counted as `unchanged`, not rewritten;
+* records the page range, Part and Chapter for every article, so a reviewer can open the same
+  pages of the official PDF (`source_pages`, `source_locator`);
 * writes only `text_en` / `text_gu` and sets `text_status = verified_source_text`;
 * leaves `verification_status = requires_human_verification` — extraction is **not** review;
 * reports duplicate article numbers (only the first is kept) instead of overwriting;
@@ -55,6 +63,11 @@ The importer:
 * refuses to overwrite a row a human has already verified;
 * reports `low_text_quality` and stops short if the PDF has no usable text layer (scan → OCR is
   the owner's step, not a guess by the tool).
+
+After importing, run `python scripts/constitution_coverage.py` (or `--format both --out
+reports/coverage`) for the authoritative count of what is loaded, what has source text, what a
+human has signed off, and which article numbers are missing. Missing numbers are **reported, never
+filled in**.
 
 ## 3. Review protocol (per item)
 

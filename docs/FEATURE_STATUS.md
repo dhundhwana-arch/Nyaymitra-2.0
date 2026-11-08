@@ -55,8 +55,22 @@ Evidence column points at the test file(s) in `backend/tests/`.
 | 40 | Legal correctness of explanations, helplines, portals | REQUIRES HUMAN VERIFICATION | `/admin` verification queue |
 | 41 | Ingestion of an official Constitution document | COMPLETE AND TESTED (with fixture text) | `test_apply_writes_articles_and_report`; never run against a real PDF |
 | 42 | Legacy corpus preservation | COMPLETE AND TESTED | 2,125 rows in gzip + DB, never served (`test_legacy_rows_are_preserved`) |
-| 43 | CI (Python 3.11/3.12, node checks, bootstrap, backup) | COMPLETE AND TESTED | `.github/workflows/ci.yml`; runs 42404987197 and 42404988506 green |
+| 43 | CI (Python 3.11/3.12, dependency audit, node checks, bootstrap, backup) | COMPLETE AND TESTED | `.github/workflows/ci.yml`; jobs `test`, `security`, `frontend` |
 | 44 | Deployment guide, backups, rollback | COMPLETE (documented) | `docs/DEPLOYMENT_GUIDE.md` |
+| 45 | Duplicate-submission protection (idempotency key + fingerprint window) | COMPLETE AND TESTED | `test_same_client_request_id_returns_conflict_not_a_second_row`, `test_double_click_without_client_id_is_caught_by_fingerprint`, `test_duplicate_window_is_bounded` |
+| 46 | Data-retention purge (complaints, documents, files, logs) | COMPLETE AND TESTED | `test_retention.py` (7 tests), `scripts/purge_data.py` |
+| 47 | Operational metrics endpoint and admin panel | COMPLETE AND TESTED | `/admin/metrics`, `test_metrics_and_privacy.py`, jsdom smoke |
+| 48 | `Cache-Control: no-store` on personal data, attachment downloads | COMPLETE AND TESTED | `test_sensitive_responses_are_not_cacheable`, `test_document_download_is_an_attachment_and_not_cacheable` |
+| 49 | No cookies / no CORS surface | COMPLETE AND TESTED | `test_the_api_never_sets_cookies`, `test_no_cors_headers_are_advertised` |
+| 50 | Ingestion: page/Part/Chapter provenance, boundary detection, quality gate, idempotency, conflict protection | COMPLETE AND TESTED | `test_ingest_pipeline.py` (19 tests) |
+| 51 | Coverage report for the corpus (JSON + Markdown) | COMPLETE AND TESTED | `scripts/constitution_coverage.py`, `test_coverage_report_counts_real_rows` |
+| 52 | Static accessibility / dead-end checks | COMPLETE AND TESTED | `test_frontend_static.py` (10 tests) |
+| 53 | Dependency vulnerability audit + upgrade | COMPLETE | `pip-audit` clean after upgrading fastapi/starlette/pypdf/python-multipart |
+| 54 | Real-browser / device / screen-reader / voice verification | BLOCKED | no browser, device or assistive technology in this environment |
+
+**Summary:** 51 of 54 tracked features are complete and tested, 2 are blocked on owner input
+(authoritative text, human verification), 1 is blocked on hardware. Nothing is marked complete
+without a test, a CI run, or a measured command output.
 
 ## Known dead ends removed in this round
 

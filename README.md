@@ -20,9 +20,12 @@ guarantee results, and it never presents unverified material as official law.
 | Citizen web app (6 routes, gu/en) and admin console | **IMPLEMENTED AND TESTED IN JSDOM** — no real phone/browser session yet |
 | Voice input / speech output | **IMPLEMENTED BUT NOT TESTED** (browser APIs) |
 | Live LLM provider (`openai_compatible`) | **IMPLEMENTED BUT NOT TESTED** (no API key available) |
+| Complaint duplicate-submission protection | **COMPLETE AND TESTED** (idempotency key + fingerprint window) |
+| Data-retention purge of complaints/documents | **COMPLETE AND TESTED** (`scripts/purge_data.py`, dry-run default) |
+| Dependency vulnerability audit | **COMPLETE** — `pip-audit` clean after upgrading 3 packages |
 | Authoritative Article text in Gujarati/English | **BLOCKED** — official source PDFs not supplied by the owner |
 | Legal accuracy of every explanation, helpline and department entry | **REQUIRES HUMAN VERIFICATION** (queue in `/admin`) |
-| Automated test suite | **119 tests, 90% line coverage, all passing** |
+| Automated test suite | **168 tests, 91 % line coverage, all passing** |
 
 The corpus ships with **9 human-written article explanations and 0 authoritative texts**. The API
 says so on every answer, and the UI shows a warning banner. See
@@ -69,12 +72,13 @@ backend/app/          FastAPI application (factory `create_app`)
   services/           constitution search, textsearch, complaints, documents, departments,
                       triage, glossary, seeding, ingestion, monitoring
 backend/migrations/   versioned SQL with down-migrations
-backend/tests/        119 pytest tests
+backend/tests/        168 pytest tests
 web/                  self-hosted SPA (no CDN) + admin console
 data/seed/            curated seed JSON (sources, 9 articles, departments, triage, glossary)
 data/legacy/          quarantined 2,125 legacy rows (gzip + sha256), never served to citizens
 data/raw/             where the owner puts official Constitution PDFs (git-ignored)
-scripts/              init_db, backup_db, ingest_constitution, export_legacy, smoke_web
+scripts/              init_db, backup_db, purge_data, ingest_constitution,
+                      constitution_coverage, export_legacy, smoke_web
 docs/                 audit, architecture, API, schema, testing, security, legal, deployment
 ```
 
@@ -87,10 +91,13 @@ not served.
 ## Tests
 
 ```bash
-python -m pytest                                  # 119 passed, 90% coverage
+python -m pytest                                  # 168 passed, 91% coverage
 python -m pytest -q --cov=backend/app             # coverage report
 node --check web/app.js web/admin.js              # frontend syntax
 node scripts/smoke_web.mjs http://127.0.0.1:8000  # optional jsdom journeys (needs jsdom)
+pip-audit --vulnerability-service pypi -r backend/requirements.txt   # dependency audit
+python scripts/constitution_coverage.py           # what the corpus really contains
+python scripts/purge_data.py                      # what retention would delete (dry run)
 ```
 
 Detailed, honest results — including what is *not* covered — are in
@@ -113,7 +120,10 @@ Detailed, honest results — including what is *not* covered — are in
 | [SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md) | Threat model, controls, fixed findings, residual risk |
 | [LEGAL_VERIFICATION_CHECKLIST.md](docs/LEGAL_VERIFICATION_CHECKLIST.md) | What a human must sign off before this is legal information |
 | [KNOWN_LIMITATIONS.md](docs/KNOWN_LIMITATIONS.md) | What does not work yet |
-| [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Local, server, backups, upgrades, rollback |
+| [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Local, server, backups, retention, metrics, upgrades, rollback |
+| [FINAL_COMPLETION_REPORT.md](docs/FINAL_COMPLETION_REPORT.md) | Task register, results, completion percentage |
+| [REMAINING_BLOCKERS.md](docs/REMAINING_BLOCKERS.md) | The three external blockers and who owns them |
+| [RELEASE_READINESS_CHECKLIST.md](docs/RELEASE_READINESS_CHECKLIST.md) | Gate-by-gate release decision |
 
 ---
 
