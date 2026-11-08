@@ -101,6 +101,7 @@ class Settings:
     trust_proxy_headers: bool = False
     log_level: str = "INFO"
     pii_retention_days: int = 180
+    duplicate_window_s: int = 600
 
     extra: dict = field(default_factory=dict)
 
@@ -156,6 +157,7 @@ def load_settings() -> Settings:
         trust_proxy_headers=_env_bool("TRUST_PROXY_HEADERS", False),
         log_level=(_env("LOG_LEVEL", "INFO") or "INFO").upper(),
         pii_retention_days=_env_int("PII_RETENTION_DAYS", 180),
+        duplicate_window_s=_env_int("DUPLICATE_WINDOW_S", 600),
     )
 
 

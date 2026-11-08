@@ -530,8 +530,22 @@
   }
 
   /* ---- complaint ---- */
+  function newRequestId() {
+    // One id per drafting session. Retries (double-click, timeout, back button) reuse it,
+    // so the server returns the existing reference instead of creating a second complaint.
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    var bytes = new Uint8Array(16);
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
+    else for (var i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+    return 'req-' + Array.prototype.map.call(bytes, function (b) {
+      return ('0' + b.toString(16)).slice(-2);
+    }).join('');
+  }
+
   function newComplaintState() {
-    return { step: 1, form: { documents: [] }, preview: null, saved: null };
+    return { step: 1, form: { documents: [] }, preview: null, saved: null, requestId: newRequestId() };
   }
 
   function viewComplaint() {
@@ -624,6 +638,7 @@
     };
     if (includeConfirm) {
       payload.confirmed = true;
+      payload.client_request_id = state.complaint.requestId;
       payload.documents = (form.documents || []).map(function (doc) {
         return { id: doc.id, token: doc.token };
       });
@@ -721,8 +736,24 @@
           setupComplaint();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
-          toast(error.message);
           submitBtn.disabled = false;
+          var details = error.details || {};
+          if (error.code === 'conflict' && details.reference) {
+            // A retry of a submission that already succeeded: show the reference
+            // instead of pretending the complaint failed.
+            var note = document.createElement('div');
+            note.className = 'notice warn';
+            note.setAttribute('role', 'status');
+            note.textContent = (state.lang === 'gu'
+              ? 'આ ફરિયાદ પહેલેથી સબમિટ થઈ ગઈ છે. સંદર્ભ: ' + details.reference +
+                '. તેને ટોકન સાથે "સાચવેલી ફરિયાદ જુઓ" માંથી ખોલો.'
+              : 'This complaint was already submitted. Reference: ' + details.reference +
+                '. Open it with its token under "Open a saved complaint".');
+            var root = $('#complaintRoot');
+            if (root) root.appendChild(note);
+            return;
+          }
+          toast(error.message);
         }
       });
     }

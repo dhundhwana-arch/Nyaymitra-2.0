@@ -5,7 +5,8 @@ import sqlite3
 
 from fastapi import APIRouter, Depends, Query
 
-from ..deps import db_dependency
+from ..config import Settings
+from ..deps import db_dependency, settings_dependency
 from ..errors import AppError
 from ..models import ComplaintCreate, ComplaintCreated, ComplaintOut, ComplaintPreview, ComplaintPreviewRequest
 from ..security import hash_ip
@@ -20,6 +21,7 @@ NOTICE = complaints.NOTICE
 def create_complaint(
     payload: ComplaintCreate,
     conn: sqlite3.Connection = Depends(db_dependency),
+    settings: Settings = Depends(settings_dependency),
 ) -> dict:
     data = payload.model_dump()
     document_refs = []
@@ -28,7 +30,24 @@ def create_complaint(
             raise AppError("bad_request", "Each document entry needs an id and a token.").to_http()
         document_refs.append({"id": int(doc["id"]), "token": str(doc["token"])})
 
-    created = complaints.create(conn, data, document_refs=document_refs)
+    try:
+        created = complaints.create(
+            conn,
+            data,
+            document_refs=document_refs,
+            duplicate_window_s=settings.duplicate_window_s,
+        )
+    except complaints.DuplicateSubmission as duplicate:
+        raise AppError(
+            "conflict",
+            "This complaint was already submitted. Open it with its reference and access token "
+            "instead of submitting again.",
+            details={
+                "reason": duplicate.reason,
+                "reference": duplicate.reference,
+                "retry_safe": False,
+            },
+        ).to_http()
 
     guide_row = triage.guide_for_category(conn, payload.category)
     guide = triage.shape_guide(guide_row, payload.language) if guide_row else None

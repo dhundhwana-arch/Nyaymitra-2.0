@@ -5,7 +5,8 @@ from .conftest import complaint_payload
 
 
 def test_create_and_retrieve_complaint(client):
-    created = client.post("/api/v1/complaints", json=complaint_payload())
+    payload = complaint_payload()
+    created = client.post("/api/v1/complaints", json=payload)
     assert created.status_code == 201
     body = created.json()
     assert body["reference"].startswith("NYM-")
@@ -18,7 +19,7 @@ def test_create_and_retrieve_complaint(client):
     )
     assert fetched.status_code == 200
     assert fetched.json()["status"] == "submitted"
-    assert fetched.json()["description"] == complaint_payload()["description"]
+    assert fetched.json()["description"] == payload["description"]
 
 
 def test_wrong_token_is_indistinguishable_from_missing(client):
@@ -108,3 +109,61 @@ def test_admin_complaint_index_has_no_free_text(client, admin_headers):
     serialised = str(body)
     assert "Unauthorised withdrawal" not in serialised
     assert "98765" not in serialised
+
+
+# ------------------------------------------------- duplicate-submission protection
+def test_same_client_request_id_returns_conflict_not_a_second_row(client, db):
+    payload = complaint_payload()
+    before = db.execute("SELECT COUNT(*) FROM complaints").fetchone()[0]
+    first = client.post("/api/v1/complaints", json=payload)
+    assert first.status_code == 201
+
+    retry = client.post("/api/v1/complaints", json=payload)
+    assert retry.status_code == 409
+    error = retry.json()["error"]
+    assert error["code"] == "conflict"
+    assert error["details"]["reason"] == "same_client_request_id"
+    assert error["details"]["reference"] == first.json()["reference"]
+    # the retry must not hand out a token: the server only stores the hash
+    assert "access_token" not in retry.text
+    assert db.execute("SELECT COUNT(*) FROM complaints").fetchone()[0] == before + 1
+
+
+def test_double_click_without_client_id_is_caught_by_fingerprint(client, db):
+    payload = complaint_payload()
+    payload.pop("client_request_id")          # older client: no idempotency key
+    before = db.execute("SELECT COUNT(*) FROM complaints").fetchone()[0]
+    first = client.post("/api/v1/complaints", json=payload)
+    second = client.post("/api/v1/complaints", json=payload)
+    assert first.status_code == 201
+    assert second.status_code == 409
+    assert second.json()["error"]["details"]["reason"] == "identical_recent_submission"
+    assert second.json()["error"]["details"]["reference"] == first.json()["reference"]
+    assert db.execute("SELECT COUNT(*) FROM complaints").fetchone()[0] == before + 1
+
+
+def test_two_distinct_sessions_may_file_identical_complaints(client):
+    """A shared kiosk: same words, different sessions (different idempotency keys)."""
+    payload = complaint_payload()
+    payload.pop("client_request_id")
+    first = client.post("/api/v1/complaints", json={**payload, "client_request_id": "kiosk-session-a1"})
+    second = client.post("/api/v1/complaints", json={**payload, "client_request_id": "kiosk-session-b2"})
+    assert first.status_code == 201, first.text
+    assert second.status_code == 201, second.text
+    assert first.json()["reference"] != second.json()["reference"]
+
+
+def test_duplicate_window_is_bounded(client, db):
+    payload = complaint_payload()
+    payload.pop("client_request_id")
+    assert client.post("/api/v1/complaints", json=payload).status_code == 201
+    # Move the first complaint outside the window: an identical later submission is
+    # a genuinely new complaint, not a retry.
+    db.execute("UPDATE complaints SET created_at = '2020-01-01T00:00:00+00:00'")
+    assert client.post("/api/v1/complaints", json=payload).status_code == 201
+
+
+def test_client_request_id_is_validated(client):
+    payload = complaint_payload()
+    payload["client_request_id"] = "x"  # too short
+    assert client.post("/api/v1/complaints", json=payload).status_code == 422

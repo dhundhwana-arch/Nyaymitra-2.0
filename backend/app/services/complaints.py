@@ -9,10 +9,11 @@ Privacy model
 """
 from __future__ import annotations
 
+import hashlib
 import re
 import secrets
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from ..security import hash_token
@@ -47,6 +48,43 @@ NOTICE = (
 )
 
 REFERENCE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+#: Short window in which an *identical* submission is treated as a retry rather than a
+#: new complaint. Deliberately short: a citizen may legitimately file the same problem
+#: again later, so the window only covers double-clicks and timeouts.
+DEFAULT_DUPLICATE_WINDOW_S = 600
+
+
+class DuplicateSubmission(Exception):
+    """Raised when this submission is a retry of one that already succeeded.
+
+    Carries the existing reference so the client can show it instead of creating a
+    second complaint. The access token is deliberately NOT returned again — the server
+    only stores its hash, so a retry cannot leak a token to whoever sent it.
+    """
+
+    def __init__(self, reference: str, reason: str = "duplicate_submission") -> None:
+        self.reference = reference
+        self.reason = reason
+        super().__init__(f"duplicate submission: {reference}")
+
+
+_WHITESPACE = re.compile(r"\s+")
+
+
+def fingerprint(payload: dict[str, Any]) -> str:
+    """Stable hash of the substantive fields, used to detect an immediate retry."""
+    parts = [
+        str(payload.get("language") or ""),
+        str(payload.get("category") or ""),
+        _WHITESPACE.sub(" ", str(payload.get("title") or "")).strip().lower(),
+        _WHITESPACE.sub(" ", str(payload.get("description") or "")).strip().lower(),
+        str(payload.get("incident_date") or ""),
+        _WHITESPACE.sub(" ", str(payload.get("location") or "")).strip().lower(),
+        _WHITESPACE.sub(" ", str(payload.get("district") or "")).strip().lower(),
+        _WHITESPACE.sub(" ", str(payload.get("state") or "")).strip().lower(),
+    ]
+    return hashlib.sha256("\x31".join(parts).encode("utf-8")).hexdigest()
 
 
 def _now() -> str:
@@ -106,7 +144,44 @@ def create(
     payload: dict[str, Any],
     *,
     document_refs: list[dict] | None = None,
+    duplicate_window_s: int = DEFAULT_DUPLICATE_WINDOW_S,
+    now: datetime | None = None,
 ) -> dict[str, Any]:
+    """Insert a complaint, refusing retries.
+
+    Guards:
+
+    1. ``client_request_id`` is unique — the same key can never create two rows, so a
+       double-click or a timeout retry returns the reference of the complaint that was
+       already created.
+    2. When the client sends **no** key (curl, older clients), an identical payload
+       inside ``duplicate_window_s`` is treated as a retry. With a key present this
+       check is skipped on purpose: a shared kiosk may legitimately file two identical
+       complaints for two people in the same session.
+    """
+    client_request_id = payload.get("client_request_id") or None
+    if client_request_id:
+        existing = conn.execute(
+            "SELECT reference FROM complaints WHERE client_request_id = ?",
+            (client_request_id,),
+        ).fetchone()
+        if existing:
+            raise DuplicateSubmission(existing["reference"], "same_client_request_id")
+
+    fp = fingerprint(payload)
+    if not client_request_id:
+        moment = now or datetime.now(timezone.utc)
+        cutoff = (moment - timedelta(seconds=max(1, duplicate_window_s))).replace(
+            microsecond=0
+        ).isoformat()
+        recent = conn.execute(
+            "SELECT reference FROM complaints WHERE fingerprint = ? AND created_at >= ?"
+            " ORDER BY id DESC LIMIT 1",
+            (fp, cutoff),
+        ).fetchone()
+        if recent:
+            raise DuplicateSubmission(recent["reference"], "identical_recent_submission")
+
     reference = new_reference(conn)
     token = secrets.token_urlsafe(24)
     summary = build_summary(
@@ -119,37 +194,51 @@ def create(
         district=payload.get("district"),
         state=payload.get("state"),
     )
-    now = _now()
-    cur = conn.execute(
-        """
-        INSERT INTO complaints
-            (reference, access_token_hash, language, category, title, description, summary,
-             incident_date, location, district, state, respondent, contact_phone, contact_email,
-             consent_given, status, submitted_at, created_at, updated_at)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """,
-        (
-            reference,
-            hash_token(token),
-            payload["language"],
-            payload["category"],
-            payload["title"],
-            payload["description"],
-            summary,
-            str(payload["incident_date"]) if payload.get("incident_date") else None,
-            payload.get("location"),
-            payload.get("district"),
-            payload.get("state"),
-            payload.get("respondent"),
-            payload.get("contact_phone"),
-            str(payload["contact_email"]) if payload.get("contact_email") else None,
-            1 if payload.get("consent") else 0,
-            "submitted",
-            now,
-            now,
-            now,
-        ),
-    )
+    now_text = _now()
+    try:
+        cur = conn.execute(
+            """
+            INSERT INTO complaints
+                (reference, access_token_hash, language, category, title, description, summary,
+                 incident_date, location, district, state, respondent, contact_phone, contact_email,
+                 consent_given, status, submitted_at, created_at, updated_at,
+                 client_request_id, fingerprint)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                reference,
+                hash_token(token),
+                payload["language"],
+                payload["category"],
+                payload["title"],
+                payload["description"],
+                summary,
+                str(payload["incident_date"]) if payload.get("incident_date") else None,
+                payload.get("location"),
+                payload.get("district"),
+                payload.get("state"),
+                payload.get("respondent"),
+                payload.get("contact_phone"),
+                str(payload["contact_email"]) if payload.get("contact_email") else None,
+                1 if payload.get("consent") else 0,
+                "submitted",
+                now_text,
+                now_text,
+                now_text,
+                client_request_id,
+                fp,
+            ),
+        )
+    except sqlite3.IntegrityError:
+        # Two concurrent retries can pass the checks above; the unique index is the
+        # authority. Surface the winner's reference instead of a 500.
+        existing = conn.execute(
+            "SELECT reference FROM complaints WHERE client_request_id = ?",
+            (client_request_id,),
+        ).fetchone()
+        if existing:
+            raise DuplicateSubmission(existing["reference"], "same_client_request_id") from None
+        raise
     complaint_id = int(cur.lastrowid)
 
     for ref in document_refs or []:
@@ -164,7 +253,7 @@ def create(
         "reference": reference,
         "access_token": token,
         "status": "submitted",
-        "created_at": now,
+        "created_at": now_text,
         "summary": summary,
         "category": payload["category"],
     }

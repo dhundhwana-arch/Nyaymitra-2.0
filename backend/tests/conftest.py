@@ -87,7 +87,13 @@ def db(settings):
         yield conn
 
 
-def complaint_payload(**overrides) -> dict:
+def complaint_payload(*, unique: bool = True, **overrides) -> dict:
+    """A valid complaint payload.
+
+    Each call gets a unique marker by default, because the API treats an *identical*
+    payload without an idempotency key as a retry of the same submission (409). Tests
+    that want to exercise that behaviour pass ``unique=False``.
+    """
     payload = {
         "language": "en",
         "category": "cyber_fraud",
@@ -104,6 +110,11 @@ def complaint_payload(**overrides) -> dict:
         "consent": True,
         "confirmed": True,
     }
+    if unique:
+        payload["description"] = payload["description"] + (
+            f" Case note {os.urandom(4).hex()} recorded for this test run."
+        )
+        payload.setdefault("client_request_id", f"test-{os.urandom(8).hex()}")
     payload.update(overrides)
     return payload
 
