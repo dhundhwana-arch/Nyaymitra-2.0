@@ -1,13 +1,18 @@
-# Runtime dependencies (pinned).
+# Runtime dependencies (pinned). Reviewed 2026-11-08 with:
+#   pip-audit --vulnerability-service pypi -r backend/requirements.txt
 # Install from the repository root:
 #   python -m venv .venv && . .venv/bin/activate
 #   pip install -r backend/requirements.txt
-fastapi==0.115.6
-uvicorn[standard]==0.32.1
+fastapi==0.162.2
+uvicorn[standard]==0.54.0
 pydantic==2.10.3
 email-validator==2.2.0
-python-multipart==0.0.20
-pypdf==5.1.0
+python-multipart==0.0.33
+pypdf==7.0.0
 httpx==0.28.1
 
-# Test-only tooling lives in backend/requirements-dev.txt
+# Security notes:
+# * starlette is not pinned directly — it is constrained by fastapi. fastapi 0.162.2
+#   resolves starlette 1.x, which clears the advisories that affected 0.41.x.
+# * python-multipart and pypdf were upgraded for the same reason (see docs/SECURITY_AUDIT.md).
+# * Test-only tooling lives in backend/requirements-dev.txt

@@ -70,6 +70,23 @@ jobs:
           NYAYMITRA_BACKUP_DIR=/tmp/ci-db/backups \
             python scripts/backup_db.py --list
 
+  security:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install audit tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements-dev.txt
+      - name: Audit pinned runtime dependencies
+        run: pip-audit --vulnerability-service pypi -r backend/requirements.txt --progress-spinner off
+
   frontend:
     name: frontend syntax checks (node 20)
     runs-on: ubuntu-latest
