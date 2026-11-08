@@ -69,7 +69,7 @@ Honest list, in the order it is likely to bite.
     voice and screen readers are unverified (`docs/TESTING_REPORT.md` §4).
 25. **No load test.** Throughput and latency under concurrent users are unmeasured.
 26. **CI covers Linux only.** Runs 42404987197 / 42404988506 are green on Python 3.11 and 3.12
-    plus the Node checks, and a `pip-audit` job now covers dependencies, but there is no
+    plus the Node checks, and run 42439419345 includes a `pip-audit` job, but there is no
     Windows/macOS job, so `run.bat` and the `chmod` calls are untested on those platforms.
 27. **Metrics exist, alerting does not.** `GET /api/v1/admin/metrics` exposes request, rate-limit
     and AI-fallback counters in-process, and the admin console shows them; there is no scraper,

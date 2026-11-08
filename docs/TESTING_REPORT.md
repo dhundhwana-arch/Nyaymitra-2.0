@@ -130,7 +130,7 @@ admin console were also exercised over HTTP with `curl` against the running serv
 | Screen reader (NVDA/TalkBack) | **NOT TESTED** | Requires a human with assistive technology |
 | Live AI provider | **NOT TESTED** | No API key; the fallback and rejection paths *are* tested |
 | Official Constitution PDF ingestion | **NOT TESTED** | No official PDF supplied; parser tested on fixture text |
-| GitHub Actions workflow | **COMPLETE** | Runs 42404987197 / 42404988506 green (pytest 3.11 + 3.12, frontend). The dependency-audit job was added after those runs; CI re-runs on this branch's next push |
+| GitHub Actions workflow | **COMPLETE** | Runs **42439419345** (push) and **42439422327** (pull request) green with all four jobs: pytest 3.11 (27 s), pytest 3.12 (53 s), dependency audit (20 s), frontend checks (9 s). Earlier runs 42404987197 / 42404988506 covered the pre-audit workflow |
 | Dependency vulnerabilities | **COMPLETE** | `pip-audit` found advisories in python-multipart, pypdf and starlette; all three were upgraded and the audit is now clean |
 | Load/performance | **NOT TESTED** | No benchmark; single-process synchronous SQLite is the design limit |
 

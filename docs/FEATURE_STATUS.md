@@ -55,7 +55,7 @@ Evidence column points at the test file(s) in `backend/tests/`.
 | 40 | Legal correctness of explanations, helplines, portals | REQUIRES HUMAN VERIFICATION | `/admin` verification queue |
 | 41 | Ingestion of an official Constitution document | COMPLETE AND TESTED (with fixture text) | `test_apply_writes_articles_and_report`; never run against a real PDF |
 | 42 | Legacy corpus preservation | COMPLETE AND TESTED | 2,125 rows in gzip + DB, never served (`test_legacy_rows_are_preserved`) |
-| 43 | CI (Python 3.11/3.12, dependency audit, node checks, bootstrap, backup) | COMPLETE AND TESTED | `.github/workflows/ci.yml`; jobs `test`, `security`, `frontend` |
+| 43 | CI (Python 3.11/3.12, dependency audit, node checks, bootstrap, backup) | COMPLETE AND TESTED | `.github/workflows/ci.yml`; runs 42439419345 and 42439422327 green — pytest 3.11, pytest 3.12, dependency audit, frontend |
 | 44 | Deployment guide, backups, rollback | COMPLETE (documented) | `docs/DEPLOYMENT_GUIDE.md` |
 | 45 | Duplicate-submission protection (idempotency key + fingerprint window) | COMPLETE AND TESTED | `test_same_client_request_id_returns_conflict_not_a_second_row`, `test_double_click_without_client_id_is_caught_by_fingerprint`, `test_duplicate_window_is_bounded` |
 | 46 | Data-retention purge (complaints, documents, files, logs) | COMPLETE AND TESTED | `test_retention.py` (7 tests), `scripts/purge_data.py` |
