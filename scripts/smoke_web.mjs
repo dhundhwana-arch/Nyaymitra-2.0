@@ -64,6 +64,13 @@ for (const route of ["#/home", "#/assistant", "#/complaint", "#/library", "#/dep
   console.log(`${route.padEnd(14)} ${String(body.length).padStart(5)} chars`);
 }
 
+/* keyboard and focus: the router must move focus to the main landmark */
+const main = document.querySelector("#main");
+check(main && main.getAttribute("tabindex") === "-1", "main landmark is not focusable");
+check(document.querySelector(".skip-link")?.getAttribute("href") === "#main", "skip link missing");
+await go("#/library");
+check(document.activeElement === document.querySelector("#main"), "route change did not move focus to main");
+
 /* language toggle */
 document.querySelector("#langEn").click();
 await wait(400);
@@ -165,7 +172,10 @@ if (adminToken) {
   check(/pending/i.test(queue), "verification queue did not load");
   check(docsPanel.length > 0, "document review panel did not load");
   check(/administration/i.test(clean(adminDocument.querySelector("main"))), "admin page did not render");
-  console.log(`admin          stats=${stats.length} chars, queue=${queue.length} chars, documents=${docsPanel.length} chars`);
+  const metricsPanel = clean(adminDocument.querySelector("#metricsPanel"));
+  const hasMetrics = adminWindow.document.body.innerHTML.includes("http.requests_total");
+  check(metricsPanel.length > 0 && hasMetrics, "process metrics panel did not load");
+  console.log(`admin          stats=${stats.length} chars, queue=${queue.length} chars, metrics=${hasMetrics ? "loaded" : "MISSING"}, documents=${docsPanel.length} chars`);
 } else {
   console.log("admin          skipped (set NYAYMITRA_ADMIN_TOKEN to exercise the console)");
 }

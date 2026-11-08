@@ -79,5 +79,9 @@ def document_content(
         path,
         media_type=row["mime_type"],
         filename=row["original_name"],
-        headers={"X-Content-Type-Options": "nosniff"},
+        headers={
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "no-store",
+            "Pragma": "no-cache",
+        },
     )

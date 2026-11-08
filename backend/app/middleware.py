@@ -15,6 +15,7 @@ from starlette.responses import JSONResponse, Response
 
 from .config import Settings, get_settings
 from .errors import error_body
+from .metrics import metrics
 from .logging_utils import request_id_ctx
 from .security import client_ip, rate_limiter
 
@@ -33,6 +34,13 @@ def _classify(path: str, method: str, settings: Settings) -> tuple[str, int]:
     return "write", settings.rate_limit_write
 
 
+SENSITIVE_PREFIXES = ("/api/v1/complaints", "/api/v1/documents", "/api/v1/admin", "/admin")
+
+
+def _is_sensitive(path: str) -> bool:
+    return any(path == prefix or path.startswith(prefix + "/") for prefix in SENSITIVE_PREFIXES)
+
+
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
@@ -45,6 +53,8 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             request_id_ctx.reset(token)
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Response-Time-ms"] = str(int((time.perf_counter() - started) * 1000))
+        metrics.inc("http.requests_total")
+        metrics.inc(f"http.status_{response.status_code // 100}xx")
         return response
 
 
@@ -68,6 +78,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
             ),
         }
+        if _is_sensitive(request.url.path):
+            # Complaint text, document bytes and admin data must never sit in a shared
+            # cache or be restored from the back/forward cache on a shared kiosk.
+            headers["Cache-Control"] = "no-store"
+            headers["Pragma"] = "no-cache"
         if self.settings.environment == "production":
             headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         for key, value in headers.items():
@@ -128,6 +143,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         )
         if not allowed:
             rid = getattr(request.state, "request_id", "-")
+            metrics.inc("http.rate_limited_total")
             log.warning("rate limit hit bucket=%s path=%s", bucket, path)
             return JSONResponse(
                 status_code=429,

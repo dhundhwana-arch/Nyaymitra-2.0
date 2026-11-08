@@ -11,12 +11,24 @@ from ..deps import db_dependency, require_role, settings_dependency
 from ..errors import AppError
 from ..models import VerificationUpdate
 from ..security import client_ip, hash_ip
+from ..metrics import metrics
 from ..services import complaints, monitoring
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 read_only = require_role("monitor")
 admin_only = require_role("admin")
+
+
+@router.get("/metrics", dependencies=[Depends(read_only)])
+def process_metrics() -> dict:
+    """In-process counters for operational monitoring.
+
+    No labels contain personal data: no IP addresses, no question text, no references.
+    Counters reset when the process restarts; this is a liveness/health signal, not a
+    long-term time series (ship stdout logs to your log store for that).
+    """
+    return metrics.snapshot()
 
 
 @router.get("/stats", dependencies=[Depends(read_only)])

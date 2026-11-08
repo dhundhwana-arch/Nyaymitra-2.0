@@ -69,6 +69,14 @@
           queue.departments.map(function (d) { return [d.department_key, d.verification_status, d.verified_on || 'never']; })) +
         '<p class="small muted">' + esc(queue.note) + '</p>';
 
+      var metrics = await api('/admin/metrics');
+      var counters = Object.keys(metrics.counters).map(function (key) {
+        return [key, metrics.counters[key]];
+      });
+      $('#metricsPanel').innerHTML =
+        table(['counter', 'value'], counters) +
+        '<p class="small muted">uptime: ' + esc(metrics.uptime_s) + ' s</p>';
+
       var queries = await api('/admin/queries?limit=25');
       $('#queriesPanel').innerHTML = table(['time', 'lang', 'category', 'provider', 'ms', 'status', 'query (redacted)'],
         queries.items.map(function (q) {

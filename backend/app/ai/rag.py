@@ -18,6 +18,7 @@ from typing import Any
 
 from ..config import Settings
 from ..errors import AppError
+from ..metrics import metrics
 from ..services import constitution, departments, monitoring, triage
 from . import guard, offline
 from .base import ProviderResult, ProviderUnavailable, AIProviderError
@@ -101,6 +102,7 @@ def answer_question(
         answer_text = NO_INFO_GU if language == "gu" else NO_INFO_EN
         grounded = False
         warnings.append("insufficient_sources")
+        metrics.inc("ai.insufficient_sources_total")
         provider = build_provider(settings)
         provider_name = getattr(provider, "name", "offline")
     else:
@@ -137,6 +139,7 @@ def answer_question(
                 ok, problems = guard.validate_answer(result.text, allowed_article_labels=allowed)
                 if not ok:
                     warnings.extend(f"model_rejected:{p}" for p in problems)
+                    metrics.inc("ai.model_rejected_total")
                     warnings.append("fell_back_to_offline_grounded")
                     answer_text = _offline_text(
                         question=question, language=language, rows=rows, guide=guide, deps=deps
@@ -152,6 +155,7 @@ def answer_question(
                          type(exc).__name__, started)
                     raise AppError("provider_unavailable") from exc
                 warnings.append("provider_unavailable_fallback")
+                metrics.inc("ai.provider_fallback_total")
                 answer_text = _offline_text(
                     question=question, language=language, rows=rows, guide=guide, deps=deps
                 )

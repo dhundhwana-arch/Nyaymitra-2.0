@@ -62,6 +62,14 @@
         </div>
 
         <div class="card stack">
+          <h2>Process metrics</h2>
+          <p class="small muted">In-process counters since the worker started: request volume,
+            rate-limit hits and how often the AI fell back or refused to answer. No personal
+            data is counted or labelled.</p>
+          <div id="metricsPanel" aria-live="polite"></div>
+        </div>
+
+        <div class="card stack">
           <h2>Recent queries (redacted)</h2>
           <div id="queriesPanel" aria-live="polite"></div>
         </div>
