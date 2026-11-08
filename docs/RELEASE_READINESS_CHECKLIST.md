@@ -22,7 +22,7 @@ Legend: ✅ done and evidenced · ⚠️ done with a documented limitation · �
 | Browser journeys (simulated) | ✅ | `scripts/smoke_web.mjs` — all routes + admin |
 | Dependency audit clean | ✅ | `pip-audit --vulnerability-service pypi` → no known vulnerabilities |
 | Security controls regression-tested | ✅ | `test_admin_and_security.py`, `test_metrics_and_privacy.py` |
-| CI workflow present and green | ✅ | run 42439419345 / 42439422327: pytest 3.11, pytest 3.12, dependency audit, frontend |
+| CI workflow present and green | ✅ | runs 42442829095 / 42442832288 on `bc919d3`: pytest 3.11, pytest 3.12, dependency audit, frontend |
 | Documentation matches code | ✅ | 15 documents; audit §14–§15 and plan addendum updated |
 | No secrets in the repository | ✅ | `test_no_secret_is_hardcoded_in_tracked_source`, `git grep` clean |
 | Legacy data preserved | ✅ | 2,125 rows in gzip + `legacy_import_chunks` |

@@ -203,7 +203,9 @@ the retention cron, metrics, and a pre-flight checklist.
 * Branch: `arena/812d6894-nyaymitra-2-0`
 * Commits: `67de357` (ingestion), `95f6062` (duplicate submissions), `f1b69fa` (retention),
   `bb4b545` (metrics/caching/frontend checks), `332999b` (dependency upgrade + CI audit),
-  `ad1057a` (documentation) — the documentation commit SHA is reported in the PR conversation.
-* CI: run **42439419345** (push) and **42439422327** (pull request) — all four jobs green:
-  pytest 3.11 (27 s), pytest 3.12 (53 s), dependency audit (20 s), frontend (9 s).
+  `ad1057a` + `c788f7d` (documentation), `7503e05` (handover tooling + guard fixes),
+  `bc919d3` (changeset checker fixes).
+* CI: run **42442829095** (push) and **42442832288** (pull request) — all four jobs green on the
+  handover commit `bc919d3`: pytest 3.11 (36 s), pytest 3.12, dependency audit (21 s), frontend
+  (7 s). Earlier green runs 42439419345 / 42439422327 covered `c788f7d`.
 * PR: #1 — kept **draft**; not merged; owner approval required.

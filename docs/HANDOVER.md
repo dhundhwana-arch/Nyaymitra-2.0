@@ -77,7 +77,7 @@ The frontend smoke test needs jsdom, which is not vendored:
 simulation, not a browser — see `KNOWN_LIMITATIONS.md` #24.
 
 CI (`.github/workflows/ci.yml`): pytest 3.11, pytest 3.12, dependency audit (`pip-audit`), and
-frontend checks. The run IDs for this commit are recorded in `TESTING_REPORT.md` §2.
+frontend checks. Runs **42442829095** (push) and **42442832288** (pull request) are green on commit `bc919d3`: pytest 3.11 (36 s), pytest 3.12, dependency audit (21 s), frontend checks (7 s). Earlier handover runs 42442727692 / 42442731248 covered `7503e05`.
 
 ## 4. Real-model status: **not verified here**
 

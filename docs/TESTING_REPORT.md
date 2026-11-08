@@ -140,7 +140,7 @@ admin console were also exercised over HTTP with `curl` against the running serv
 | Screen reader (NVDA/TalkBack) | **NOT TESTED** | Requires a human with assistive technology |
 | Live AI provider (real model) | **NOT TESTED** | `scripts/verify_ai_provider.py` exits 3 here: no provider configured, no Ollama, and weights cannot be downloaded in this sandbox. The provider *wiring* is tested against a stub HTTP server, which is not a model test. See `docs/HANDOVER.md` §4 |
 | Official Constitution PDF ingestion | **NOT TESTED** | No official PDF supplied; parser tested on fixture text |
-| GitHub Actions workflow | **COMPLETE** | Runs **42439419345** (push) and **42439422327** (pull request) green with all four jobs: pytest 3.11 (27 s), pytest 3.12 (53 s), dependency audit (20 s), frontend checks (9 s). Earlier runs 42404987197 / 42404988506 covered the pre-audit workflow |
+| GitHub Actions workflow | **COMPLETE** | Runs **42442829095** (push) and **42442832288** (pull request) green on the handover commit `bc919d3`: pytest 3.11 (36 s), pytest 3.12, dependency audit (21 s), frontend checks (7 s). Earlier green runs: 42442727692 / 42442731248 (`7503e05`), 42439419345 / 42439422327 (`c788f7d`), 42404987197 / 42404988506 (pre-audit workflow) |
 | Dependency vulnerabilities | **COMPLETE** | `pip-audit` found advisories in python-multipart, pypdf and starlette; all three were upgraded and the audit is now clean |
 | Load/performance | **NOT TESTED** | No benchmark; single-process synchronous SQLite is the design limit |
 
