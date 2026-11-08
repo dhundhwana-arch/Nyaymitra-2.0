@@ -14,7 +14,7 @@ Legend: ✅ done and evidenced · ⚠️ done with a documented limitation · �
 | Backend imports and starts from a clean checkout | ✅ | `uvicorn backend.app.main:app`, `/health` |
 | Database bootstraps from nothing | ✅ | CI step + `scripts/init_db.py --info` |
 | Migrations apply and roll back (3 migrations) | ✅ | `test_migrations_are_idempotent`, `test_rollback_and_reapply`, `test_migration_002_rolls_back_cleanly` |
-| Full test suite green | ✅ | `186 passed in 23.65s` |
+| Full test suite green | ✅ | `187 passed in 23.73s` |
 | Coverage ≥ 85 % | ✅ | 92 % (2306 statements, 189 missed) |
 | Changeset manifest verified (tree + extracted archive) | ✅ | `scripts/verify_changeset.py`; see `docs/HANDOVER.md` §2 |
 | Live model verified end to end | ❌ | `scripts/verify_ai_provider.py` exits 3: no provider available here |
@@ -74,7 +74,7 @@ Everything in Stage B, plus:
 
 ## Pre-merge checklist (copy into the PR)
 
-- [x] `python -m pytest` → 186 passed
+- [x] `python -m pytest` → 187 passed
 - [x] `python -m pytest --cov=backend/app` → 92 %
 - [x] `node --check web/app.js web/admin.js scripts/smoke_web.mjs`
 - [x] `node scripts/smoke_web.mjs <url>` → OK

@@ -43,11 +43,21 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def hash_entries(root: Path, paths: Iterable[str]) -> list[dict]:
-    """Return a sorted list of ``{path, sha256, size}`` for the given relative paths."""
+def hash_entries(root: Path, paths: Iterable[str], *, strict: bool = False) -> list[dict]:
+    """Return a sorted list of ``{path, sha256, size}`` for the given relative paths.
+
+    ``strict=False`` (verification) skips files that are not present, so that ``compare`` can
+    report them as **missing** — a deleted file is a mismatch, not a reason the check could not
+    run. ``strict=True`` (manifest creation) raises instead: a manifest built from a checkout
+    with a missing tracked file would be quietly smaller than the commit it claims to describe.
+    """
     entries: list[dict] = []
     for rel in sorted(set(paths)):
         full = root / rel
+        if not full.is_file():
+            if strict:
+                raise FileNotFoundError(f"tracked file is missing: {rel}")
+            continue
         entries.append({"path": rel, "sha256": sha256_file(full), "size": full.stat().st_size})
     return entries
 
@@ -100,7 +110,7 @@ def build_manifest(root: Path, paths: Sequence[str], *, commit: str | None = Non
         "commit": commit,
         "root": root.name,
         "entry_count": len(paths),
-        "entries": hash_entries(root, paths),
+        "entries": hash_entries(root, paths, strict=True),
     }
 
 
@@ -196,7 +206,9 @@ def verify_archive(archive_path: Path, manifest: dict) -> dict:
 
 
 # --------------------------------------------------------------------------- CLI
-def _print_human(manifest: dict | None, report: dict) -> None:
+def _print_human(manifest: dict | None, report: dict, root: Path | None = None) -> None:
+    if root is not None:
+        print(f"root: {root}")
     if manifest:
         print(f"manifest: {manifest['entry_count']} entries, commit {manifest.get('commit') or 'unknown'}")
     print(
@@ -220,11 +232,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--verify-archive", metavar="ARCHIVE", help="extract an archive and verify it")
     parser.add_argument("--manifest", metavar="MANIFEST", help="manifest to use with --verify-archive")
     parser.add_argument("--ref", default=None, help="git ref to manifest (default: HEAD)")
-    parser.add_argument("--root", default=str(REPO_ROOT), help="repository root (default: this checkout)")
+    parser.add_argument(
+        "--root",
+        default=None,
+        help="directory to check (default: the current working directory, so that "
+             "'verify' always checks the copy you are standing in, never a different checkout)",
+    )
     parser.add_argument("--json", action="store_true", help="machine-readable output")
     args = parser.parse_args(argv)
 
-    root = Path(args.root).resolve()
+    root = Path(args.root).resolve() if args.root else Path.cwd().resolve()
     try:
         if args.write:
             ref = args.ref or "HEAD"
@@ -244,7 +261,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.json:
                 print(json.dumps(report, indent=2))
             else:
-                _print_human(manifest, report)
+                _print_human(manifest, report, root)
             return 0 if report["ok"] else 1
 
         if args.verify_archive:
@@ -253,6 +270,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 return 2
             manifest = load_manifest(Path(args.manifest))
             report = verify_archive(Path(args.verify_archive), manifest)
+            report["root"] = str(root)
             if args.json:
                 print(json.dumps(report, indent=2))
             else:

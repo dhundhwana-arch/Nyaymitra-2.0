@@ -50,7 +50,13 @@ python scripts/backup_db.py --list
 ```
 
 Exit codes: `0` identical, `1` mismatch (missing / extra / modified file), `2` the check itself
-could not run. A mismatch is never reported as a pass.
+could not run. A mismatch is never reported as a pass. `--verify` checks the directory you are
+standing in unless `--root` says otherwise, and prints that root, so it can never quietly verify a
+different checkout (a bug found during this handover and fixed with a regression test).
+
+Evidence recorded at handover: the manifest's 120 entries matched both the working tree and a
+freshly extracted archive (0 missing, 0 extra, 0 modified), and a deliberately tampered copy of
+that archive returned exit 1 with `modified: README.md`.
 
 ## 3. Test evidence
 
@@ -63,8 +69,8 @@ node --check web/app.js web/admin.js scripts/smoke_web.mjs
 | Suite | Tests |
 |---|---:|
 | backend (12 original modules) | 168 |
-| `test_handover_tooling.py` (changeset checker + provider probe) | 18 |
-| **Total** | **186** |
+| `test_handover_tooling.py` (changeset checker + provider probe) | 19 |
+| **Total** | **187** |
 
 The frontend smoke test needs jsdom, which is not vendored:
 `npm install --no-save jsdom && node scripts/smoke_web.mjs http://127.0.0.1:8000`. It is a jsdom

@@ -152,7 +152,7 @@ Phases 1–12 of the table are implemented. Outcome against the plan's own phase
 | 8. Admin | roles, stats, queues, audit, backups, document index, legacy quarantine | COMPLETE AND TESTED |
 | 9. Frontend | `web/` six routes, gu/en, accessible forms, admin console, PWA manifest | IMPLEMENTED AND TESTED IN JSDOM (no real device yet) |
 | 10. Security | token hashing, rate limits, upload validation, CSP, permissions, redaction | COMPLETE AND TESTED |
-| 11. Testing | 186 pytest tests, 92% coverage, jsdom journeys, CI workflow (pytest ×2, pip-audit, frontend), changeset integrity checker | COMPLETE |
+| 11. Testing | 187 pytest tests, 92% coverage, jsdom journeys, CI workflow (pytest ×2, pip-audit, frontend), changeset integrity checker | COMPLETE |
 | 12. Documentation | 12 documents in `docs/` + README | COMPLETE except legal sign-off, which is human work |
 
 ### Design rules — compliance

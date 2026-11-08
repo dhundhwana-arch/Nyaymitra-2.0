@@ -9,7 +9,7 @@ Environment: Linux sandbox, Python 3.11.2, Node 22.22.3, SQLite 3.40, jsdom 25 (
 
 ```bash
 python -m pytest
-# 186 passed, 1 warning in 23.65s
+# 187 passed, 1 warning in 23.73s
 
 python -m pytest --cov=backend/app --cov-report=term-missing
 # TOTAL  2306 statements  189 missed  92%
@@ -32,8 +32,8 @@ The single warning is Starlette's notice that `TestClient` currently uses `httpx
 | `test_metrics_and_privacy.py` | 7 | pass |
 | `test_retention.py` | 7 | pass |
 | `test_departments_and_feedback.py` | 5 | pass |
-| `test_handover_tooling.py` | 18 | pass |
-| **Total** | **186** | **all pass** |
+| `test_handover_tooling.py` | 19 | pass |
+| **Total** | **187** | **all pass** |
 | Frontend jsdom journeys (separate script) | 14 checks | pass |
 
 Coverage by area: `security.py` 89%, `middleware.py` 99%, `guard.py` 93%, `rag.py` 92%,

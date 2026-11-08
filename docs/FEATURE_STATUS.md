@@ -67,8 +67,8 @@ Evidence column points at the test file(s) in `backend/tests/`.
 | 52 | Static accessibility / dead-end checks | COMPLETE AND TESTED | `test_frontend_static.py` (10 tests) |
 | 53 | Dependency vulnerability audit + upgrade | COMPLETE | `pip-audit` clean after upgrading fastapi/starlette/pypdf/python-multipart |
 | 54 | Real-browser / device / screen-reader / voice verification | BLOCKED | no browser, device or assistive technology in this environment |
-| 55 | Changeset integrity checker (manifest, tree verify, archive verify) | COMPLETE AND TESTED | `scripts/verify_changeset.py`, 6 tests in `test_handover_tooling.py` |
-| 56 | Live AI provider probe (fails honestly when no model is reachable) | COMPLETE AND TESTED | `scripts/verify_ai_provider.py`, exit 3 reproduced twice; 8 stub-server tests |
+| 55 | Changeset integrity checker (manifest, tree verify, archive verify) | COMPLETE AND TESTED | `scripts/verify_changeset.py`, 7 tests in `test_handover_tooling.py` |
+| 56 | Live AI provider probe (fails honestly when no model is reachable) | COMPLETE AND TESTED | `scripts/verify_ai_provider.py`, exit 3 reproduced twice; 9 stub-server tests |
 | 57 | Guard: correct citation of a retrieved article is accepted ("Article 14 is…") | COMPLETE AND TESTED | `backend/app/ai/guard.py`; regression tests in `test_ai.py` / `test_handover_tooling.py` |
 | 58 | Guard: Gujarati digits match ASCII article labels | COMPLETE AND TESTED | `guard._normalise_digits`, `test_gujarati_digits_match_ascii_labels` |
 | 59 | Accidental tracked `node_modules` symlink removed | COMPLETE | `git rm --cached node_modules`, `.gitignore` updated |

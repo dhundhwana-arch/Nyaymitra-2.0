@@ -124,7 +124,7 @@ All nine required documents updated, plus three new: this report, `REMAINING_BLO
 
 ```
 python -m pytest
-186 passed, 1 warning in 23.65s
+187 passed, 1 warning in 23.73s
 
 python -m pytest -q --cov=backend/app --cov-report=term
 TOTAL 2306 statements, 189 missed, 92 %
@@ -145,9 +145,9 @@ NYAYMITRA_DB_PATH=data/nyaymitra.db python scripts/purge_data.py --json
  "complaints": 0, "documents": 0, "query_logs": 0, "files_deleted": 0}
 ```
 
-Test growth: 119 → **186** (+67). Coverage: 90 % → **92 %** on a larger codebase.
+Test growth: 119 → **187** (+68). Coverage: 90 % → **92 %** on a larger codebase.
 
-A later handover pass added `test_handover_tooling.py` (18 tests: the changeset integrity checker
+A later handover pass added `test_handover_tooling.py` (19 tests: the changeset integrity checker
 and the live-provider probe) and fixed two guard defects it exposed — see `docs/HANDOVER.md` §6.
 
 The single warning is a Starlette deprecation notice about `TestClient` and `httpx` (it suggests

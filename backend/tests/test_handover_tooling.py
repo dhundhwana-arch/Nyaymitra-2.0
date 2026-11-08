@@ -120,6 +120,26 @@ def test_cli_verifies_the_real_checkout():
     assert changeset.verify_tree(REPO_ROOT, manifest)["ok"] is True
 
 
+def test_cli_verify_checks_the_current_directory(tmp_path, monkeypatch):
+    """Regression: --verify used to default to this checkout, silently checking the wrong tree."""
+    copy = tmp_path / "copy"
+    copy.mkdir()
+    (copy / "file.txt").write_text("original\n", encoding="utf-8")
+    manifest_path = tmp_path / "manifest.json"
+    changeset.write_manifest(
+        manifest_path, changeset.build_manifest(copy, ["file.txt"], commit="abc")
+    )
+
+    monkeypatch.chdir(copy)
+    assert changeset.main(["--verify", str(manifest_path)]) == 0
+
+    (copy / "file.txt").write_text("tampered\n", encoding="utf-8")
+    assert changeset.main(["--verify", str(manifest_path)]) == 1, "a modified copy must fail"
+
+    (copy / "file.txt").unlink()
+    assert changeset.main(["--verify", str(manifest_path)]) == 1, "a missing file must fail"
+
+
 # ------------------------------------------------------------------ provider probe
 class _StubHandler(BaseHTTPRequestHandler):
     """Minimal OpenAI-compatible endpoint. Records the last request body."""
