@@ -12,7 +12,7 @@ from ..errors import AppError
 from ..models import VerificationUpdate
 from ..security import client_ip, hash_ip
 from ..metrics import metrics
-from ..services import complaints, monitoring
+from ..services import complaints, monitoring, provider_health, review
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -112,6 +112,43 @@ def verification_queue(conn: sqlite3.Connection = Depends(db_dependency)) -> dic
         "departments": [dict(r) for r in departments],
         "note": "Work queue for docs/LEGAL_VERIFICATION_CHECKLIST.md — every row needs a human sign-off.",
     }
+
+
+@router.get("/ai/health", dependencies=[Depends(read_only)])
+def ai_health(
+    probe: bool = Query(True, description="also call the providers /models endpoint"),
+    settings: Settings = Depends(settings_dependency),
+) -> dict:
+    """Is a live model configured, and is its endpoint reachable right now?"""
+    return provider_health.health(settings, probe=probe)
+
+
+@router.get("/ai/usage", dependencies=[Depends(read_only)])
+def ai_usage(
+    days: int = Query(30, ge=1, le=365),
+    conn: sqlite3.Connection = Depends(db_dependency),
+) -> dict:
+    return monitoring.usage_summary(conn, days=days)
+
+
+@router.get("/review-packet", dependencies=[Depends(read_only)])
+def review_packet(
+    format: str = Query("json", pattern="^(json|markdown)$"),
+    kinds: str | None = Query(None,
+              description="comma separated: article,department,triage,glossary"),
+    conn: sqlite3.Connection = Depends(db_dependency),
+) -> dict:
+    wanted = None
+    if kinds:
+        wanted = tuple(part.strip() for part in kinds.split(",") if part.strip())
+        invalid = set(wanted) - set(review.CHECKLIST)
+        if invalid:
+            raise AppError("validation_error", details={"unknown_kinds": sorted(invalid)})
+    packet = review.build(conn, kinds=wanted)
+    if format == "markdown":
+        return {"format": "markdown", "total": packet["total"],
+                "markdown": review.to_markdown(packet), "counts": packet["counts"]}
+    return packet
 
 
 @router.get("/legacy-chunks", dependencies=[Depends(read_only)])

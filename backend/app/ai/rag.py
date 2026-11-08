@@ -97,6 +97,7 @@ def answer_question(
     degraded = False
     grounded = True
     answer_text: str | None = None
+    usage: dict | None = None
 
     if not rows and not guide:
         answer_text = NO_INFO_GU if language == "gu" else NO_INFO_EN
@@ -149,6 +150,13 @@ def answer_question(
                 else:
                     answer_text = result.text
                     grounded = True
+                    usage = result.usage
+                    prompt_tokens = (usage or {}).get("prompt_tokens")
+                    completion_tokens = (usage or {}).get("completion_tokens")
+                    if isinstance(prompt_tokens, int):
+                        metrics.inc("ai.prompt_tokens_total", prompt_tokens)
+                    if isinstance(completion_tokens, int):
+                        metrics.inc("ai.completion_tokens_total", completion_tokens)
             except (ProviderUnavailable, AIProviderError) as exc:
                 if settings.ai_fallback_mode == "strict":
                     _log(conn, request_id, language, question, log_category(category, guide), "error",
@@ -178,6 +186,7 @@ def answer_question(
         citations=citations,
         answer_text=answer_text or "",
         warnings=warnings,
+        usage=usage,
     )
     if degraded:
         warnings.append("answer_degraded_offline_grounded")

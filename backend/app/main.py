@@ -58,6 +58,14 @@ async def lifespan(app: FastAPI):
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
+
+    problems = settings.production_problems()
+    if problems:
+        raise RuntimeError(
+            "refusing to start with an unsafe production configuration: "
+            + "; ".join(problems)
+        )
+
     app = FastAPI(
         title="NYAYMITRA 2.0 API",
         version=settings.version,

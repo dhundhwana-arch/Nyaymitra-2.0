@@ -77,6 +77,9 @@ class Settings:
     ai_api_key: str | None = None
     ai_timeout_s: float = 20.0
     ai_max_output_tokens: int = 700
+    # Retry policy for the live provider.
+    ai_max_attempts: int = 2
+    ai_retry_backoff_s: float = 0.5
     # strict  -> 503 when the configured provider fails
     # offline_grounded -> deterministic, citation-only fallback (never invented text)
     ai_fallback_mode: str = "offline_grounded"
@@ -117,6 +120,51 @@ class Settings:
     def public_url(self) -> str:
         return self.allowed_origins[0] if self.allowed_origins else "http://localhost:8000"
 
+    # -- production preflight --------------------------------------------------
+    def production_problems(self) -> list[str]:
+        """Configuration that must fail loudly in production, never silently."""
+        if self.environment.strip().lower() not in {"production", "prod"}:
+            return []
+        problems: list[str] = []
+        placeholders = ("replace", "changeme", "change-me", "todo", "example", "test", "demo",
+                        "secret", "password")
+
+        def check_token(label: str, value: str | None) -> None:
+            token = (value or "").strip()
+            if not token:
+                problems.append(f"{label} is not set")
+                return
+            if len(token) < 24:
+                problems.append(f"{label} is shorter than 24 characters")
+            lowered = token.lower()
+            if any(word in lowered for word in placeholders):
+                problems.append(f"{label} looks like a placeholder value")
+            if len(set(token)) < 8:
+                problems.append(f"{label} has too little variety to be random")
+
+        check_token("NYAYMITRA_ADMIN_TOKEN", self.admin_token)
+        check_token("NYAYMITRA_MONITOR_TOKEN", self.monitor_token)
+        if self.admin_token and self.monitor_token and self.admin_token == self.monitor_token:
+            problems.append("NYAYMITRA_ADMIN_TOKEN and NYAYMITRA_MONITOR_TOKEN are identical")
+
+        try:
+            db_path = Path(self.db_path).resolve()
+            db_path.relative_to(REPO_ROOT)
+        except ValueError:
+            pass  # outside the repository: good
+        else:
+            problems.append(
+                "NYAYMITRA_DB_PATH is inside the repository; point it at a data directory "
+                "outside the checkout"
+            )
+
+        if self.trust_proxy_headers and not self.allowed_origins:
+            problems.append(
+                "NYAYMITRA_TRUST_PROXY_HEADERS is on but NYAYMITRA_ALLOWED_ORIGINS is empty; "
+                "X-Forwarded-For would be trusted from any client"
+            )
+        return problems
+
 
 def load_settings() -> Settings:
     provider = (_env("AI_PROVIDER", "auto") or "auto").lower()
@@ -144,6 +192,8 @@ def load_settings() -> Settings:
         ai_api_key=_env("AI_API_KEY"),
         ai_timeout_s=float(_env_int("AI_TIMEOUT_S", 20)),
         ai_max_output_tokens=_env_int("AI_MAX_OUTPUT_TOKENS", 700),
+        ai_max_attempts=max(1, min(_env_int("AI_MAX_ATTEMPTS", 2), 5)),
+        ai_retry_backoff_s=max(0.0, min(float(_env_int("AI_RETRY_BACKOFF_MS", 500)) / 1000.0, 5.0)),
         ai_fallback_mode=fallback,
         allowed_origins=_env_list("ALLOWED_ORIGINS", ()),
         serve_web=_env_bool("SERVE_WEB", True),

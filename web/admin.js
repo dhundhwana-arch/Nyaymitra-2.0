@@ -52,6 +52,24 @@
       }).join('') + '</tbody></table></div>';
   }
 
+  async function downloadReviewPacket() {
+    try {
+      var packed = await api('/admin/review-packet?format=markdown');
+      var blob = new Blob([packed.markdown], { type: 'text/markdown' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = 'nyaymitra-review-packet.md';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      toast('Review packet downloaded (' + packed.total + ' items).');
+    } catch (error) {
+      toast(error.message);
+    }
+  }
+
   async function loadAll() {
     try {
       var stats = await api('/admin/stats');
@@ -68,6 +86,12 @@
         table(['department', 'verification', 'verified on'],
           queue.departments.map(function (d) { return [d.department_key, d.verification_status, d.verified_on || 'never']; })) +
         '<p class="small muted">' + esc(queue.note) + '</p>';
+
+      var packet = await api('/admin/review-packet');
+      $('#reviewPanel').innerHTML = table(['kind', 'items awaiting review'],
+        Object.keys(packet.counts).sort().map(function (key) { return [key, packet.counts[key]]; })) +
+        '<p class="small muted">Total: ' + esc(packet.total) + ' items. ' +
+        'Generated: ' + esc(packet.generated_at) + ' (UTC)</p>';
 
       var metrics = await api('/admin/metrics');
       var counters = Object.keys(metrics.counters).map(function (key) {
@@ -135,6 +159,7 @@
       loadAll();
     });
     $('#refreshBtn').addEventListener('click', function () { loadAll(); toast('Refreshed'); });
+    $('#downloadReview').addEventListener('click', downloadReviewPacket);
     $('#backupBtn').addEventListener('click', async function () {
       try {
         var result = await api('/admin/backup', { method: 'POST' });

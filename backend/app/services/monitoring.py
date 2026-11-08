@@ -61,11 +61,16 @@ def log_answer(
     citations: list[dict],
     answer_text: str,
     warnings: list[str],
+    usage: dict | None = None,
 ) -> int:
+    """Record one answer, including token counts when the provider reported them."""
+    prompt_tokens = (usage or {}).get("prompt_tokens")
+    completion_tokens = (usage or {}).get("completion_tokens")
     cur = conn.execute(
         """INSERT INTO ai_answers (query_log_id, provider, model, grounded, degraded,
-                                   citations_json, answer_text, warnings_json)
-           VALUES (?,?,?,?,?,?,?,?)""",
+                                   citations_json, answer_text, warnings_json,
+                                   prompt_tokens, completion_tokens)
+           VALUES (?,?,?,?,?,?,?,?,?,?)""",
         (
             query_log_id,
             provider,
@@ -75,9 +80,54 @@ def log_answer(
             json.dumps(citations, ensure_ascii=False),
             redact_and_truncate(answer_text, 4000),
             json.dumps(warnings, ensure_ascii=False),
+            int(prompt_tokens) if isinstance(prompt_tokens, int) else None,
+            int(completion_tokens) if isinstance(completion_tokens, int) else None,
         ),
     )
     return int(cur.lastrowid)
+
+
+def usage_summary(conn: sqlite3.Connection, days: int = 30) -> dict:
+    """Aggregate token usage, grounding and latency per provider/model."""
+    since = f"-{max(1, int(days))} days"
+    rows = conn.execute(
+        """SELECT COALESCE(a.provider, 'unknown')      AS provider,
+                  COALESCE(a.model, '(none)')          AS model,
+                  COUNT(*)                             AS answers,
+                  SUM(CASE WHEN a.grounded = 1 THEN 1 ELSE 0 END) AS grounded,
+                  SUM(CASE WHEN a.degraded = 1 THEN 1 ELSE 0 END) AS degraded,
+                  COALESCE(SUM(a.prompt_tokens), 0)     AS prompt_tokens,
+                  COALESCE(SUM(a.completion_tokens), 0) AS completion_tokens,
+                  MAX(a.created_at)                     AS last_at
+           FROM ai_answers a
+           WHERE a.created_at >= datetime('now', ?)
+           GROUP BY provider, model
+           ORDER BY provider, model""",
+        (since,),
+    ).fetchall()
+    items = [dict(row) for row in rows]
+    totals = {
+        "answers": sum(item["answers"] for item in items),
+        "grounded": sum(item["grounded"] for item in items),
+        "degraded": sum(item["degraded"] for item in items),
+        "prompt_tokens": sum(item["prompt_tokens"] for item in items),
+        "completion_tokens": sum(item["completion_tokens"] for item in items),
+    }
+    latency = conn.execute(
+        """SELECT COUNT(*) AS answers, AVG(latency_ms) AS avg_ms, MAX(latency_ms) AS max_ms
+           FROM query_logs WHERE created_at >= datetime('now', ?)""",
+        (since,),
+    ).fetchone()
+    return {
+        "days": max(1, int(days)),
+        "providers": items,
+        "totals": totals,
+        "latency": {
+            "answers": latency["answers"],
+            "avg_ms": round(latency["avg_ms"], 1) if latency["avg_ms"] is not None else None,
+            "max_ms": latency["max_ms"],
+        },
+    }
 
 
 def audit(

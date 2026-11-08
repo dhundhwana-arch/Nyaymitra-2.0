@@ -68,6 +68,7 @@
       viewSaved: 'સાચવેલી ફરિયાદ જુઓ', savedRefLabel: 'સંદર્ભ નંબર', savedTokenLabel: 'એક્સેસ ટોકન', open: 'ખોલો',
       libraryTitle: 'ભારતનું બંધારણ', librarySearch: 'કલમ નંબર કે શબ્દ શોધો',
       search: 'શોધો', allParts: 'બધા ભાગ', results: 'પરિણામ', noResults: 'કોઈ પરિણામ મળ્યું નથી.',
+      noResultsHint: 'બીજા શબ્દો વાપરીને શોધો, અથવા મફત કાનૂની સહાય ૧૫૧૦૦ પર ફોન કરો.',
       articleText: 'મૂળ કલમનું લખાણ', explanation: 'નાગરિક માટે સરળ સમજૂતી', sourceHeading: 'સ્રોત',
       textNotLoaded: 'આ કલમનું સત્તાવાર લખાણ હજુ લોડ થયેલું નથી — ફક્ત માનવ-લિખિત સમજૂતી ઉપલબ્ધ છે.',
       lastChecked: 'છેલ્લે ચકાસ્યું', neverChecked: 'ક્યારેય ચકાસાયું નથી',
@@ -132,6 +133,7 @@
       viewSaved: 'Open a saved complaint', savedRefLabel: 'Reference number', savedTokenLabel: 'Access token', open: 'Open',
       libraryTitle: 'The Constitution of India', librarySearch: 'Search an article number or a word',
       search: 'Search', allParts: 'All parts', results: 'Results', noResults: 'No results found.',
+      noResultsHint: 'Try a different word, or call free legal aid on 15100.',
       articleText: 'Text of the article', explanation: 'Plain-language explanation for citizens', sourceHeading: 'Source',
       textNotLoaded: 'The authoritative text of this article is not loaded yet — only a human-written explanation is available.',
       lastChecked: 'Last checked', neverChecked: 'Never checked',
@@ -923,7 +925,8 @@
     try {
       var data = await api('/constitution/articles?' + params.join('&'));
       if (!data.items.length) {
-        results.innerHTML = '<p class="muted">' + esc(t('noResults')) + '</p>' +
+        results.innerHTML = '<div class="notice" role="status"><p>' + esc(t('noResults')) + '</p>' +
+          '<p class="small muted">' + esc(t('noResultsHint')) + '</p></div>' +
           (data.notice ? '<div class="notice small">' + esc(data.notice) + '</div>' : '');
         return;
       }
@@ -1035,6 +1038,7 @@
   async function route() {
     var current = parseRoute();
     var view = $('#view');
+    view.setAttribute('aria-busy', 'true');
     var navLinks = document.querySelectorAll('[data-nav]');
     Array.prototype.forEach.call(navLinks, function (link) {
       var name = link.getAttribute('data-nav');
@@ -1058,6 +1062,7 @@
     } else {
       view.innerHTML = viewHome();
     }
+    view.setAttribute('aria-busy', 'false');
     var main = $('#main');
     if (main) main.focus({ preventScroll: true });
   }

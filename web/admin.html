@@ -62,6 +62,15 @@
         </div>
 
         <div class="card stack">
+          <h2>Review packet</h2>
+          <p class="small muted">Everything a qualified reviewer has to check, with the source and
+            page for each item. Downloading this is a work order for a human — it is not a
+            verification record, and nothing becomes verified by exporting it.</p>
+          <div id="reviewPanel" aria-live="polite"></div>
+          <button class="btn" type="button" id="downloadReview">Download review packet (.md)</button>
+        </div>
+
+        <div class="card stack">
           <h2>Process metrics</h2>
           <p class="small muted">In-process counters since the worker started: request volume,
             rate-limit hits and how often the AI fell back or refused to answer. No personal

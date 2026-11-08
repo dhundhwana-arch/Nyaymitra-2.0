@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 
 from ..config import Settings
 from .base import AIProviderError, ProviderResult, ProviderUnavailable
@@ -32,6 +33,8 @@ class OpenAICompatibleProvider:
         self._api_key = settings.ai_api_key or ""
         self.model = settings.ai_model
         self._timeout = settings.ai_timeout_s
+        self._attempts = max(1, settings.ai_max_attempts)
+        self._backoff = max(0.0, settings.ai_retry_backoff_s)
 
     def available(self) -> bool:
         return bool(self._base_url and self._api_key and self.model)
@@ -65,16 +68,31 @@ class OpenAICompatibleProvider:
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
-        try:
-            with httpx.Client(timeout=self._timeout) as client:
-                response = client.post(url, headers=headers, json=payload)
-        except Exception as exc:  # noqa: BLE001 - network layer may raise many types
-            # Log the class only: the message can contain the URL or a key fragment.
-            log.warning("ai provider transport error: %s", type(exc).__name__)
-            raise ProviderUnavailable("could not reach the AI provider") from exc
+        response = None
+        last_error: str | None = None
+        for attempt in range(1, self._attempts + 1):
+            try:
+                with httpx.Client(timeout=self._timeout) as client:
+                    response = client.post(url, headers=headers, json=payload)
+            except Exception as exc:  # noqa: BLE001 - network layer may raise many types
+                last_error = type(exc).__name__
+                log.warning("ai provider transport error (attempt %s/%s): %s",
+                            attempt, self._attempts, last_error)
+            else:
+                status = response.status_code
+                retryable = status == 429 or status >= 500
+                if not retryable:
+                    break
+                last_error = f"HTTP {status}"
+                log.warning("ai provider http error (attempt %s/%s): %s",
+                            attempt, self._attempts, status)
 
+            if attempt < self._attempts and self._backoff:
+                time.sleep(self._backoff * attempt)
+
+        if response is None:
+            raise ProviderUnavailable(f"could not reach the AI provider ({last_error})")
         if response.status_code >= 400:
-            log.warning("ai provider http error: %s", response.status_code)
             raise ProviderUnavailable(f"AI provider returned HTTP {response.status_code}")
         try:
             data = response.json()
