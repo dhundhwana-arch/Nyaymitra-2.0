@@ -245,6 +245,24 @@ the API), `ai.provider_fallback_total` climbing (the provider is failing), and u
 (a crash loop). `/health` is liveness, `/ready` is dependency readiness — point the uptime check at
 `/ready`. Note these counters are per worker: run one worker (see `KNOWN_LIMITATIONS.md` #19).
 
+**AI provider probe.** Before telling anyone the assistant "uses AI", prove it:
+
+```bash
+NYAYMITRA_AI_PROVIDER=openai_compatible \
+NYAYMITRA_AI_BASE_URL=http://127.0.0.1:11434/v1 \
+NYAYMITRA_AI_MODEL=llama3.2:3b \
+NYAYMITRA_AI_API_KEY=ollama \
+python scripts/verify_ai_provider.py --question "What does equality before the law mean?"
+```
+
+Exit 0 means a real model produced a grounded, cited answer; exit 3 means no model is reachable
+(the script prints the requirement); exit 4 means the model answered but the guard rejected the
+output as uncited or unsafe. Never treat a 3 or a 4 as a pass.
+
+**Handover integrity.** `python scripts/verify_changeset.py --write|--verify|--verify-archive`
+proves that a deployed copy matches the manifest of the tested commit. Run `--verify` after any
+transfer and before a release tag.
+
 **Dependency audit.** Before every deploy:
 
 ```bash

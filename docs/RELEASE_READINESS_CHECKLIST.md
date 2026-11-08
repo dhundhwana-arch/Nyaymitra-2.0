@@ -14,8 +14,10 @@ Legend: ✅ done and evidenced · ⚠️ done with a documented limitation · �
 | Backend imports and starts from a clean checkout | ✅ | `uvicorn backend.app.main:app`, `/health` |
 | Database bootstraps from nothing | ✅ | CI step + `scripts/init_db.py --info` |
 | Migrations apply and roll back (3 migrations) | ✅ | `test_migrations_are_idempotent`, `test_rollback_and_reapply`, `test_migration_002_rolls_back_cleanly` |
-| Full test suite green | ✅ | `168 passed in 22.32s` |
-| Coverage ≥ 85 % | ✅ | 91 % (2302 statements, 210 missed) |
+| Full test suite green | ✅ | `186 passed in 23.65s` |
+| Coverage ≥ 85 % | ✅ | 92 % (2306 statements, 189 missed) |
+| Changeset manifest verified (tree + extracted archive) | ✅ | `scripts/verify_changeset.py`; see `docs/HANDOVER.md` §2 |
+| Live model verified end to end | ❌ | `scripts/verify_ai_provider.py` exits 3: no provider available here |
 | Frontend syntax checks | ✅ | `node --check` ×3 |
 | Browser journeys (simulated) | ✅ | `scripts/smoke_web.mjs` — all routes + admin |
 | Dependency audit clean | ✅ | `pip-audit --vulnerability-service pypi` → no known vulnerabilities |
@@ -72,12 +74,14 @@ Everything in Stage B, plus:
 
 ## Pre-merge checklist (copy into the PR)
 
-- [x] `python -m pytest` → 168 passed
-- [x] `python -m pytest --cov=backend/app` → 91 %
+- [x] `python -m pytest` → 186 passed
+- [x] `python -m pytest --cov=backend/app` → 92 %
 - [x] `node --check web/app.js web/admin.js scripts/smoke_web.mjs`
 - [x] `node scripts/smoke_web.mjs <url>` → OK
 - [x] `pip-audit --vulnerability-service pypi -r backend/requirements.txt` → clean
 - [x] `python scripts/constitution_coverage.py` → reports 0 verified text (honest)
+- [x] `python scripts/verify_changeset.py --verify <manifest>` → 0 missing / 0 extra / 0 modified, extracted archive also verified
+- [ ] `python scripts/verify_ai_provider.py` → exit 0 (live model) — currently exit 3, no provider here
 - [x] No file permissions wider than 0600/0700 for data
 - [x] Documentation updated and cross-checked against the code
 - [ ] **Owner approval to merge** (required)

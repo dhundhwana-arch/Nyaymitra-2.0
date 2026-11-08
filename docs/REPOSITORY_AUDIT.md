@@ -368,7 +368,7 @@ evidence*. "Tested" always means an automated test on this branch fails if the b
 | B-4 | No schema, no migrations | Fixed | `backend/migrations/001_initial.sql`; `test_migrations_are_idempotent` |
 | B-5 | Fabricated "remedy" strings presented as law | Fixed (content quarantined, never served) | `test_fabricated_legacy_remedy_text_is_never_exposed` |
 | S-1…S-12 | Security and integrity findings | Fixed except where documented as residual risk | `docs/SECURITY_AUDIT.md` §3–§5 |
-| §7.3 | Zero tests / zero CI | Fixed | 168 tests, 91% coverage, `.github/workflows/ci.yml` (pytest 3.11/3.12, dependency audit, frontend) |
+| §7.3 | Zero tests / zero CI | Fixed | 186 tests, 92% coverage, `.github/workflows/ci.yml` (pytest 3.11/3.12, dependency audit, frontend) |
 | §8 | Verification workflow absent | Fixed | `PATCH /admin/articles/{id}/verification` with reviewer + date + text guard |
 | §9 | Fake login | Removed; replaced by token-scoped complaint access and admin/monitor roles | `docs/SECURITY_AUDIT.md` |
 | §10 | No sources or provenance | Fixed | `legal_sources` spine, `SourceRef` in responses |

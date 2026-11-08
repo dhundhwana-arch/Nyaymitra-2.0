@@ -124,10 +124,10 @@ All nine required documents updated, plus three new: this report, `REMAINING_BLO
 
 ```
 python -m pytest
-168 passed, 1 warning in 22.32s
+186 passed, 1 warning in 23.65s
 
 python -m pytest -q --cov=backend/app --cov-report=term
-TOTAL 2302 statements, 210 missed, 91 %
+TOTAL 2306 statements, 189 missed, 92 %
 
 node --check web/app.js web/admin.js scripts/smoke_web.mjs
 (no output, exit 0)
@@ -145,7 +145,10 @@ NYAYMITRA_DB_PATH=data/nyaymitra.db python scripts/purge_data.py --json
  "complaints": 0, "documents": 0, "query_logs": 0, "files_deleted": 0}
 ```
 
-Test growth: 119 → **168** (+49). Coverage: 90 % → **91 %** on a larger codebase (+219 lines).
+Test growth: 119 → **186** (+67). Coverage: 90 % → **92 %** on a larger codebase.
+
+A later handover pass added `test_handover_tooling.py` (18 tests: the changeset integrity checker
+and the live-provider probe) and fixed two guard defects it exposed — see `docs/HANDOVER.md` §6.
 
 The single warning is a Starlette deprecation notice about `TestClient` and `httpx` (it suggests
 `httpx2` in future versions). It does not affect behaviour and is recorded rather than suppressed.
@@ -184,6 +187,16 @@ Ready for a supervised, non-public evaluation. Not ready for public launch, beca
 authoritative legal text, (b) nothing is human-verified, and (c) no real-device test has been run.
 The deployment guide now covers systemd, nginx/TLS, backup/restore, migrations (including rollback),
 the retention cron, metrics, and a pre-flight checklist.
+
+## 7.1 Handover status (added at handover)
+
+* Working tree `/home/user/Nyaymitra-2.0`, branch `arena/812d6894-nyaymitra-2-0`, remote in sync.
+* Code archive + SHA-256 manifest + database backup live under `backups/`; the manifest covers
+  every tracked file and the archive is re-verified after extraction (`scripts/verify_changeset.py`).
+* A real model is still **not** verified: `scripts/verify_ai_provider.py` exits 3 here, with the
+  requirement printed. Stub-server tests cover the wiring only.
+* `DIVU-AGI` is a separate repository; nothing is shared with it (no code, database, credential or
+  deployment configuration). Details: `docs/HANDOVER.md` §5.
 
 ## 8. Git
 

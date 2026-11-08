@@ -29,8 +29,18 @@ ADVICE_VIOLATIONS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("false_certainty", re.compile(r"(?i)\bthe\s+court\s+will\s+(definitely|certainly)\b|\byou\s+are\s+entitled\s+to\s+compensation\s+of\b")),
 )
 
-ARTICLE_REF = re.compile(r"(?i)\barticle\s+(\d{1,3}\s?[A-Z]?)")
-ARTICLE_REF_GU = re.compile(r"કલમ\s*(\d{1,3}\s?[A-Z]?)")
+# Only the word "article" is case-insensitive. Putting re.IGNORECASE on the whole pattern
+# made `[A-Z]?` match a lowercase letter too, so "Article 14 is relevant" was parsed as
+# article "14I" and a correct model answer was thrown away as an uncited reference.
+ARTICLE_REF = re.compile(r"\b(?i:article)\s+(\d{1,3}\s?[A-Z]?)")
+ARTICLE_REF_GU = re.compile(r"(?i:કલમ)\s*(\d{1,3}\s?[A-Z]?)")
+
+# A Gujarati or Hindi answer may write "કલમ ૧૪" with native digits. Without normalisation the
+# article number would never match the ASCII label of a retrieved row and a correct answer
+# would be rejected as uncited. Normalising digits only compares glyphs; it never widens the
+# set of allowed articles.
+_DIGITS = {ord("૦") + i: str(i) for i in range(10)}          # Gujarati ૦-૯
+_DIGITS.update({ord("०") + i: str(i) for i in range(10)})     # Devanagari ०-९
 
 MAX_CONTEXT_CHARS = 6000
 
@@ -39,14 +49,24 @@ def scan_input(text: str) -> list[str]:
     return [name for name, pattern in INJECTION_PATTERNS if pattern.search(text or "")]
 
 
+def _normalise_digits(value: str) -> str:
+    return (value or "").translate(_DIGITS)
+
+
 def find_cited_articles(text: str) -> set[str]:
-    found = {m.group(1).replace(" ", "").upper() for m in ARTICLE_REF.finditer(text or "")}
-    found |= {m.group(1).replace(" ", "").upper() for m in ARTICLE_REF_GU.finditer(text or "")}
+    found = {
+        _normalise_digits(m.group(1)).replace(" ", "").upper()
+        for m in ARTICLE_REF.finditer(text or "")
+    }
+    found |= {
+        _normalise_digits(m.group(1)).replace(" ", "").upper()
+        for m in ARTICLE_REF_GU.finditer(text or "")
+    }
     return found
 
 
 def article_number_from_label(label: str) -> str:
-    match = re.search(r"(\d{1,3}\s?[A-Z]?)", label or "")
+    match = re.search(r"(\d{1,3}\s?[A-Z]?)", _normalise_digits(label or ""))
     return match.group(1).replace(" ", "").upper() if match else ""
 
 

@@ -9,10 +9,10 @@ Environment: Linux sandbox, Python 3.11.2, Node 22.22.3, SQLite 3.40, jsdom 25 (
 
 ```bash
 python -m pytest
-# 168 passed, 1 warning in 22.32s
+# 186 passed, 1 warning in 23.65s
 
 python -m pytest --cov=backend/app --cov-report=term-missing
-# TOTAL  2302 statements  210 missed  91%
+# TOTAL  2306 statements  189 missed  92%
 ```
 
 The single warning is Starlette's notice that `TestClient` currently uses `httpx` and will move to
@@ -32,7 +32,8 @@ The single warning is Starlette's notice that `TestClient` currently uses `httpx
 | `test_metrics_and_privacy.py` | 7 | pass |
 | `test_retention.py` | 7 | pass |
 | `test_departments_and_feedback.py` | 5 | pass |
-| **Total** | **168** | **all pass** |
+| `test_handover_tooling.py` | 18 | pass |
+| **Total** | **186** | **all pass** |
 | Frontend jsdom journeys (separate script) | 14 checks | pass |
 
 Coverage by area: `security.py` 89%, `middleware.py` 99%, `guard.py` 93%, `rag.py` 92%,
@@ -77,6 +78,15 @@ disabled and the AI tests re-run: **4 tests failed** (`test_model_answer_with_un
 * **Ingestion cannot silently destroy good text.** Existing non-empty text is not replaced; a
   verified row is never touched even with `--replace-existing`; a re-run reports `unchanged`
   instead of rewriting; a failed quality gate makes the CLI exit 3.
+* **A handover can be proven.** The changeset checker writes and verifies a SHA-256 manifest of
+  every tracked file and re-verifies an extracted archive against it; a tampered, missing, extra
+  or modified file is reported and the exit code is non-zero.
+* **A model answer that cites a real article is not thrown away.** Regression tests cover
+  "Article 14 is relevant" (previously parsed as article "14I" and rejected) and Gujarati digits
+  (`કલમ ૧૪`), which used to miss the ASCII label.
+* **A live provider can be probed without pretending.** `scripts/verify_ai_provider.py` runs a real
+  question through retrieval, guide injection, validation and citations, and exits 3 when no model
+  is reachable instead of printing a canned answer.
 * **Ingestion keeps provenance.** Page range, Part and Chapter are stored and exposed; boundary
   problems (embedded heading, page header, oversized body) are reported before writing.
 
@@ -128,7 +138,7 @@ admin console were also exercised over HTTP with `curl` against the running serv
 | Voice input (Web Speech API) and speech synthesis | **NOT TESTED** | Requires microphone/speaker permission in a real browser |
 | Gujarati rendering (font shaping) | **PARTIAL** | Text presence asserted; visual rendering needs a browser |
 | Screen reader (NVDA/TalkBack) | **NOT TESTED** | Requires a human with assistive technology |
-| Live AI provider | **NOT TESTED** | No API key; the fallback and rejection paths *are* tested |
+| Live AI provider (real model) | **NOT TESTED** | `scripts/verify_ai_provider.py` exits 3 here: no provider configured, no Ollama, and weights cannot be downloaded in this sandbox. The provider *wiring* is tested against a stub HTTP server, which is not a model test. See `docs/HANDOVER.md` §4 |
 | Official Constitution PDF ingestion | **NOT TESTED** | No official PDF supplied; parser tested on fixture text |
 | GitHub Actions workflow | **COMPLETE** | Runs **42439419345** (push) and **42439422327** (pull request) green with all four jobs: pytest 3.11 (27 s), pytest 3.12 (53 s), dependency audit (20 s), frontend checks (9 s). Earlier runs 42404987197 / 42404988506 covered the pre-audit workflow |
 | Dependency vulnerabilities | **COMPLETE** | `pip-audit` found advisories in python-multipart, pypdf and starlette; all three were upgraded and the audit is now clean |

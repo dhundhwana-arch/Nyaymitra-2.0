@@ -54,12 +54,19 @@ guaranteeing availability under DDoS (see residual risk R-6).
 
 | ID | Severity | Finding | Fix | Test evidence |
 |---|---|---|---|---|
-| S-26 | **High** | Three pinned packages had published advisories: `python-multipart` 0.0.20 (12), `pypdf` 5.1.0 (103, PDF parser), `starlette` 0.41.3 via fastapi 0.115.6 (14) | Upgraded: fastapi 0.162.2 (starlette 1.10.0), pypdf 7.0.0, python-multipart 0.0.33, uvicorn 0.54.0. Full suite re-run after the upgrade | `pip-audit --vulnerability-service pypi -r backend/requirements.txt` → *No known vulnerabilities found*; 168 tests green |
+| S-26 | **High** | Three pinned packages had published advisories: `python-multipart` 0.0.20 (12), `pypdf` 5.1.0 (103, PDF parser), `starlette` 0.41.3 via fastapi 0.115.6 (14) | Upgraded: fastapi 0.162.2 (starlette 1.10.0), pypdf 7.0.0, python-multipart 0.0.33, uvicorn 0.54.0. Full suite re-run after the upgrade | `pip-audit --vulnerability-service pypi -r backend/requirements.txt` → *No known vulnerabilities found*; full suite green (186 tests at the handover commit) |
 | S-27 | Medium | Personal-data responses carried no cache directives, so a shared browser/kiosk or proxy could retain complaint text or an admin view | `Cache-Control: no-store` + `Pragma: no-cache` on `/api/v1/complaints*`, `/api/v1/documents*`, `/api/v1/admin*`, `/admin`; public shell remains cacheable | `test_sensitive_responses_are_not_cacheable`, `test_public_assets_remain_cacheable` |
 | S-28 | Medium | Document downloads could be rendered inline by the browser | `Content-Disposition: attachment` (via `FileResponse(filename=...)`) plus `no-store` | `test_document_download_is_an_attachment_and_not_cacheable` |
 | S-29 | Medium | A double-click or retry could create duplicate complaint records (data-quality and privacy issue: duplicated personal data with separate tokens) | Idempotency key with a partial unique index, plus a fingerprint window for clients without a key; retries return the existing reference and never a token | 5 tests in `test_complaints.py` |
 | S-30 | Low | Retention was configured but never enforced, so personal data could be kept indefinitely | `services/retention.py` + `scripts/purge_data.py` (dry-run default, audited, cannot delete outside the storage directory) | 7 tests in `test_retention.py` |
 | S-31 | Info | No evidence that CSRF/CORS exposure had been considered | Tests assert the API sets no cookies and no CORS headers, i.e. no ambient credential exists | `test_the_api_never_sets_cookies`, `test_no_cors_headers_are_advertised` |
+
+## 3.2 Findings fixed during the handover pass (2026-11-08, later)
+
+| ID | Severity | Finding | Fix | Test evidence |
+|---|---|---|---|---|
+| S-32 | **Medium** (availability of correct advice) | `guard.ARTICLE_REF` compiled with `re.IGNORECASE` for the whole pattern, so the optional `[A-Z]` suffix matched a lowercase letter: "Article 14 is relevant" was read as article **14I** and a *correct* model answer was discarded and replaced by the offline text. Found by the stub-model probe, not by any existing test | Only the word "article" is case-insensitive (`\b(?i:article)\s+(\d{1,3}\s?[A-Z]?)`); Gujarati digits are normalised before comparison; the allowed-article set is unchanged, so nothing is loosened | `test_handover_tooling.py::test_guarded_citation_of_a_real_model_sentence`, `test_gujarati_digits_match_ascii_labels` |
+| S-33 | Low (hygiene) | A tracked `node_modules` **symlink** pointed at `/tmp/webcheck/node_modules`, leaking a local absolute path into the public repository and dangling for every other clone | Removed from tracking; `node_modules` added to `.gitignore`; jsdom installed per run with `npm install --no-save jsdom` | `test_no_secret_is_hardcoded_in_tracked_source` still passes; the changeset manifest no longer contains the entry |
 
 ## 4. Findings fixed earlier in this branch
 
