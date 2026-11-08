@@ -243,6 +243,7 @@ def get_article(conn: sqlite3.Connection, identifier: str | int) -> dict | None:
         "citizen_explanation_en": data["citizen_explanation_en"],
         "citizen_explanation_gu": data["citizen_explanation_gu"],
         "source_locator": data["source_locator"],
+        "source_pages": data["source_pages"] if "source_pages" in data.keys() else None,
         "source_url": data["source_url"] or (primary or {}).get("url"),
         "notes": data["notes"],
         "sources": [

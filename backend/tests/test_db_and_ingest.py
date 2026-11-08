@@ -32,13 +32,27 @@ def test_migrations_are_idempotent(isolated_settings):
 
 def test_rollback_and_reapply(isolated_settings):
     with get_db(isolated_settings.db_path) as conn:
+        applied = applied_migrations(conn)
         rolled = rollback_migrations(conn, isolated_settings.migrations_dir, target=0)
-        assert "001_initial.sql" in rolled
+        assert rolled == sorted(applied, reverse=True)
         tables = {
             r["name"] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
         }
         assert "constitution_articles" not in tables
-        assert apply_migrations(conn, isolated_settings.migrations_dir) == ["001_initial.sql"]
+        assert apply_migrations(conn, isolated_settings.migrations_dir) == sorted(applied)
+
+
+def test_migration_002_rolls_back_cleanly(isolated_settings):
+    """The idempotency columns must disappear with the migration that added them."""
+    with get_db(isolated_settings.db_path) as conn:
+        columns = {r["name"] for r in conn.execute("PRAGMA table_info(complaints)")}
+        assert {"client_request_id", "fingerprint"} <= columns
+        rollback_migrations(conn, isolated_settings.migrations_dir, target=1)
+        columns = {r["name"] for r in conn.execute("PRAGMA table_info(complaints)")}
+        assert "client_request_id" not in columns and "fingerprint" not in columns
+        indexes = {r["name"] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='index'")}
+        assert "uq_complaints_client_request" not in indexes
+        apply_migrations(conn, isolated_settings.migrations_dir)
 
 
 def test_foreign_keys_are_enforced(isolated_settings):

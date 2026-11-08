@@ -123,6 +123,7 @@ class ArticleDetail(ArticleSummary):
     citizen_explanation_en: str | None
     citizen_explanation_gu: str | None
     source_locator: str | None
+    source_pages: str | None = None
     source_url: str | None
     notes: str | None
     sources: list[SourceRef]
@@ -237,6 +238,16 @@ class ComplaintCreate(StrictModel):
     consent: bool = Field(description="User confirms the data is theirs and may be stored")
     confirmed: bool = Field(description="User has reviewed the generated summary")
     documents: list[dict] = Field(default_factory=list, max_length=10)
+    client_request_id: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=8, max_length=64)
+    ] | None = Field(
+        default=None,
+        description=(
+            "Optional idempotency key generated once by the client for this submission. "
+            "Retrying with the same value returns 409 with the existing reference instead "
+            "of creating a duplicate complaint."
+        ),
+    )
 
     @field_validator("incident_date")
     @classmethod
@@ -377,6 +388,9 @@ class ComplaintPreviewRequest(StrictModel):
     contact_phone: str | None = None
     contact_email: EmailStr | None = None
     consent: bool
+    client_request_id: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=8, max_length=64)
+    ] | None = None
 
     _not_future = field_validator("incident_date")(ComplaintCreate._not_future.__func__)  # type: ignore[attr-defined]
     _phone = field_validator("contact_phone")(ComplaintCreate._phone.__func__)  # type: ignore[attr-defined]
