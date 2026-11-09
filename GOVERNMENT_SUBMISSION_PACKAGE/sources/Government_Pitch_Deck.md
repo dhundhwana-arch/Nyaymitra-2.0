@@ -16,13 +16,13 @@ Not legal advice; not a replacement for lawyers or courts
 
 ## Slide 2 — Problem
 
-Millions of Indians cannot access or understand legal information.
+Many Indians face barriers to accessing or understanding legal information (scale to be validated by field research).
 - Legal provisions are formal and English-heavy.
 - Citizens do not know which article, statute, or department applies.
 - Free legal aid (NALSA/DLSA, 15100) is under-used due to low awareness.
 - Complaint drafting is intimidating and error-prone.
 
-Result: constitutional rights (Article 39A) remain theoretical for many.
+Result: constitutional rights (Article 39A) may remain theoretical for many.
 
 ---
 
@@ -38,7 +38,7 @@ NYAYMITRA 2.0 guides citizens to understand, navigate, and act:
 
 ## Slide 4 — Innovation
 
-- Offline-first deterministic grounding: no invented legal citations.
+- Offline-first deterministic grounding: answer guard rejects uncited article references (technical control; legal-source accuracy validation pending).
 - Multilingual with Gujarati digit normalisation for article references.
 - Data protection by design: token hashing, rate limiting, PII redaction, 180-day retention.
 - Transparency: every answer shows sources, verification status, warnings, disclaimers.
@@ -67,17 +67,17 @@ Deployment: Docker, systemd, Render shape; .env.example (no secrets).
 ## Slide 7 — Evidence of progress
 
 - Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0
-- Branch `arena/812d6894-nyaymitra-2-0`, commit `792b529`
+- Branch `arena/812d6894-nyaymitra-2-0`, commit `cc56d0e`
 - PR #1 open, draft, mergeable; CI green.
 - Full documentation suite: security, privacy, IP, legal, setup, audit.
 
 ---
 
-## Slide 8 — Social impact
+## Slide 8 — Social impact (projected, pending field validation)
 
-- Faster, cheaper first-level legal navigation.
-- Reduced load on legal-aid bodies for simple queries.
-- Greater rights awareness in rural/under-served communities.
+- Potential for faster, cheaper first-level legal navigation (impact not yet measured).
+- Potential to reduce load on legal-aid bodies for simple queries (pending pilot evidence).
+- Greater rights awareness in rural/under-served communities (objective, not yet measured).
 - Reusable open prototype for civic technology in India.
 
 ---
@@ -96,4 +96,4 @@ No guarantee of selection, funding, approval, or adoption is implied.
 
 ---
 
-Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `792b529`
+Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `cc56d0e`

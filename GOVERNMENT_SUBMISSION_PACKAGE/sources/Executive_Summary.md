@@ -28,7 +28,7 @@ It is a **functional software prototype / Proof of Concept**, subject to indepen
 - Data retention (180 days default), purge tooling, role-based tokens, rate limiting, CSP headers.
 - A quarantined legacy corpus (2,125 chunks) is preserved but never served; its source provenance and copyright status are unresolved.
 
-## 4. Verified status (commit `792b529`)
+## 4. Verified status (commit `cc56d0e`)
 
 | Check | Result |
 |-------|--------|
@@ -55,4 +55,4 @@ No guarantee of selection, funding, approval, or government adoption is implied 
 
 ## 7. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, commit `792b529`)
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, commit `cc56d0e`)

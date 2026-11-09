@@ -71,11 +71,11 @@ The backend is a FastAPI application with routers for health, constitution, AI a
 - Retrieve a saved complaint with reference + token.
 - Admin console: stats, verification queue, metrics, backup.
 
-## 10. Expected social impact
+## 10. Expected social impact (projected, pending field validation)
 
-- Faster, cheaper first-level legal navigation for citizens.
-- Reduced load on legal aid bodies for simple information queries.
-- Greater awareness of rights and available departments.
+- Potential for faster, cheaper first-level legal navigation for citizens (impact not yet measured).
+- Potential to reduce load on legal aid bodies for simple information queries (pending pilot evidence).
+- Greater awareness of rights and available departments (objective, not yet measured).
 - A reusable, open prototype for civic technology in India.
 
 ## 11. Future development plan
@@ -90,4 +90,4 @@ The backend is a FastAPI application with routers for health, constitution, AI a
 ## 12. Repository
 
 https://github.com/dhundhwana-arch/Nyaymitra-2.0
-Branch: `arena/812d6894-nyaymitra-2-0` | Commit: `792b529` | PR #1 (open, draft)
+Branch: `arena/812d6894-nyaymitra-2-0` | Commit: `cc56d0e` | PR #1 (open, draft)

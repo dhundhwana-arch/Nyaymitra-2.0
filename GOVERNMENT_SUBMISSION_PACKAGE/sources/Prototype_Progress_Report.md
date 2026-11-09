@@ -58,13 +58,13 @@ PRAGMA integrity_check = ok; 4 migrations applied, 0 missing indexes
 
 - Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0
 - Branch: `arena/812d6894-nyaymitra-2-0`
-- Current repository commit: `792b529` (this remediation commit)
-- Commit used to generate PDFs: `792b529` (rebuilt after remediation)
-- Commit on which tests were executed: `792b529` (226 passed, just verified)
-- Commit associated with CI evidence: `792b529` (GitHub runs `42586560990` push / `42586568746` pull request)
-- Prior commit: `1e9fe61` (previous package commit; superseded)
+- Current repository commit: `cc56d0e`
+- Commit used to generate PDFs: `cc56d0e` (rebuilt after remediation)
+- Commit on which tests were executed: `792b529` (226 passed)
+- Commit associated with CI evidence: `cc56d0e` (GitHub push run `42595255121`, success); prior push `42594844444` on `792b529` also succeeded
+- Prior commit: `792b529` (source validation commit; superseded by `cc56d0e`)
 - Earlier: `5a6dcb9` (AI reliability, usage tracking, review packet, deployment configs)
-- PR #1: https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 (open, draft, mergeable; head = `792b529`)
+- PR #1: https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 (open, draft, mergeable; head = `cc56d0e`)
 
 ## 7. Screenshots
 

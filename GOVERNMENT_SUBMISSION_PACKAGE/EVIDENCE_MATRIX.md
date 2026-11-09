@@ -6,7 +6,7 @@ Every claim in the government submission package is traced to evidence. Nothing 
 
 Status labels:
 
-- **VERIFIED** — confirmed by direct test/inspection against commit `792b529`
+- **VERIFIED** — confirmed by direct test/inspection against commit `792b529` (test execution commit); current repository HEAD is `cc56d0e`
 - **COMPLETED** — implemented and committed
 - **PARTIALLY COMPLETED** — implemented, not fully verified
 - **BLOCKED** — requires an external dependency (model, reviewer, documents, devices)
@@ -18,9 +18,9 @@ Status labels:
 |---|-------|----------|----------------|---------------------|------------|
 | T-1 | Repository is `dhundhwana-arch/Nyaymitra-2.0` | git remote + GitHub PR #1 | https://github.com/dhundhwana-arch/Nyaymitra-2.0 | VERIFIED | None |
 | T-2 | Branch is `arena/812d6894-nyaymitra-2-0` | `git branch` | local + `origin/arena/812d6894-nyaymitra-2-0` | VERIFIED | None |
-| T-3 | Current repository commit is `792b529` | `git log --oneline -1` | commit `792b529a75d6c4eb2e9c15d357539cc4def07e0b` | VERIFIED | None |
-| T-4 | PR #1 is open, draft, mergeable; head = `792b529` | GitHub API | https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 | VERIFIED | Merge requires owner approval |
-| T-5 | CI push green on `792b529` | GitHub run `42594844444` (push) | GitHub Actions | VERIFIED | Runs reflect commit `792b529` only; PR run pending |
+| T-3 | Current repository commit is `cc56d0e` (tests executed on `792b529`) | `git log --oneline -1` | commit `cc56d0eca58cbb890e24bfb0036cc40911195468` | VERIFIED | None |
+| T-4 | PR #1 is open, draft, mergeable; head = `cc56d0e` | GitHub API | https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 | VERIFIED | Merge requires owner approval |
+| T-5 | CI push green on `cc56d0e` | GitHub run `42595255121` (push) | GitHub Actions | VERIFIED | Runs reflect commit `cc56d0e` only; prior push `42594844444` on `792b529` also succeeded |
 | T-6 | 226 automated tests pass | `pytest` output | `backend/tests/` | VERIFIED | Sandbox, Python 3.11, SQLite |
 | T-7 | Coverage 92% | `pytest --cov=backend/app` | 2,545 statements, 202 missed | VERIFIED | Backend app package only |
 | T-8 | pip-audit: no known vulnerabilities | `pip-audit --vulnerability-service pypi` | `backend/requirements.txt` | VERIFIED | PyPI advisory service at time of run |
@@ -75,6 +75,6 @@ Status labels:
 
 ## How to read
 
-- "VERIFIED" means the claim was checked directly against the repository at commit `792b529` during this session; it is not projected or assumed.
+- "VERIFIED" means the claim was checked directly against the repository at commit `cc56d0e` (current HEAD) during this session; test execution was on commit `792b529`; nothing is projected or assumed.
 - Items marked BLOCKED or OWNER APPROVAL REQUIRED are genuine outstanding dependencies and must not be represented as complete in any submission.
 - Legal dates are drawn from Gazette notifications G.S.R. 843(E) and G.S.R. 846(E); forward dates are interpretation until officially confirmed.
