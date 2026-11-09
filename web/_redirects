@@ -1,0 +1,8 @@
+# SPA fallback - hash-based routes are handled client-side, so no server redirect needed
+# But we keep this for direct API path access and root fallback
+
+# API routes should go to the backend (configured separately)
+/api/*  https://YOUR_BACKEND_URL/api/:splat  200
+
+# Everything else serves the SPA
+/*    /index.html  200

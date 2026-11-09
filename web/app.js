@@ -1106,4 +1106,57 @@
   } else {
     init();
   }
+
+  /* ------------------------------------------------------------------ PWA */
+  function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(function (reg) {
+          console.log('Service worker registered', reg.scope);
+        })
+        .catch(function (err) {
+          console.log('Service worker registration failed', err);
+        });
+    }
+  }
+
+  var deferredPrompt = null;
+  var installBtn = null;
+
+  function createInstallButton() {
+    if (installBtn) return;
+    installBtn = document.createElement('button');
+    installBtn.type = 'button';
+    installBtn.className = 'btn btn-primary install-btn';
+    installBtn.textContent = state.lang === 'en' ? 'Install app' : 'આપમાં ઇન્સ્ટોલ કરો';
+    installBtn.style.display = 'none';
+    installBtn.addEventListener('click', function () {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+      });
+    });
+    document.body.appendChild(installBtn);
+  }
+
+  function showInstallButton() {
+    if (!installBtn) createInstallButton();
+    if (installBtn) installBtn.style.display = 'inline-block';
+  }
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallButton();
+  });
+
+  window.addEventListener('appinstalled', function () {
+    deferredPrompt = null;
+    if (installBtn) installBtn.style.display = 'none';
+    console.log('PWA installed');
+  });
+
+  registerServiceWorker();
 })();

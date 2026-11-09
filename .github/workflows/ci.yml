@@ -109,3 +109,27 @@ jobs:
             echo "inline style attribute found (blocked by the CSP)" >&2; exit 1
           fi
           echo "frontend checks OK"
+
+  deploy-frontend:
+    name: deploy frontend to Cloudflare Pages
+    needs: [test, security, frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && secrets.CLOUDFLARE_API_TOKEN != ''
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: nyaymitra-frontend
+          directory: web
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-frontend-skip:
+    name: deploy frontend (skip if no Cloudflare token)
+    needs: [test, security, frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && secrets.CLOUDFLARE_API_TOKEN == ''
+    steps:
+      - run: echo "Skipping Cloudflare Pages deployment: CLOUDFLARE_API_TOKEN not configured. Add it as a repository secret to enable automatic frontend deployment."

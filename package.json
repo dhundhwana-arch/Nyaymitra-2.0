@@ -1,0 +1,29 @@
+{
+  "name": "nyaymitra-2.0",
+  "version": "2.1.0",
+  "description": "AI-Powered Inclusive Justice Access & Navigation System — legal information, complaint drafting and government department navigation for citizens of India. Not a court, not a lawyer.",
+  "author": "Divyesh Bambhaniya",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhundhwana-arch/Nyaymitra-2.0.git"
+  },
+  "homepage": "https://github.com/dhundhwana-arch/Nyaymitra-2.0#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "legal-aid",
+    "justice-access",
+    "gujarati",
+    "india",
+    "pwa",
+    "capacitor"
+  ],
+  "devDependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "typescript": "^7.0.2"
+  }
+}
