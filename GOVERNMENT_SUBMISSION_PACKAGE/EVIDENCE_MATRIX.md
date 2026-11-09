@@ -4,7 +4,7 @@ NYAYMITRA 2.0 — Traceability matrix
 
 Every claim in the government submission package is traced to evidence. Status labels:
 
-- **VERIFIED** — confirmed by direct test/inspection against commit `068cf9f`
+- **VERIFIED** — confirmed by direct test/inspection against commit `1e9fe61`
 - **COMPLETED** — implemented and committed
 - **PARTIALLY COMPLETED** — implemented, not fully verified
 - **BLOCKED** — requires an external dependency (model, reviewer, documents, devices)
@@ -14,9 +14,9 @@ Every claim in the government submission package is traced to evidence. Status l
 |---|-------|----------|----------------|---------------------|------------|
 | 1 | Repository is `dhundhwana-arch/Nyaymitra-2.0` | git remote + GitHub PR #1 | https://github.com/dhundhwana-arch/Nyaymitra-2.0 | VERIFIED | None |
 | 2 | Branch is `arena/812d6894-nyaymitra-2-0` | `git branch` | local + `origin/arena/812d6894-nyaymitra-2-0` | VERIFIED | None |
-| 3 | Latest commit is `068cf9f` | `git log --oneline -1` | commit `068cf9f20fa357490e281735a455e822025a7b75` | VERIFIED | None |
+| 3 | Latest commit is `1e9fe61` | `git log --oneline -1` | commit `1e9fe616e7b629d2c0b019f93343cbbe48c39b8a` | VERIFIED | None |
 | 4 | PR #1 is open, draft, mergeable | GitHub API | https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 | VERIFIED | Merge requires owner approval |
-| 5 | CI push + PR green on `068cf9f` | GitHub runs `42567707008` / `42567711418` | GitHub Actions | VERIFIED | Runs reflect this commit only |
+| 5 | CI push + PR green on `1e9fe61` | GitHub runs `42584356621` (push) / `42584362822` (pull request) | GitHub Actions | VERIFIED | Runs reflect this commit only |
 | 6 | 226 automated tests pass | `pytest` output | `backend/tests/` | VERIFIED | Sandbox, Python 3.11, SQLite |
 | 7 | Coverage 92% | `pytest --cov=backend/app` | 2,545 statements, 202 missed | VERIFIED | Backend app package only |
 | 8 | pip-audit: no known vulnerabilities | `pip-audit --vulnerability-service pypi` | `backend/requirements.txt` | VERIFIED | PyPI advisory service at time of run |
@@ -33,5 +33,5 @@ Every claim in the government submission package is traced to evidence. Status l
 
 ## How to read
 
-- "VERIFIED" means the claim was checked directly against the repository at commit `068cf9f` during this session; it is not projected or assumed.
+- "VERIFIED" means the claim was checked directly against the repository at commit `1e9fe61` during this session; it is not projected or assumed.
 - Items marked BLOCKED or OWNER APPROVAL REQUIRED are genuine outstanding dependencies and must not be represented as complete in any submission.

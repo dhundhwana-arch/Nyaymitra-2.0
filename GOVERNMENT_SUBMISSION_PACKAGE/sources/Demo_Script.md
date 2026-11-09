@@ -17,7 +17,21 @@ Open http://localhost:8000/
 
 ---
 
+### Verification status of demo journeys
+
+All three journeys were exercised against a live `uvicorn` server using the `scripts/smoke_web.mjs` jsdom test and the backend test suite (226 tests pass). They are **partially verified**: the underlying endpoints and behaviour were confirmed by automated tests and a live-server jsdom simulation, but they have **not** been tested in a real browser, on a real device, or with a screen reader (blocker B-3). Each journey below uses synthetic demonstration data only.
+
+| Journey | Verification status | Basis |
+|---------|---------------------|-------|
+| 1. Legal information question | Partially verified | `pytest` + `scripts/smoke_web.mjs` jsdom simulation against live server; not real-browser tested |
+| 2. Retrieve relevant information & sources | Partially verified | `pytest` + `scripts/smoke_web.mjs` jsdom simulation against live server; not real-browser tested |
+| 3. Guide to department / human assistance | Partially verified | `pytest` + `scripts/smoke_web.mjs` jsdom simulation against live server; not real-browser tested |
+
+---
+
 ## Journey 1 — A citizen asks a basic legal information question
+
+*Verification status: Partially verified (live-server jsdom simulation; synthetic data). Not real-browser or real-device tested.*
 
 1. Open the home page. A red banner notes official article text is not loaded (expected — prototype).
 2. Switch language to Gujarati (optional), then back to English.
@@ -33,6 +47,8 @@ Expected: Article 14 cited, disclaimer present, "requires human verification" la
 
 ## Journey 2 — The system retrieves relevant information and displays sources
 
+*Verification status: Partially verified (live-server jsdom simulation; synthetic data). Not real-browser or real-device tested.*
+
 1. Type an unrelated query: "zzz qqq" (nonsense).
 2. Observe: the system returns "no verified information" and "no matching article or guide is loaded"; it does not guess or invent a citation.
 3. Type a department-relevant query: "cyber fraud money stolen from bank account."
@@ -46,6 +62,8 @@ Expected: no hallucinated citations; honest "not found" for nonsense; relevant d
 ---
 
 ## Journey 3 — The system guides the citizen toward the relevant department or human assistance
+
+*Verification status: Partially verified (live-server jsdom simulation; synthetic data). Not real-browser or real-device tested.*
 
 1. Navigate to the complaint form.
 2. Enter synthetic details only (e.g., category "cyber crime", title "Unauthorized bank withdrawal", description without any real names/phones/emails).
@@ -69,4 +87,4 @@ Expected: preview before submit; consent-gated submit; reference + token issued 
 
 ---
 
-Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `068cf9f`
+Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `1e9fe61`

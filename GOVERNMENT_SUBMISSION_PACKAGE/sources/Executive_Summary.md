@@ -25,7 +25,7 @@ It is a **functional software prototype / Proof of Concept**, subject to indepen
 - Admin console with statistics, verification queue, metrics, backup, and redaction.
 - Data retention (180 days default), purge tooling, role-based tokens, rate limiting, CSP headers.
 
-## 4. Verified status (commit `068cf9f`)
+## 4. Verified status (commit `1e9fe61`)
 
 | Check | Result |
 |-------|--------|
@@ -52,4 +52,4 @@ No guarantee of selection, funding, approval, or government adoption is implied 
 
 ## 7. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, commit `068cf9f`)
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, commit `1e9fe61`)

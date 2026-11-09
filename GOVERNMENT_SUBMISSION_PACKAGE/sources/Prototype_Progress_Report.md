@@ -58,10 +58,10 @@ PRAGMA integrity_check = ok; 4 migrations applied, 0 missing indexes
 
 - Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0
 - Branch: `arena/812d6894-nyaymitra-2-0`
-- Latest commit: `068cf9f` (docs: complete legal, security, IP, privacy and handover documentation)
+- Latest commit: `1e9fe61` (docs: complete legal, security, IP, privacy and handover documentation)
 - Prior: `5a6dcb9` (AI reliability, usage tracking, review packet, deployment configs)
 - PR #1: https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 (open, draft, mergeable)
-- CI push run: `42567707008` | CI PR run: `42567711418` (both success on `068cf9f`)
+- CI push run: `42567707008` | CI PR run: `42567711418` (both success on `1e9fe61`)
 
 ## 7. Screenshots
 

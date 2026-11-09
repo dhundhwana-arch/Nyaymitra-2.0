@@ -44,6 +44,8 @@ S_H1 = st("h1", fontName="Helvetica-Bold", fontSize=14, leading=18, textColor=NA
           alignment=TA_LEFT, spaceBefore=14, spaceAfter=6)
 S_H2 = st("h2", fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=STEEL,
           alignment=TA_LEFT, spaceBefore=10, spaceAfter=4)
+S_H3 = st("h3", fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=STEEL,
+          alignment=TA_LEFT, spaceBefore=10, spaceAfter=4)
 S_BODY = st("body")
 S_BODY_L = st("bodyL", alignment=TA_LEFT)
 S_BULLET = st("bullet", leftIndent=14, bulletIndent=4, spaceAfter=3, alignment=TA_LEFT)
@@ -94,6 +96,12 @@ def parse_blocks(md):
         m = re.match(r"^##\s+(.+)$", line)
         if m:
             flowables.append(Paragraph(inline(m.group(1)), S_H2))
+            i += 1
+            continue
+        # Heading 3
+        m = re.match(r"^###\s+(.+)$", line)
+        if m:
+            flowables.append(Paragraph(inline(m.group(1)), S_H3))
             i += 1
             continue
         # Table (pipe-delimited)
@@ -194,7 +202,7 @@ def build_pdf(src_path, out_path, title_text, sub_text):
     story.append(Paragraph(
         "NYAYMITRA 2.0 — functional software prototype / Proof of Concept — subject to independent evaluation. "
         "Not legal advice; not a replacement for courts, lawyers, police, or government authorities. "
-        "https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch arena/812d6894-nyaymitra-2-0, commit 068cf9f)",
+        "https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch arena/812d6894-nyaymitra-2-0, commit 1e9fe61)",
         S_FOOTER))
 
     doc.build(story)

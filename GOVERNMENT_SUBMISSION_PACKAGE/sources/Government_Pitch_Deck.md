@@ -67,7 +67,7 @@ Deployment: Docker, systemd, Render shape; .env.example (no secrets).
 ## Slide 7 — Evidence of progress
 
 - Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0
-- Branch `arena/812d6894-nyaymitra-2-0`, commit `068cf9f`
+- Branch `arena/812d6894-nyaymitra-2-0`, commit `1e9fe61`
 - PR #1 open, draft, mergeable; CI green.
 - Full documentation suite: security, privacy, IP, legal, setup, audit.
 
@@ -96,4 +96,4 @@ No guarantee of selection, funding, approval, or adoption is implied.
 
 ---
 
-Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `068cf9f`
+Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `1e9fe61`

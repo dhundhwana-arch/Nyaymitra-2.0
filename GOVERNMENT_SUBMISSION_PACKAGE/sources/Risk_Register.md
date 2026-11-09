@@ -21,4 +21,4 @@ The highest-severity risks (R-1 unverified legal content, R-10 mistaken for advi
 
 ## Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `068cf9f`
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `1e9fe61`
