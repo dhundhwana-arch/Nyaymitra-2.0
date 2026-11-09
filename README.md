@@ -25,7 +25,7 @@ guarantee results, and it never presents unverified material as official law.
 | Dependency vulnerability audit | **COMPLETE** — `pip-audit` clean after upgrading 3 packages |
 | Authoritative Article text in Gujarati/English | **BLOCKED** — official source PDFs not supplied by the owner |
 | Legal accuracy of every explanation, helpline and department entry | **REQUIRES HUMAN VERIFICATION** (queue in `/admin`) |
-| Automated test suite | **187 tests, 92 % line coverage, all passing** |
+| Automated test suite | **226 tests, 92 % line coverage, all passing** |
 
 The corpus ships with **9 human-written article explanations and 0 authoritative texts**. The API
 says so on every answer, and the UI shows a warning banner. See
@@ -72,7 +72,7 @@ backend/app/          FastAPI application (factory `create_app`)
   services/           constitution search, textsearch, complaints, documents, departments,
                       triage, glossary, seeding, ingestion, monitoring
 backend/migrations/   versioned SQL with down-migrations
-backend/tests/        187 pytest tests
+backend/tests/        226 pytest tests
 web/                  self-hosted SPA (no CDN) + admin console
 data/seed/            curated seed JSON (sources, 9 articles, departments, triage, glossary)
 data/legacy/          quarantined 2,125 legacy rows (gzip + sha256), never served to citizens
@@ -92,7 +92,7 @@ not served.
 ## Tests
 
 ```bash
-python -m pytest                                  # 187 passed, 92% coverage
+python -m pytest                                  # 226 passed, 92% coverage
 python -m pytest -q --cov=backend/app             # coverage report
 node --check web/app.js web/admin.js              # frontend syntax
 node scripts/smoke_web.mjs http://127.0.0.1:8000  # optional jsdom journeys (needs jsdom)

@@ -62,7 +62,7 @@ that archive returned exit 1 with `modified: README.md`.
 
 ```bash
 python -m pytest                                   # 186 passed, 1 warning in ~23 s
-python -m pytest --cov=backend/app                 # 2306 statements, 189 missed, 92 %
+python -m pytest --cov=backend/app                 # 2545 statements, 202 missed, 92 %
 node --check web/app.js web/admin.js scripts/smoke_web.mjs
 ```
 
@@ -70,7 +70,7 @@ node --check web/app.js web/admin.js scripts/smoke_web.mjs
 |---|---:|
 | backend (12 original modules) | 168 |
 | `test_handover_tooling.py` (changeset checker + provider probe) | 19 |
-| **Total** | **187** |
+| **Total** | **226** |
 
 The frontend smoke test needs jsdom, which is not vendored:
 `npm install --no-save jsdom && node scripts/smoke_web.mjs http://127.0.0.1:8000`. It is a jsdom

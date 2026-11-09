@@ -124,10 +124,10 @@ All nine required documents updated, plus three new: this report, `REMAINING_BLO
 
 ```
 python -m pytest
-187 passed, 1 warning in 23.73s
+226 passed, 1 warning in ~20s
 
 python -m pytest -q --cov=backend/app --cov-report=term
-TOTAL 2306 statements, 189 missed, 92 %
+TOTAL 2545 statements, 202 missed, 92 %
 
 node --check web/app.js web/admin.js scripts/smoke_web.mjs
 (no output, exit 0)
@@ -145,7 +145,7 @@ NYAYMITRA_DB_PATH=data/nyaymitra.db python scripts/purge_data.py --json
  "complaints": 0, "documents": 0, "query_logs": 0, "files_deleted": 0}
 ```
 
-Test growth: 119 → **187** (+68). Coverage: 90 % → **92 %** on a larger codebase.
+Test growth: 119 → **226** (+107). Coverage: 90 % → **92 %** on a larger codebase.
 
 A later handover pass added `test_handover_tooling.py` (19 tests: the changeset integrity checker
 and the live-provider probe) and fixed two guard defects it exposed — see `docs/HANDOVER.md` §6.

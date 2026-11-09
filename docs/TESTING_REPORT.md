@@ -9,10 +9,10 @@ Environment: Linux sandbox, Python 3.11.2, Node 22.22.3, SQLite 3.40, jsdom 25 (
 
 ```bash
 python -m pytest
-# 187 passed, 1 warning in 23.73s
+# 226 passed, 1 warning in ~20s
 
 python -m pytest --cov=backend/app --cov-report=term-missing
-# TOTAL  2306 statements  189 missed  92%
+# TOTAL  2545 statements  202 missed  92%
 ```
 
 The single warning is Starlette's notice that `TestClient` currently uses `httpx` and will move to
@@ -33,7 +33,9 @@ The single warning is Starlette's notice that `TestClient` currently uses `httpx
 | `test_retention.py` | 7 | pass |
 | `test_departments_and_feedback.py` | 5 | pass |
 | `test_handover_tooling.py` | 19 | pass |
-| **Total** | **187** | **all pass** |
+| `test_provider_reliability.py` | 24 | pass |
+| `test_production_preflight.py` | 20 | pass |
+| **Total** | **226** | **all pass** |
 | Frontend jsdom journeys (separate script) | 14 checks | pass |
 
 Coverage by area: `security.py` 89%, `middleware.py` 99%, `guard.py` 93%, `rag.py` 92%,
