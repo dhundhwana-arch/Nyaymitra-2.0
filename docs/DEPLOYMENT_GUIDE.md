@@ -288,7 +288,77 @@ CMD ["uvicorn","backend.app.main:app","--host","0.0.0.0","--port","8000","--work
 
 Mount `/data` as a volume and back it up. Do not run multiple replicas against one SQLite file.
 
-## 6. Capacity
+## 6. Cloudflare Pages (frontend hosting)
+
+The frontend (`web/`) is a static SPA that can be hosted on Cloudflare Pages at zero cost.
+
+### 6.1 Files added
+
+| File | Purpose |
+|------|---------|
+| `web/_headers` | CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, permission policy; asset cache controls |
+| `web/_redirects` | SPA fallback: all hash-based routes serve `index.html` |
+| `wrangler.toml` | Cloudflare Pages project config: publish dir `web`, no build step |
+| `web/sw.js` | Service worker: cache-first app shell, offline fallback HTML, no API caching (privacy) |
+| `web/manifest.webmanifest` | PWA manifest: 10 icons (72–512 px + maskable), shortcuts, screenshots, `scope`, `dir`, `categories` |
+| `web/assets/icons/` | Generated PWA icons (PNG, 72–512 px + 2 maskable) |
+| `scripts/generate_pwa_icons.py` | Icon generation script (Pillow, from `favicon.svg`) |
+
+### 6.2 Deploy via CI
+
+`.github/workflows/ci.yml` contains two jobs:
+
+- `deploy-frontend` — runs when `CLOUDFLARE_API_TOKEN` secret is set; deploys `web/` to Cloudflare Pages via Wrangler
+- `deploy-frontend-skip` — runs when the secret is absent; logs a skip message
+
+The deployment job is gated on successful test + dependency audit jobs.
+
+### 6.3 Manual deploy
+
+```bash
+# Requires CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
+npm install -g wrangler
+wrangler pages deploy web --project-name=nyaymitra --branch=main
+```
+
+### 6.4 PWA installation
+
+The PWA is installable from the Cloudflare Pages URL:
+
+1. Open the deployed URL in a modern browser (Chrome/Edge on Android, Safari on iOS).
+2. The install button appears (or "Add to Home Screen" in the browser menu).
+3. Tapping it installs NYAYMITRA 2.0 as a standalone app.
+4. The service worker registers on first visit and caches the app shell for offline use.
+
+No native APK is produced. See §7 for the mobile native wrapper status.
+
+## 7. Capacitor Android (native wrapper — APK build BLOCKED)
+
+A Capacitor Android project was added (`android/`, `capacitor.config.js`, `package.json`) and synced with the current `web/` assets.
+
+### 7.1 What works
+
+- `npx cap add android` — native project created
+- `npx cap sync android` — web assets copied to `android/app/src/main/assets/public`
+- `npx cap open android` — opens in Android Studio (requires Android Studio)
+
+### 7.2 What is BLOCKED
+
+**APK build (`./gradlew assembleRelease`) cannot run in this environment.** No Java (JDK) and no Android SDK are installed — only `npx`/Node.js is available.
+
+**Required to unblock:**
+1. Install Java 17+ JDK (`JAVA_HOME` set)
+2. Install Android SDK (`ANDROID_HOME` / `ANDROID_SDK_ROOT` set)
+3. Accept Android SDK licenses (`sdkmanager --licenses`)
+4. Run `cd android && ./gradlew assembleRelease`
+
+This blocker is tracked as **B-4** in `docs/REMAINING_BLOCKERS.md` (no physical mobile device / real device testing) and as a deployment environment limitation. Do not simulate an APK build; a qualified human with Android tooling must complete it.
+
+### 7.3 Recommended path for HackIndia submission
+
+Submit the PWA (Cloudflare Pages URL) as the primary delivery mechanism. The Capacitor Android project is included in the repo so a reviewer with Android Studio can generate the APK. Document the APK as BLOCKED pending Android SDK/Java availability.
+
+## 8. Capacity
 
 A single small VM (1 vCPU, 1 GB RAM) is sufficient for a help-desk workload: SQLite FTS5 answers
 searches in milliseconds at this corpus size, and the offline AI path is CPU-light. The limits are
