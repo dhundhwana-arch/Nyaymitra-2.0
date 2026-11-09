@@ -5,7 +5,9 @@ Government-facing overview | Functional software prototype / Proof of Concept
 
 ## 1. What NYAYMITRA 2.0 is
 
-NYAYMITRA 2.0 ("Nyaymitra" = friend of justice) is an offline-first, multilingual (English and Gujarati) web application that helps ordinary citizens — especially in rural communities and among people with limited digital or legal literacy — understand legal information, locate relevant government departments, identify official sources, and find human legal assistance.
+NYAYMITRA 2.0 ("Nyaymitra" = friend of justice) is an AI-enabled justice-navigation prototype with deterministic offline retrieval. It is an offline-first, multilingual (English and Gujarati) web application that helps ordinary citizens — especially in rural communities and among people with limited digital or legal literacy — understand legal information, locate relevant government departments, identify official sources, and find human legal assistance.
+
+Live AI inference and legal-source accuracy validation remain pending.
 
 It is a **functional software prototype / Proof of Concept**, subject to independent evaluation. It is not a substitute for courts, lawyers, police, government authorities, or qualified legal professionals.
 
@@ -24,8 +26,9 @@ It is a **functional software prototype / Proof of Concept**, subject to indepen
 - Complaint drafting with preview-before-submit, consent checkbox, idempotency, and access-token lookup.
 - Admin console with statistics, verification queue, metrics, backup, and redaction.
 - Data retention (180 days default), purge tooling, role-based tokens, rate limiting, CSP headers.
+- A quarantined legacy corpus (2,125 chunks) is preserved but never served; its source provenance and copyright status are unresolved.
 
-## 4. Verified status (commit `1e9fe61`)
+## 4. Verified status (commit `88e54a0`)
 
 | Check | Result |
 |-------|--------|
@@ -52,4 +55,4 @@ No guarantee of selection, funding, approval, or government adoption is implied 
 
 ## 7. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, commit `1e9fe61`)
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, commit `88e54a0`)

@@ -7,7 +7,7 @@
 - Documentation: security, privacy, IP, legal, setup, audit, architecture
 - Deployment config: Dockerfile, systemd, render.yaml, .env.example
 - Backups created and integrity-checked
-- PR #1 open (draft, mergeable) on `arena/812d6894-nyaymitra-2-0`, commit `1e9fe61`
+- PR #1 open (draft, mergeable) on `arena/812d6894-nyaymitra-2-0`, commit `88e54a0`
 
 ## B. Remaining work before submission
 
@@ -59,4 +59,4 @@ No exaggerated budget is claimed; requirements are limited to mentorship, review
 
 ## Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `1e9fe61`
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `88e54a0`

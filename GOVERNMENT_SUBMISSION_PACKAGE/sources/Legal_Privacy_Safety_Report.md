@@ -51,6 +51,8 @@ A human legal reviewer must sign off using the review packet (`GET /api/v1/admin
 - API key is never hard-coded and never logged.
 - Provider is optional; the system degrades safely to offline when unavailable.
 
+> **WARNING:** External AI mode must NOT be used with real citizen data until appropriate privacy controls, disclosures, consent mechanisms, and qualified legal/privacy review are completed. In external mode, the citizen's question (which may contain phone, email, location, or other personal details) is transmitted unredacted to the configured provider. The provider's retention, processing, and data-handling practices are unknown and outside NYAYMITRA's control. Do not enable external AI mode with real citizen data in any pilot or deployment until these risks are addressed.
+
 ## 6. Consent and transparency
 
 - Complaint flow requires an explicit consent checkbox before submission (submit button disabled until ticked).
@@ -90,4 +92,4 @@ This project is **not legally certified, not legally compliant, and not governme
 
 ## 11. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `1e9fe61`
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `88e54a0`

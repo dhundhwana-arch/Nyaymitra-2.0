@@ -10,7 +10,7 @@ Intended for SSIP / Startup Srujan or similar government startup application por
 - [ ] Stage: functional software prototype / Proof of Concept (subject to independent evaluation)
 - [ ] Repository URL: https://github.com/dhundhwana-arch/Nyaymitra-2.0
 - [ ] Branch: `arena/812d6894-nyaymitra-2-0`
-- [ ] Commit: `1e9fe61`
+- [ ] Commit: `88e54a0`
 - [ ] Pull request: #1 (open, draft) — owner approval required to merge
 
 ## B. Technical evidence
@@ -68,4 +68,4 @@ Keep the combined submission PDFs within the portal's stated limit (e.g., 5 MB i
 
 ## Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `1e9fe61`
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `88e54a0`

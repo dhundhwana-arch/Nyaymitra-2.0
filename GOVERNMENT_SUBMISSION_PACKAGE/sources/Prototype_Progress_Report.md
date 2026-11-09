@@ -47,7 +47,7 @@ Against a live `uvicorn` server on `0.0.0.0:8000`:
 ## 5. Test outputs
 
 ```
-226 passed, 1 warning in 19.09s
+226 passed, 1 warning in ~20s
 TOTAL  2545 statements  202 missed  92%
 pip-audit → No known vulnerabilities found
 PRAGMA integrity_check = ok; 4 migrations applied, 0 missing indexes
@@ -58,10 +58,13 @@ PRAGMA integrity_check = ok; 4 migrations applied, 0 missing indexes
 
 - Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0
 - Branch: `arena/812d6894-nyaymitra-2-0`
-- Latest commit: `1e9fe61` (docs: complete legal, security, IP, privacy and handover documentation)
-- Prior: `5a6dcb9` (AI reliability, usage tracking, review packet, deployment configs)
-- PR #1: https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 (open, draft, mergeable)
-- CI push run: `42567707008` | CI PR run: `42567711418` (both success on `1e9fe61`)
+- Current repository commit: `88e54a0` (this remediation commit)
+- Commit used to generate PDFs: `88e54a0` (rebuilt after remediation)
+- Commit on which tests were executed: `88e54a0` (226 passed, just verified)
+- Commit associated with CI evidence: `88e54a0` (GitHub runs `42586560990` push / `42586568746` pull request)
+- Prior commit: `1e9fe61` (previous package commit; superseded)
+- Earlier: `5a6dcb9` (AI reliability, usage tracking, review packet, deployment configs)
+- PR #1: https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 (open, draft, mergeable; head = `88e54a0`)
 
 ## 7. Screenshots
 

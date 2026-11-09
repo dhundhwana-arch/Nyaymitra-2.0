@@ -7,9 +7,9 @@ Functional software prototype / Proof of Concept — subject to independent eval
 
 - **URL:** https://github.com/dhundhwana-arch/Nyaymitra-2.0
 - **Branch:** `arena/812d6894-nyaymitra-2-0`
-- **Latest commit:** `1e9fe61` (`docs: complete legal, security, IP, privacy and handover documentation`)
+- **Latest commit:** `88e54a0` (`docs: complete legal, security, IP, privacy and handover documentation`)
 - **Pull request:** #1 — https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 (open, draft, mergeable — owner approval required to merge)
-- **CI:** push and PR runs green on commit `1e9fe61`
+- **CI:** push and PR runs green on commit `88e54a0`
 
 ## Contents
 
@@ -34,7 +34,7 @@ NYAYMITRA 2.0 is presented as a **functional software prototype / Proof of Conce
 
 It is **NOT intended to replace** courts, lawyers, police, government authorities, or qualified legal professionals.
 
-## Verified evidence (as of commit `1e9fe61`)
+## Verified evidence (as of commit `88e54a0`)
 
 | Check | Result |
 |-------|--------|

@@ -202,7 +202,7 @@ def build_pdf(src_path, out_path, title_text, sub_text):
     story.append(Paragraph(
         "NYAYMITRA 2.0 — functional software prototype / Proof of Concept — subject to independent evaluation. "
         "Not legal advice; not a replacement for courts, lawyers, police, or government authorities. "
-        "https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch arena/812d6894-nyaymitra-2-0, commit 1e9fe61)",
+        "https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch arena/812d6894-nyaymitra-2-0, commit 88e54a0)",
         S_FOOTER))
 
     doc.build(story)

@@ -61,6 +61,7 @@ The backend is a FastAPI application with routers for health, constitution, AI a
 | AI with real model | Blocked (no model runtime) |
 | Legal content verified | Blocked (0 of 9 articles verified) |
 | Accessibility | Implemented, not screen-reader/device tested |
+| Legacy corpus | 2,125 quarantined chains; source provenance/copyright unresolved; never served |
 
 ## 9. Demonstrable features
 
@@ -89,4 +90,4 @@ The backend is a FastAPI application with routers for health, constitution, AI a
 ## 12. Repository
 
 https://github.com/dhundhwana-arch/Nyaymitra-2.0
-Branch: `arena/812d6894-nyaymitra-2-0` | Commit: `1e9fe61` | PR #1 (open, draft)
+Branch: `arena/812d6894-nyaymitra-2-0` | Commit: `88e54a0` | PR #1 (open, draft)
