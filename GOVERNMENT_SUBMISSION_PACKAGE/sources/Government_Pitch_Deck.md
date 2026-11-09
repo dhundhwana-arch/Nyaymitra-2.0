@@ -19,7 +19,7 @@ Not legal advice; not a replacement for lawyers or courts
 Many Indians face barriers to accessing or understanding legal information (scale to be validated by field research).
 - Legal provisions are formal and English-heavy.
 - Citizens do not know which article, statute, or department applies.
-- Free legal aid (NALSA/DLSA, 15100) is under-used due to low awareness.
+- Free legal aid (NALSA/DLSA, 15100) is reportedly under-used due to low awareness (no supporting usage data provided).
 - Complaint drafting is intimidating and error-prone.
 
 Result: constitutional rights (Article 39A) may remain theoretical for many.
@@ -67,7 +67,7 @@ Deployment: Docker, systemd, Render shape; .env.example (no secrets).
 ## Slide 7 — Evidence of progress
 
 - Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0
-- Branch `arena/812d6894-nyaymitra-2-0`, commit `cc56d0e`
+- Branch `arena/812d6894-nyaymitra-2-0`, audited source snapshot `cc56d0e`
 - PR #1 open, draft, mergeable; CI green.
 - Full documentation suite: security, privacy, IP, legal, setup, audit.
 
@@ -96,4 +96,4 @@ No guarantee of selection, funding, approval, or adoption is implied.
 
 ---
 
-Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `cc56d0e`
+Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | audited source snapshot `cc56d0e`

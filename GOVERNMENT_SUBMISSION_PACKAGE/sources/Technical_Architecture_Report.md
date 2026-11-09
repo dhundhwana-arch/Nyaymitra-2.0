@@ -114,4 +114,4 @@ Base path `/api/v1`. Key endpoints:
 
 ## 10. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 | branch `arena/812d6894-nyaymitra-2-0` | commit `cc56d0e`
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 | branch `arena/812d6894-nyaymitra-2-0` | audited source snapshot `cc56d0e`

@@ -6,7 +6,7 @@ Ordinary citizens, particularly in rural India and among those with limited digi
 
 - Legal provisions are written in formal, English-heavy language that is difficult to understand.
 - Citizens often cannot identify which constitutional article, statute, or government department applies to their situation.
-- Free legal aid (NALSA/DLSA, helpline 15100) exists but is under-utilised because people do not know how to reach it or what to ask.
+- Free legal aid (NALSA/DLSA, helpline 15100) exists; reported under-utilisation (no supporting usage data provided in this prototype).
 - Complaint drafting is intimidating; mistakes can weaken a case or lead to rejection.
 
 ## 2. Why the problem matters
@@ -90,4 +90,4 @@ The backend is a FastAPI application with routers for health, constitution, AI a
 ## 12. Repository
 
 https://github.com/dhundhwana-arch/Nyaymitra-2.0
-Branch: `arena/812d6894-nyaymitra-2-0` | Commit: `cc56d0e` | PR #1 (open, draft)
+Branch: `arena/812d6894-nyaymitra-2-0` | Source snapshot: `cc56d0e` | PR #1 (open, draft)

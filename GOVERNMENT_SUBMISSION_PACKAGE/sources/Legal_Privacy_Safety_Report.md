@@ -92,4 +92,4 @@ This project is **not legally certified, not legally compliant, and not governme
 
 ## 11. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `cc56d0e`
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 | audited source snapshot `cc56d0e`

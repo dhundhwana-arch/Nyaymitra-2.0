@@ -14,7 +14,7 @@ It is a **functional software prototype / Proof of Concept**, subject to indepen
 ## 2. Why it matters in India
 
 - Legal information is hard to access and understand for citizens outside major cities.
-- Free legal aid exists (NALSA / DLSA helpline 15100) but awareness and navigation are low.
+- Free legal aid exists (NALSA / DLSA helpline 15100); awareness and navigation are reportedly low (no supporting usage data provided in this prototype).
 - Citizens often do not know which constitutional provision, statute, or department applies to their problem.
 - Existing portals are typically English-only, desktop-centric, and not built around guided complaint drafting.
 
@@ -28,7 +28,7 @@ It is a **functional software prototype / Proof of Concept**, subject to indepen
 - Data retention (180 days default), purge tooling, role-based tokens, rate limiting, CSP headers.
 - A quarantined legacy corpus (2,125 chunks) is preserved but never served; its source provenance and copyright status are unresolved.
 
-## 4. Verified status (commit `cc56d0e`)
+## 4. Verified status (source snapshot `cc56d0e`)
 
 | Check | Result |
 |-------|--------|
@@ -55,4 +55,4 @@ No guarantee of selection, funding, approval, or government adoption is implied 
 
 ## 7. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, commit `cc56d0e`)
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 (branch `arena/812d6894-nyaymitra-2-0`, audited source snapshot `cc56d0e`)

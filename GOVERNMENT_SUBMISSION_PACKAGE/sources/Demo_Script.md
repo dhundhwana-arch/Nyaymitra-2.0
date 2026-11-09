@@ -87,4 +87,4 @@ Expected: preview before submit; consent-gated submit; reference + token issued 
 
 ---
 
-Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `cc56d0e`
+Repository: https://github.com/dhundhwana-arch/Nyaymitra-2.0 | audited source snapshot `cc56d0e`
