@@ -20,7 +20,7 @@ Status labels:
 | T-2 | Branch is `arena/812d6894-nyaymitra-2-0` | `git branch` | local + `origin/arena/812d6894-nyaymitra-2-0` | VERIFIED | None |
 | T-3 | Audited source snapshot: `cc56d0e` (final package commit available via GitHub metadata) | `git log --oneline -1` | commit `cc56d0eca58cbb890e24bfb0036cc40911195468` | VERIFIED | None |
 | T-4 | PR #1 is open, draft, mergeable (head available via GitHub API) | GitHub API | https://github.com/dhundhwana-arch/Nyaymitra-2.0/pull/1 | VERIFIED | Merge requires owner approval |
-| T-5 | CI push green on source snapshot `cc56d0e` | GitHub run `42595255121` (push) | GitHub Actions | VERIFIED | Runs reflect commit `cc56d0e` only; prior push `42594844444` on `792b529` also succeeded; final package CI verified via GitHub Actions run `42598098956` |
+| T-5 | CI push green on source snapshot `cc56d0e` | GitHub run `42595255121` (push) | GitHub Actions | VERIFIED | Runs reflect commit `cc56d0e` only; prior push `42594844444` on `792b529` also succeeded; package commit CI verified via GitHub Actions run `42598098956` on `947698e`; current HEAD `8b1e652` verified via GitHub Actions run `42599240604` |
 | T-6 | 226 automated tests pass | `pytest` output | `backend/tests/` | VERIFIED | Sandbox, Python 3.11, SQLite |
 | T-7 | Coverage 92% | `pytest --cov=backend/app` | 2,545 statements, 202 missed | VERIFIED | Backend app package only |
 | T-8 | pip-audit: no known vulnerabilities | `pip-audit --vulnerability-service pypi` | `backend/requirements.txt` | VERIFIED | PyPI advisory service at time of run |
