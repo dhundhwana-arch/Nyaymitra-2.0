@@ -92,4 +92,4 @@ This project is **not legally certified, not legally compliant, and not governme
 
 ## 11. Repository
 
-https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `88e54a0`
+https://github.com/dhundhwana-arch/Nyaymitra-2.0 | commit `792b529`
