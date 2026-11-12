@@ -9,7 +9,16 @@ from __future__ import annotations
 
 import re
 
-TOKEN_RE = re.compile(r"[\w\u0A80-\u0AFF\u0900-\u097F]+", re.UNICODE)
+from ..languages import normalize_text
+
+# ``\\w`` does not include combining vowel signs, viramas or nuktas, so a bare ``\\w+`` cuts
+# every Indic word at its first dependent sign. The classes below add the Brahmic blocks
+# (Devanagari … Malayalam), Arabic-script marks, Ol Chiki, Meetei Mayek and ZWJ/ZWNJ.
+TOKEN_RE = re.compile(
+    r"[\w\u0900-\u0D7F\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED"
+    r"\u1C50-\u1C7F\uA8E0-\uA8FF\uABC0-\uABFF\u200C\u200D]+",
+    re.UNICODE,
+)
 
 STOPWORDS: frozenset[str] = frozenset(
     {
@@ -30,7 +39,8 @@ STOPWORDS: frozenset[str] = frozenset(
 
 
 def tokens(text: str) -> list[str]:
-    return [t.lower() for t in TOKEN_RE.findall(text or "")]
+    return [t.strip("\u200c\u200d").lower() for t in TOKEN_RE.findall(normalize_text(text or ""))
+            if t.strip("\u200c\u200d")]
 
 
 def significant_tokens(text: str, *, min_len: int = 3, limit: int = 8) -> list[str]:

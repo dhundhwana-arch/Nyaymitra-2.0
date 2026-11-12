@@ -54,17 +54,19 @@ const doc = window.document;
 const $ = (sel) => doc.querySelector(sel);
 const go = async (hash, ms = 700) => { window.location.hash = hash; await wait(ms); };
 const view = () => text($("#view"));
+const setLang = (code) => { const sel = $("#langSelect"); sel.value = code; sel.dispatchEvent(new window.Event("change")); };
+const apiCalls = () => network.filter((n) => n.url.includes("/api/"));
 await wait(1500);
 
 // 1. frontend opens
 step("1. frontend opens and reaches the API", network.some((n) => n.url.endsWith("/api/v1/meta") && n.status === 200),
-  `API origin ${new URL(network[0]?.url || frontend).origin}`);
-step("   API calls go to the expected backend", network.length > 0 && network.every((n) => n.url.startsWith(expectedApi + "/api/")));
+  `API origin ${new URL(apiCalls()[0]?.url || frontend).origin}`);
+step("   API calls go to the expected backend", apiCalls().length > 0 && apiCalls().every((n) => n.url.startsWith(expectedApi + "/api/")));
 step("   footer attribution (exact text)", text($("footer")).includes(ATTRIBUTION));
 step("   home attribution (exact text)", view().includes(ATTRIBUTION));
 
 // 2-3. constitution: parts and articles
-$("#langEn").click(); await wait(900);
+setLang("en"); await wait(900);
 await go("#/library");
 const partButtons = [...doc.querySelectorAll("#libParts [data-part]")];
 const articles = () => [...doc.querySelectorAll("#libResults a.article-item")];
@@ -82,9 +84,9 @@ step("4. Article detail shows stored content", view().includes("Article 14") && 
 step("   official text is NOT faked (explicit notice)", /authoritative text|not been loaded|not loaded/i.test(view()));
 step("   source reference shown", view().includes("indiacode.nic.in") || view().toLowerCase().includes("owner"));
 step("   verification label shown", Boolean($("#view .badge")));
-$("#langGu").click(); await wait(1000);
+setLang("gu"); await wait(1000);
 step("5. Switch to Gujarati", view().includes("કાયદા સમક્ષ સમાનતા"));
-$("#langEn").click(); await wait(1000);
+setLang("en"); await wait(1000);
 step("   Switch back to English", view().includes("Equality before law"));
 
 // 6-8. legal library
@@ -108,12 +110,12 @@ const ask = async (question) => {
   await wait(1500);
   return text($("#answerArea"));
 };
-$("#langGu").click(); await wait(900);
+setLang("gu"); await wait(900);
 const gu = await ask("મફત કાનૂની સહાય કેવી રીતે મળે?");
 step("9. Assistant answers a Gujarati question", gu.includes("15100") || gu.includes("૧૫૧૦૦"), gu.slice(0, 70));
 const guArticle = await ask("કાયદા સમક્ષ સમાનતા એટલે શું?");
 step("   Gujarati question returns an article + reference", guArticle.includes("Article 14") && Boolean($("#answerArea .cite-list a")));
-$("#langEn").click(); await wait(900);
+setLang("en"); await wait(900);
 const en = await ask("What is equality before law?");
 const cite = $("#answerArea .cite-list a");
 step("10. Assistant answers an English question", en.includes("Article 14"), en.slice(0, 70));
@@ -135,6 +137,58 @@ step("    Library with no hits says so", /No results/i.test(text($("#legalResult
 // about
 await go("#/about", 900);
 step("About page: attribution + data counts", view().includes(ATTRIBUTION) && view().includes("Constitution: 9"));
+
+// 14. multilingual: every language of the registry, in the rendered page
+const index = await (await fetch(new URL("locales/index.json", frontend))).json();
+step("14. Language selector lists all 23 registry languages", doc.querySelectorAll("#langSelect option").length === 23 && index.languages.length === 23,
+  `${doc.querySelectorAll("#langSelect option").length} options`);
+const html = doc.documentElement;
+const enCat = await (await fetch(new URL("locales/en.json", frontend))).json();
+let langOk = 0; const langProblems = [];
+for (const lang of index.languages) {
+  setLang(lang.code); await wait(450);
+  const cat = await (await fetch(new URL(`locales/${lang.code}.json`, frontend))).json();
+  const want = cat.strings.navLibrary || enCat.strings.navLibrary;      // translated, or the English fallback
+  const nav = text(doc.querySelector('[data-nav="library"]'));
+  const notice = $("#langNotice");
+  const mt = lang.ui.translation_status === "MACHINE_TRANSLATED";
+  const problems = [];
+  if (html.lang !== lang.tag) problems.push(`html lang=${html.lang}`);
+  if (html.dir !== lang.direction) problems.push(`dir=${html.dir}`);
+  if (nav !== want) problems.push(`nav="${nav}"`);
+  if (mt && (notice.hidden || !/machine-translated/i.test(text(notice)))) problems.push("no machine-translation notice");
+  if (!mt && /machine-translated/i.test(text(notice))) problems.push("wrong machine-translation notice");
+  if (text(doc.querySelector('[data-nav="home"]')).includes("\uFFFD")) problems.push("replacement character");
+  if (!text($("footer")).includes(ATTRIBUTION)) problems.push("attribution missing");
+  if (problems.length) langProblems.push(`${lang.code}: ${problems.join(", ")}`); else langOk += 1;
+}
+step("    each language: lang/dir attributes, localized nav, honest notice, attribution", langOk === 23, langProblems.join(" | ") || "23/23");
+for (const code of ["ur", "sd", "ks"]) {
+  setLang(code); await wait(450);
+  step(`    ${code}: page is right-to-left`, html.dir === "rtl" && html.getAttribute("data-script") === "Arab");
+}
+setLang("hi"); await wait(600);
+await go("#/library/14", 900);
+step("    hi: article page says the text is not stored in Hindi and shows the fallback",
+  !!doc.querySelector('[data-fallback="article"]') && view().includes("Equality before law"), view().slice(0, 70));
+step("    hi: the article title and body are not machine-translated into Hindi", !/[\u0900-\u097F]/.test(text($("#view h1"))) && !/[\u0900-\u097F]/.test([...doc.querySelectorAll("#view article > div:not(.notice) p")].map(text).join(" ")));
+const hiAnswer = await ask("अनुच्छेद २१ क्या है?");
+step("    hi: question with Devanagari digits finds Article 21 and the answer is labelled as a fallback",
+  hiAnswer.includes("Article 21") && !!doc.querySelector('[data-fallback="answer"]'), hiAnswer.slice(0, 80));
+setLang("ta"); await wait(500);
+const taAnswer = await ask("உறுப்பு 300A என்ன சொல்கிறது?");
+step("    ta: a missing article is reported as unavailable, not invented", taAnswer.includes("Article 300A is not available"), taAnswer.slice(0, 80));
+setLang("en"); await wait(600);
+await go("#/legal", 800);
+$("#legalQuery").value = "equality"; $("#legalForm").dispatchEvent(new window.Event("submit", { cancelable: true })); await wait(800);
+step("    Library highlights the matched search term", [...doc.querySelectorAll("#legalResults mark")].some((m) => /equality/i.test(m.textContent)));
+await go("#/about", 1000);
+step("    About page shows the availability matrix for 23 languages", doc.querySelectorAll("#langMatrix tbody tr").length === 23);
+const cells = (code) => [...doc.querySelectorAll(`#langMatrix tr[data-lang="${code}"] td`)].map(text);
+const guCells = cells("gu"), hiCells = cells("hi");
+step("    matrix: Gujarati has 9 summaries, 0 official, 0 verified; Hindi has 0 / 0 / 0 and no assistant answers",
+  guCells.slice(2, 5).join(",") === "9,0,0" && hiCells.slice(2, 5).join(",") === "0,0,0" && hiCells[5] === "—" && guCells[5] === "✓",
+  `gu ${guCells.slice(2).join("/")} · hi ${hiCells.slice(2).join("/")}`);
 
 // 13. network
 const bad = network.filter((n) => n.blocked || (n.status >= 400 && !n.url.endsWith("/300A")));

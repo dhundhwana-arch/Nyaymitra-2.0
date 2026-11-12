@@ -26,6 +26,7 @@ from .errors import AppError, error_body
 from .logging_utils import configure_logging, log_event
 from .middleware import (
     ApiNotFoundMiddleware,
+    LanguageFallbackMiddleware,
     BodySizeLimitMiddleware,
     RateLimitMiddleware,
     RequestContextMiddleware,
@@ -87,6 +88,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # Middleware (added last = outermost)
     app.add_middleware(ApiNotFoundMiddleware)
+    app.add_middleware(LanguageFallbackMiddleware)
     app.add_middleware(RateLimitMiddleware, settings=settings)
     app.add_middleware(BodySizeLimitMiddleware, settings=settings)
     app.add_middleware(SecurityHeadersMiddleware, settings=settings)
@@ -118,6 +120,9 @@ def _mount_web(app: FastAPI, settings: Settings) -> None:
         assets = web_dir / "assets"
         if assets.exists():
             app.mount("/assets", StaticFiles(directory=assets), name="assets")
+        locales = web_dir / "locales"
+        if locales.exists():       # interface catalogues, one JSON file per language
+            app.mount("/locales", StaticFiles(directory=locales), name="locales")
 
         index = web_dir / "index.html"
 

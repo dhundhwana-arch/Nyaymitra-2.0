@@ -58,7 +58,7 @@ a:hover { color: var(--gold-soft); }
 
 .skip-link {
   position: absolute;
-  left: -999px;
+  inset-inline-start: -999px;
   top: 0;
   background: var(--gold);
   color: #101010;
@@ -66,7 +66,7 @@ a:hover { color: var(--gold-soft); }
   z-index: 100;
   font-weight: 700;
 }
-.skip-link:focus { left: 0.5rem; top: 0.5rem; }
+.skip-link:focus { inset-inline-start: 0.5rem; top: 0.5rem; }
 
 .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 1rem; }
 
@@ -195,10 +195,10 @@ legend { padding: 0 0.4rem; font-weight: 800; color: var(--gold-soft); }
 
 /* ---------------------------------------------------------------- results */
 .answer { white-space: pre-wrap; }
-.cite-list, .doc-list, .step-list { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+.cite-list, .doc-list, .step-list { margin: 0.4rem 0 0; padding-inline-start: 1.1rem; }
 .cite-list li, .doc-list li, .step-list li { margin-bottom: 0.4rem; }
 .article-item {
-  width: 100%; text-align: left; background: var(--navy-900); border: 1px solid var(--line);
+  width: 100%; text-align: start; background: var(--navy-900); border: 1px solid var(--line);
   border-radius: 12px; padding: 0.8rem; color: var(--ink); font: inherit; cursor: pointer;
   display: block; margin-bottom: 0.6rem;
 }
@@ -209,7 +209,7 @@ legend { padding: 0 0.4rem; font-weight: 800; color: var(--gold-soft); }
 
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
-th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th, td { text-align: start; padding: 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { color: var(--gold-soft); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
 
 .spinner {
@@ -239,7 +239,7 @@ th { color: var(--gold-soft); font-size: 0.78rem; text-transform: uppercase; let
 
 /* ---------------------------------------------------------------- footer */
 .site-footer { border-top: 1px solid var(--line); padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: 0.85rem; }
-.site-footer ul { margin: 0.5rem 0 0; padding-left: 1.1rem; }
+.site-footer ul { margin: 0.5rem 0 0; padding-inline-start: 1.1rem; }
 .site-footer li { margin-bottom: 0.3rem; }
 
 .toast-region { position: fixed; inset-inline: 0; bottom: 1rem; display: grid; place-items: center; z-index: 60; pointer-events: none; }
@@ -328,3 +328,41 @@ th { color: var(--gold-soft); font-size: 0.78rem; text-transform: uppercase; let
   text-align: center;
   overflow-wrap: anywhere;
 }
+
+/* ------------------------------------------------------------ multilingual */
+/* No web fonts are downloaded (no CDN, works offline): each script names the Noto family and
+   the fonts Android, Windows, macOS and Linux ship for it, then falls back to the system. */
+:root {
+  --font-indic: "Noto Sans Gujarati", "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Gurmukhi",
+    "Noto Sans Oriya", "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Kannada", "Noto Sans Malayalam",
+    "Noto Sans Ol Chiki", "Noto Sans Meetei Mayek", "Shruti", "Nirmala UI", "Mangal", "Vrinda", "Raavi",
+    "Kalinga", "Latha", "Gautami", "Tunga", "Kartika", "Kohinoor Devanagari", "Lohit Devanagari";
+  --font-arabic: "Noto Nastaliq Urdu", "Noto Naskh Arabic", "Noto Sans Arabic", "Jameel Noori Nastaleeq",
+    "Urdu Typesetting", "Segoe UI", "Geeza Pro", "Tahoma";
+}
+html[data-script]:not([data-script="Latn"]):not([data-script="Arab"]) body { font-family: var(--font), var(--font-indic), sans-serif; }
+html[data-script="Arab"] body, [lang="ur"], [lang="ks-Arab"], [lang="sd-Arab"] {
+  font-family: var(--font-arabic), var(--font), sans-serif;
+}
+/* Nastaliq and stacked Indic conjuncts need more vertical room than Latin text. */
+html[data-script="Arab"] body { line-height: 2; }
+html[data-script]:not([data-script="Latn"]) body { line-height: 1.75; }
+html[data-script="Arab"] h1, html[data-script="Arab"] h2, html[data-script="Arab"] h3 { line-height: 1.9; }
+
+/* Stored content (answers, article text, URLs, phone numbers) keeps its own direction even
+   inside a right-to-left page. */
+[dir="rtl"] .answer, [dir="rtl"] .snippet, [dir="rtl"] a[href^="tel:"], [dir="rtl"] a[href^="http"] { unicode-bidi: isolate; }
+[dir="rtl"] .snippet:not([lang="ur"]):not([lang="ks"]):not([lang="sd"]) { direction: ltr; text-align: start; }
+[dir="rtl"] .site-nav, [dir="rtl"] .row, [dir="rtl"] .spread { direction: rtl; }
+[dir="rtl"] .fab, [dir="rtl"] .install-btn { right: auto; left: 16px; }
+
+.lang-picker select {
+  max-width: 11.5rem; padding: 0.4rem 0.5rem; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--navy-900); color: inherit; font: inherit; font-size: 0.9rem;
+}
+.lang-picker select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.lang-notice p { margin: 0.15rem 0; }
+mark { background: var(--gold); color: #101010; border-radius: 2px; padding: 0 0.1em; }
+.table-scroll { overflow-x: auto; }
+table.matrix { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+table.matrix th[scope="row"] { white-space: nowrap; }

@@ -34,9 +34,9 @@
         <a href="#/about" data-nav="about">About</a>
       </nav>
 
-      <div class="lang-toggle" role="group" aria-label="Language / ભાષા">
-        <button type="button" id="langGu" aria-pressed="true" lang="gu">ગુજરાતી</button>
-        <button type="button" id="langEn" aria-pressed="false" lang="en">English</button>
+      <div class="lang-picker">
+        <label for="langSelect" id="langSelectLabel" class="sr-only">Language / ભાષા</label>
+        <select id="langSelect" aria-describedby="langNotice"></select>
       </div>
     </div>
   </header>
@@ -45,6 +45,9 @@
     <div class="wrap">
 
       <!-- global status banner (populated from /meta) -->
+      <!-- says honestly when the interface is machine-translated or content falls back -->
+      <div id="langNotice" class="notice small lang-notice" role="status" lang="en" dir="ltr" hidden></div>
+
       <div id="statusRegion" class="stack" aria-live="polite"></div>
 
       <!-- the single view container; app.js renders one view at a time -->

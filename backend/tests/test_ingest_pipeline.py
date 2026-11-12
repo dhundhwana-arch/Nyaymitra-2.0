@@ -292,7 +292,8 @@ def test_cli_refuses_to_apply_a_failed_quality_gate(isolated_settings, tmp_path)
     source = tmp_path / "duplicated.txt"
     source.write_text(PAGE_ONE + "\n" + PAGE_ONE, encoding="utf-8")
     result = _run_cli(
-        ["--file", str(source), "--source-key", "india-code-constitution", "--apply"],
+        ["--file", str(source), "--source-key", "india-code-constitution", "--apply",
+         "--extraction-method", "text_layer"],
         isolated_settings.db_path,
     )
     assert result.returncode == 3
@@ -305,7 +306,8 @@ def test_cli_refuses_to_apply_a_failed_quality_gate(isolated_settings, tmp_path)
 def test_cli_apply_is_idempotent_and_records_the_run(isolated_settings, tmp_path):
     source = tmp_path / "constitution.txt"
     source.write_text("\n".join(PAGES), encoding="utf-8")
-    args = ["--file", str(source), "--source-key", "india-code-constitution", "--apply"]
+    args = ["--file", str(source), "--source-key", "india-code-constitution", "--apply",
+         "--extraction-method", "text_layer"]
 
     first = _run_cli(args, isolated_settings.db_path)
     assert first.returncode == 0, first.stderr

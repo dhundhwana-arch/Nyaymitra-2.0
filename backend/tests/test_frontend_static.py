@@ -61,10 +61,12 @@ def test_admin_page_is_not_indexable():
 
 
 def test_language_switch_is_announced():
+    # The two-button gu/en toggle was replaced by one labelled selector for all 23 languages.
     index = (WEB / "index.html").read_text(encoding="utf-8")
-    assert 'id="langGu"' in index and 'aria-pressed' in index
-    assert 'id="langEn"' in index and 'aria-pressed' in index
-    assert 'lang="gu"' in index and 'lang="en"' in index
+    assert '<select id="langSelect"' in index
+    assert 'for="langSelect"' in index                      # programmatic label
+    assert 'id="langNotice"' in index and 'role="status"' in index
+    assert 'lang="gu"' in index
 
 
 def test_live_regions_exist_for_async_updates():

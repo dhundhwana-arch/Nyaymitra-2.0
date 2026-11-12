@@ -5,6 +5,7 @@ import sqlite3
 
 from fastapi import APIRouter, Depends
 
+from .. import languages
 from ..ai.registry import describe
 from ..config import Settings, get_settings
 from ..db import applied_migrations, get_db
@@ -75,6 +76,7 @@ def meta(settings: Settings = Depends(settings_dependency), conn: sqlite3.Connec
             "ai_live": info.live,
             "ai_fallback_mode": info.fallback_mode,
             "languages": ["gu", "en"],
+            "interface_languages": list(languages.CODES),
             "admin_enabled": settings.admin_enabled,
             "max_upload_bytes": settings.max_upload_bytes,
             "allowed_upload_types": list(settings.allowed_upload_types),

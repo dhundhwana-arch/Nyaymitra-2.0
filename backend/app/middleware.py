@@ -134,7 +134,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next) -> Response:
         path = request.url.path
-        if path in {"/health", "/api/v1/health"} or path.startswith("/assets/"):
+        if path in {"/health", "/api/v1/health"} or path.startswith(("/assets/", "/locales/")):
             return await call_next(request)
         bucket, limit = _classify(path, request.method, self.settings)
         ip = client_ip(request, self.settings)
@@ -155,6 +155,36 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 ),
             )
         return await call_next(request)
+
+
+class LanguageFallbackMiddleware(BaseHTTPMiddleware):
+    """Accept any registry language on ``?language=`` and say honestly what was served.
+
+    Seed content exists in Gujarati and English only. A request for another registered
+    language is served in the fallback content language and labelled with response headers,
+    instead of being rejected (422) or silently answered in the wrong language. Unknown codes
+    are still rejected by the endpoint's own validation.
+    """
+
+    async def dispatch(self, request: Request, call_next) -> Response:
+        from urllib.parse import urlencode
+
+        from . import languages
+
+        requested = request.query_params.get("language")
+        served = None
+        if (request.method == "GET" and requested and languages.is_known(requested)
+                and requested not in languages.CONTENT_LANGUAGES):
+            served = languages.content_language(requested)
+            pairs = [(k, served if k == "language" else v) for k, v in request.query_params.multi_items()]
+            pairs.append(("requested_language", requested))
+            request.scope["query_string"] = urlencode(pairs).encode("utf-8")
+        response = await call_next(request)
+        if served:
+            response.headers["Content-Language"] = served
+            response.headers["X-Requested-Language"] = requested
+            response.headers["X-Language-Fallback"] = "true"
+        return response
 
 
 class ApiNotFoundMiddleware(BaseHTTPMiddleware):

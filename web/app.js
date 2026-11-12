@@ -11,182 +11,69 @@
   var LS_LANG = 'nyaymitra.lang';
 
   var state = {
-    lang: 'gu',
+    lang: 'gu',        // interface language: any code of the registry
+    content: 'gu',     // language stored content is shown in ('gu' or 'en')
     meta: null,
     complaint: null,
     toastTimer: null
   };
 
   /* ------------------------------------------------------------------ i18n */
-  var T = {
-    gu: {
-      brandTag: 'ન્યાય સુલભતા અને માર્ગદર્શન',
-      navHome: 'મુખ્ય પૃષ્ઠ', navAssistant: 'સહાયક', navComplaint: 'ફરિયાદ',
-      navLibrary: 'બંધારણ', navDepartments: 'કચેરીઓ', navGlossary: 'શબ્દકોશ',
-      navLegal: 'પુસ્તકાલય', navAbout: 'વિશે',
-      legalTitle: 'કાનૂની પુસ્તકાલય', legalSub: 'ડેટાબેઝમાં હાલ ઉપલબ્ધ તમામ સામગ્રી — બંધારણ, માર્ગદર્શિકા, કચેરીઓ અને શબ્દકોશ.',
-      legalSearch: 'પુસ્તકાલયમાં શોધો (ગુજરાતી કે English)', allCategories: 'બધી શ્રેણીઓ',
-      catConstitution: 'બંધારણ', catGuide: 'માર્ગદર્શિકા', catDepartment: 'કચેરીઓ', catGlossary: 'શબ્દકોશ',
-      anyLanguage: 'કોઈપણ ભાષા', onlyGu: 'ગુજરાતી સામગ્રી', onlyEn: 'અંગ્રેજી સામગ્રી',
-      contentKind: 'સામગ્રીનો પ્રકાર', kindOfficial: 'સ્રોત દસ્તાવેજનું લખાણ', kindSummary: 'સમજૂતી (સત્તાવાર લખાણ નથી)',
-      kindNone: 'લખાણ ઉપલબ્ધ નથી', availableIn: 'ઉપલબ્ધ ભાષા', noSource: 'સ્રોત નોંધાયેલ નથી',
-      otherLanguageOnly: 'આ સામગ્રી પસંદ કરેલી ભાષામાં ઉપલબ્ધ નથી.', backToLegal: 'પુસ્તકાલય',
-      cardLegalTitle: 'કાનૂની પુસ્તકાલય', cardLegalBody: 'બધી ઉપલબ્ધ સામગ્રી શોધો — ભાષા અને શ્રેણી પ્રમાણે.',
-      partsHeading: 'બંધારણના ભાગ', articlesWord: 'કલમ',
-      errorNetwork: 'સર્વર સાથે જોડાણ થઈ શક્યું નથી. ઇન્ટરનેટ તપાસો અથવા થોડી વાર પછી પ્રયાસ કરો.',
-      aboutTitle: 'NYAYMITRA 2.0 વિશે', aboutBody: 'NYAYMITRA 2.0 નાગરિકોને સરળ ભાષામાં કાનૂની માહિતી, યોગ્ય કચેરી અને ફરિયાદ તૈયાર કરવામાં મદદ કરે છે. તે ન્યાયાધીશ કે વકીલ નથી.',
-      aboutData: 'હાલ ઉપલબ્ધ ડેટા', aboutDeveloper: 'ડેવલપર',
-      heroEyebrow: 'તમારો હક, તમારો અવાજ',
-      heroTitle: 'કાનૂની માહિતી, સરળ ભાષામાં',
-      heroBody: 'તમારી સમસ્યા લખો કે બોલો. અમે સંબંધિત કાનૂની માહિતી, યોગ્ય સરકારી કચેરી અને આગળના પગલાં દર્શાવીશું — સ્રોત સાથે. અમે ન્યાય આપતા નથી.',
-      cardAssistantTitle: 'સહાયકને પૂછો', cardAssistantBody: 'સાયબર ફ્રોડ, જમીન, મફત કાનૂની સહાય કે સરકારી અરજી — સ્રોત આધારિત માહિતી.',
-      cardComplaintTitle: 'ફરિયાદ તૈયાર કરો', cardComplaintBody: 'માહિતી ભરો, સારાંશ ચકાસો, પછી સાચવો અને સત્તાવાર માધ્યમથી જાતે સબમિટ કરો.',
-      cardLibraryTitle: 'બંધારણ જુઓ', cardLibraryBody: 'કલમ શોધો, મૂળ સ્રોત અને ચકાસણી સ્થિતિ સાથે.',
-      cardDepartmentsTitle: 'કચેરીઓ અને હેલ્પલાઇન', cardDepartmentsBody: 'સત્તાવાર પોર્ટલ, હેલ્પલાઇન અને ચકાસણી તારીખ સાથે.',
-      openCta: 'ખોલો',
-      askLabel: 'તમારી મુશ્કેલી લખો',
-      askHint: 'ગુજરાતી કે અંગ્રેજીમાં. ઓછામાં ઓછા ૫ અક્ષર.',
-      askPlaceholder: 'દા.ત. મારા બેંક ખાતામાંથી અજાણ્યા વ્યક્તિએ ૨૫,૦૦૦ રૂપિયા ઉપાડી લીધા, હવે શું કરવું?',
-      categoryLabel: 'શ્રેણી (વૈકલ્પિક)',
-      askSubmit: 'માહિતી મેળવો',
-      askLoading: 'સ્રોત તપાસી રહ્યું છે…',
-      micStart: 'બોલીને લખો', micStop: 'સાંભળી રહ્યું છે… બંધ કરવા દબાવો',
-      micUnsupported: 'આ બ્રાઉઝરમાં અવાજ ઓળખ ઉપલબ્ધ નથી — કૃપા કરીને લખો.',
-      answerHeading: 'માહિતી',
-      citationsHeading: 'સ્રોત (સંબંધિત કલમો)',
-      stepsHeading: 'આગળના સંભવિત પગલાં',
-      docsHeading: 'તૈયાર રાખવાના દસ્તાવેજો',
-      officesHeading: 'સંપર્ક કરવા યોગ્ય કચેરીઓ',
-      speak: 'સાંભળો', stopSpeak: 'બંધ કરો',
-      reportUnsafe: 'ખોટી કે અસુરક્ષિત માહિતી જણાવો',
-      reportThanks: 'આભાર — તમારો રિપોર્ટ માનવ તપાસ માટે નોંધાયો છે.',
-      providerOffline: 'ઑફલાઇન (નિયમ-આધારિત)',
-      providerLive: 'AI મોડેલ',
-      groundedYes: 'સ્રોત આધારિત',
-      groundedNo: 'પૂરતો સ્રોત નથી',
-      degradedNote: 'AI સેવા ઉપલબ્ધ ન હોવાથી નિયમ-આધારિત, સ્રોત-આધારિત જવાબ આપ્યો છે.',
-      complaintTitle: 'ફરિયાદ / અરજી તૈયાર કરો',
-      complaintIntro: 'નીચેની માહિતી ભરો. અમે તમારા જ શબ્દોમાંથી સારાંશ બનાવીશું — તમે ચકાસ્યા પછી જ સાચવાશે.',
-      step1: '૧. વિગત', step2: '૨. ચકાસણી', step3: '૩. સંદર્ભ',
-      fCategory: 'શ્રેણી', fTitle: 'ટૂંકમાં વિષય', fDescription: 'શું થયું તે વિગતે લખો',
-      fDate: 'બનાવની તારીખ (વૈકલ્પિક)', fLocation: 'ગામ / શહેર (વૈકલ્પિક)', fDistrict: 'જિલ્લો (વૈકલ્પિક)',
-      fState: 'રાજ્ય (વૈકલ્પિક)', fRespondent: 'સામેની વ્યક્તિ/કચેરી (વૈકલ્પિક)',
-      fPhone: 'મોબાઇલ નંબર (વૈકલ્પિક)', fEmail: 'ઈમેલ (વૈકલ્પિક)', fDocs: 'દસ્તાવેજ જોડો (PDF/ફોટો, વૈકલ્પિક)',
-      consent: 'હું સંમત છું કે આ માહિતી આ સર્વર પર સાચવવામાં આવશે.',
-      next: 'આગળ: સારાંશ ચકાસો', back: 'પાછળ', submit: 'ફરિયાદ સાચવો',
-      previewLoading: 'સારાંશ બનાવી રહ્યું છે…',
-      summaryHeading: 'તમારો ફરિયાદ સારાંશ',
-      confirmLabel: 'મેં ઉપરનો સારાંશ અને વિગતો ચકાસી લીધી છે અને તે સાચી છે.',
-      savedHeading: 'ફરિયાદ સાચવાઈ ગઈ',
-      refLabel: 'સંદર્ભ નંબર', tokenLabel: 'એક્સેસ ટોકન',
-      tokenWarning: 'આ ટોકન ફક્ત એક જ વાર દેખાય છે. તેને સાચવો — તેના વિના ફરિયાદ ફરી જોઈ શકાશે નહીં.',
-      copy: 'કોપી કરો', copied: 'કોપી થયું', download: 'ટેક્સ્ટ ડાઉનલોડ કરો',
-      viewSaved: 'સાચવેલી ફરિયાદ જુઓ', savedRefLabel: 'સંદર્ભ નંબર', savedTokenLabel: 'એક્સેસ ટોકન', open: 'ખોલો',
-      libraryTitle: 'ભારતનું બંધારણ', librarySearch: 'કલમ નંબર કે શબ્દ શોધો',
-      search: 'શોધો', allParts: 'બધા ભાગ', results: 'પરિણામ', noResults: 'કોઈ પરિણામ મળ્યું નથી.',
-      noResultsHint: 'બીજા શબ્દો વાપરીને શોધો, અથવા મફત કાનૂની સહાય ૧૫૧૦૦ પર ફોન કરો.',
-      articleText: 'મૂળ કલમનું લખાણ', explanation: 'નાગરિક માટે સરળ સમજૂતી', sourceHeading: 'સ્રોત',
-      textNotLoaded: 'આ કલમનું સત્તાવાર લખાણ હજુ લોડ થયેલું નથી — ફક્ત માનવ-લિખિત સમજૂતી ઉપલબ્ધ છે.',
-      lastChecked: 'છેલ્લે ચકાસ્યું', neverChecked: 'ક્યારેય ચકાસાયું નથી',
-      departmentsTitle: 'સરકારી કચેરીઓ અને સત્તાવાર માધ્યમ', helpline: 'હેલ્પલાઇન', portal: 'પોર્ટલ',
-      glossaryTitle: 'કાનૂની શબ્દકોશ', glossarySub: 'સામાન્ય શબ્દોની સરળ સમજૂતી (કાયદાની અધિકૃત વ્યાખ્યા નથી).',
-      loading: 'લોડ થઈ રહ્યું છે…', errorGeneric: 'કંઈક ખોટું થયું. ફરી પ્રયાસ કરો.',
-      retry: 'ફરી પ્રયાસ કરો', backHome: 'મુખ્ય પૃષ્ઠ પર જાઓ',
-      required: 'આ માહિતી જરૂરી છે', tooShort: 'ઓછામાં ઓછા ૨૦ અક્ષર લખો',
-      corpusWarning: 'ચેતવણી: સત્તાવાર કલમ લખાણ હજુ લોડ થયેલું નથી (૦ કલમ). હાલ ફક્ત માનવ-લિખિત સમજૂતી દેખાય છે.',
-      footerLine: 'AI-આધારિત સમાવેશી ન્યાય સુલભતા અને માર્ગદર્શન.',
-      offlineBanner: 'AI સેવા કન્ફિગર નથી — જવાબો નિયમ-આધારિત અને સ્રોત-આધારિત છે.'
-    },
-    en: {
-      brandTag: 'Justice access & navigation',
-      navHome: 'Home', navAssistant: 'Assistant', navComplaint: 'Complaint',
-      navLibrary: 'Constitution', navDepartments: 'Departments', navGlossary: 'Glossary',
-      navLegal: 'Library', navAbout: 'About',
-      legalTitle: 'Legal Library', legalSub: 'Everything currently stored in the database — Constitution, guides, offices and glossary.',
-      legalSearch: 'Search the library (Gujarati or English)', allCategories: 'All categories',
-      catConstitution: 'Constitution', catGuide: 'Guides', catDepartment: 'Offices', catGlossary: 'Glossary',
-      anyLanguage: 'Any language', onlyGu: 'Gujarati content', onlyEn: 'English content',
-      contentKind: 'Content type', kindOfficial: 'Text from the source document', kindSummary: 'Explanation (not the official text)',
-      kindNone: 'Text not available', availableIn: 'Available in', noSource: 'No source recorded',
-      otherLanguageOnly: 'This item is not available in the selected language.', backToLegal: 'Library',
-      cardLegalTitle: 'Legal Library', cardLegalBody: 'Search everything available — by language and category.',
-      partsHeading: 'Parts of the Constitution', articlesWord: 'articles',
-      errorNetwork: 'Could not reach the server. Check your connection or try again shortly.',
-      aboutTitle: 'About NYAYMITRA 2.0', aboutBody: 'NYAYMITRA 2.0 helps citizens with legal information in plain language, the right office to approach, and drafting a complaint. It is not a judge or a lawyer.',
-      aboutData: 'Data currently available', aboutDeveloper: 'Developer',
-      heroEyebrow: 'Your rights, your voice',
-      heroTitle: 'Legal information, in plain language',
-      heroBody: 'Describe your problem. We show relevant legal information, the right government office and the next steps — with sources. We do not decide cases.',
-      cardAssistantTitle: 'Ask the assistant', cardAssistantBody: 'Cyber fraud, land, free legal aid or a pending government application — sourced information.',
-      cardComplaintTitle: 'Prepare a complaint', cardComplaintBody: 'Fill in the details, review the summary, save it and submit it yourself through the official channel.',
-      cardLibraryTitle: 'Browse the Constitution', cardLibraryBody: 'Search articles with their original source and verification status.',
-      cardDepartmentsTitle: 'Offices and helplines', cardDepartmentsBody: 'Official portals, helplines and the date each contact was checked.',
-      openCta: 'Open',
-      askLabel: 'Describe your problem',
-      askHint: 'Gujarati or English. At least 5 characters.',
-      askPlaceholder: 'e.g. Someone withdrew 25,000 rupees from my bank account. What should I do?',
-      categoryLabel: 'Category (optional)',
-      askSubmit: 'Get information',
-      askLoading: 'Checking the sources…',
-      micStart: 'Speak instead of typing', micStop: 'Listening… press to stop',
-      micUnsupported: 'Speech recognition is not available in this browser — please type.',
-      answerHeading: 'Information',
-      citationsHeading: 'Sources (related articles)',
-      stepsHeading: 'Possible next steps',
-      docsHeading: 'Documents to keep ready',
-      officesHeading: 'Offices you can contact',
-      speak: 'Listen', stopSpeak: 'Stop',
-      reportUnsafe: 'Report wrong or unsafe information',
-      reportThanks: 'Thank you — your report is queued for human review.',
-      providerOffline: 'Offline (rule-based)',
-      providerLive: 'AI model',
-      groundedYes: 'Grounded in sources',
-      groundedNo: 'Not enough sources',
-      degradedNote: 'The AI service was unavailable, so a rule-based, source-grounded answer was produced instead.',
-      complaintTitle: 'Prepare a complaint or application',
-      complaintIntro: 'Fill in the details below. The summary is built only from your own words, and nothing is saved until you review and confirm it.',
-      step1: '1. Details', step2: '2. Review', step3: '3. Reference',
-      fCategory: 'Category', fTitle: 'Short subject', fDescription: 'What happened (in detail)',
-      fDate: 'Date of incident (optional)', fLocation: 'Village / city (optional)', fDistrict: 'District (optional)',
-      fState: 'State (optional)', fRespondent: 'Person / office complained against (optional)',
-      fPhone: 'Mobile number (optional)', fEmail: 'E-mail (optional)', fDocs: 'Attach documents (PDF/photo, optional)',
-      consent: 'I agree that this information may be stored on this server.',
-      next: 'Next: review the summary', back: 'Back', submit: 'Save complaint',
-      previewLoading: 'Building your summary…',
-      summaryHeading: 'Your complaint summary',
-      confirmLabel: 'I have reviewed the summary and details above and confirm they are correct.',
-      savedHeading: 'Complaint saved',
-      refLabel: 'Reference number', tokenLabel: 'Access token',
-      tokenWarning: 'This token is shown once. Save it — without it the complaint cannot be opened again.',
-      copy: 'Copy', copied: 'Copied', download: 'Download as text',
-      viewSaved: 'Open a saved complaint', savedRefLabel: 'Reference number', savedTokenLabel: 'Access token', open: 'Open',
-      libraryTitle: 'The Constitution of India', librarySearch: 'Search an article number or a word',
-      search: 'Search', allParts: 'All parts', results: 'Results', noResults: 'No results found.',
-      noResultsHint: 'Try a different word, or call free legal aid on 15100.',
-      articleText: 'Text of the article', explanation: 'Plain-language explanation for citizens', sourceHeading: 'Source',
-      textNotLoaded: 'The authoritative text of this article is not loaded yet — only a human-written explanation is available.',
-      lastChecked: 'Last checked', neverChecked: 'Never checked',
-      departmentsTitle: 'Government offices and official channels', helpline: 'Helpline', portal: 'Portal',
-      glossaryTitle: 'Legal glossary', glossarySub: 'Plain-language explanations (not statutory definitions).',
-      loading: 'Loading…', errorGeneric: 'Something went wrong. Please try again.',
-      retry: 'Retry', backHome: 'Go to home',
-      required: 'This field is required', tooShort: 'Please write at least 20 characters',
-      corpusWarning: 'Note: the authoritative article text is not loaded yet (0 articles). Only human-written explanations are shown.',
-      footerLine: 'AI-powered inclusive justice access and navigation.',
-      offlineBanner: 'No AI provider is configured — answers are rule-based and source-grounded.'
-    }
-  };
+  // Interface text lives in web/locales/<code>.json (one catalogue per language); the list of
+  // languages in web/locales/index.json (generated from backend/app/languages.py).
+  // Nothing here is legal content. Missing keys fall back to English.
+  var CATALOG = {};
+  var REGISTRY = [];
+  var FALLBACK_REGISTRY = [
+    { code: 'gu', tag: 'gu', native_name: 'ગુજરાતી', english_name: 'Gujarati', script: 'Gujr', direction: 'ltr', content_language: 'gu', ui: { translation_status: 'PROJECT_AUTHORED', essential_complete: true } },
+    { code: 'en', tag: 'en', native_name: 'English', english_name: 'English', script: 'Latn', direction: 'ltr', content_language: 'en', ui: { translation_status: 'PROJECT_AUTHORED', essential_complete: true } }
+  ];
 
   function t(key) {
-    var dict = T[state.lang] || T.en;
-    return dict[key] || T.en[key] || key;
+    var dict = CATALOG[state.lang] || {};
+    return dict[key] || (CATALOG.en || {})[key] || key;
   }
 
   /* --------------------------------------------------------------- helpers */
+  function langInfo(code) {
+    code = code || state.lang;
+    for (var i = 0; i < REGISTRY.length; i++) if (REGISTRY[i].code === code) return REGISTRY[i];
+    return null;
+  }
+
+  function nativeName(code) {
+    var info = langInfo(code);
+    return info ? info.native_name : code;
+  }
+
   function esc(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
     });
+  }
+
+  // Escape first, then wrap the (escaped) search terms: user text never reaches innerHTML raw.
+  function highlight(text, terms) {
+    var html = esc(text);
+    (terms || []).forEach(function (term) {
+      var safe = esc(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (!safe) return;
+      try {
+        html = html.replace(new RegExp('(' + safe + ')(?![^<]*>)', 'gi'), '<mark>$1</mark>');
+      } catch (e) { /* a term that is not a valid pattern is simply not highlighted */ }
+    });
+    return html;
+  }
+
+  var CONTENT_STATUS_KEYS = {
+    OFFICIAL_SOURCE: ['badge-neutral', 'statusOfficial'], OCR_REVIEW_REQUIRED: ['badge-review', 'statusOcr'],
+    MACHINE_TRANSLATED: ['badge-unverified', 'statusMachine'], HUMAN_REVIEWED: ['badge-neutral', 'statusHumanReviewed'],
+    VERIFIED: ['badge-verified', 'statusVerified'], UNAVAILABLE: ['badge-unverified', 'statusUnavailable']
+  };
+  function contentStatusBadge(status) {
+    var entry = CONTENT_STATUS_KEYS[status];
+    if (!entry) return '';
+    return '<span class="badge ' + entry[0] + '" data-content-status="' + esc(status) + '">' + esc(t(entry[1])) + '</span>';
   }
 
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -202,13 +89,13 @@
 
   function badge(status) {
     var map = {
-      verified: ['badge-verified', state.lang === 'gu' ? 'ચકાસાયેલ' : 'verified'],
-      requires_human_verification: ['badge-review', state.lang === 'gu' ? 'માનવ ચકાસણી બાકી' : 'needs human review'],
-      unverified: ['badge-unverified', state.lang === 'gu' ? 'અચકાસાયેલ' : 'unverified'],
-      outdated: ['badge-unverified', state.lang === 'gu' ? 'જૂનું' : 'outdated'],
-      verified_source_text: ['badge-verified', state.lang === 'gu' ? 'સત્તાવાર લખાણ' : 'source text'],
-      owner_authored_summary: ['badge-review', state.lang === 'gu' ? 'સમજૂતી (કાયદો નહીં)' : 'summary, not statute'],
-      not_available: ['badge-unverified', state.lang === 'gu' ? 'લખાણ ઉપલબ્ધ નથી' : 'text unavailable']
+      verified: ['badge-verified', state.content === 'gu' ? 'ચકાસાયેલ' : 'verified'],
+      requires_human_verification: ['badge-review', state.content === 'gu' ? 'માનવ ચકાસણી બાકી' : 'needs human review'],
+      unverified: ['badge-unverified', state.content === 'gu' ? 'અચકાસાયેલ' : 'unverified'],
+      outdated: ['badge-unverified', state.content === 'gu' ? 'જૂનું' : 'outdated'],
+      verified_source_text: ['badge-verified', state.content === 'gu' ? 'સત્તાવાર લખાણ' : 'source text'],
+      owner_authored_summary: ['badge-review', state.content === 'gu' ? 'સમજૂતી (કાયદો નહીં)' : 'summary, not statute'],
+      not_available: ['badge-unverified', state.content === 'gu' ? 'લખાણ ઉપલબ્ધ નથી' : 'text unavailable']
     };
     var item = map[status] || ['badge-neutral', status || '—'];
     return '<span class="badge ' + item[0] + '">' + esc(item[1]) + '</span>';
@@ -279,7 +166,7 @@
     }
     if (corpus && corpus.verified_text === 0) {
       html += '<div class="notice danger small"><strong>' + esc(t('corpusWarning')) + '</strong><br>' +
-        esc(state.lang === 'gu'
+        esc(state.content === 'gu'
           ? 'સ્રોત: ' + corpus.articles + ' કલમ લોડ થયેલ, તેમાંથી ' + corpus.verified_text + ' સત્તાવાર લખાણ.'
           : corpus.articles + ' articles loaded, of which ' + corpus.verified_text + ' have authoritative text.') + '</div>';
     }
@@ -337,7 +224,7 @@
 
   function categoryLabel(key) {
     var item = categoryLabels[key];
-    return item ? item[state.lang] : key;
+    return item ? item[state.content] : key;
   }
 
   function viewAssistant() {
@@ -385,14 +272,14 @@
   };
 
   function warningLabel(code) {
-    if (warningText[code]) return warningText[code][state.lang];
+    if (warningText[code]) return warningText[code][state.content];
     if (code.indexOf('input:') === 0) {
-      return state.lang === 'gu'
+      return state.content === 'gu'
         ? 'તમારા લખાણમાં સૂચના જેવો ભાગ મળ્યો; તેને ડેટા ગણીને જ જવાબ આપ્યો છે.'
         : 'Instruction-like text was detected in your input and treated as data only.';
     }
     if (code.indexOf('model_rejected:') === 0) {
-      return state.lang === 'gu' ? 'મોડેલનો જવાબ સુરક્ષા ચકાસણીમાં પસાર ન થયો.' : 'A model answer failed the safety check.';
+      return state.content === 'gu' ? 'મોડેલનો જવાબ સુરક્ષા ચકાસણીમાં પસાર ન થયો.' : 'A model answer failed the safety check.';
     }
     return code;
   }
@@ -416,7 +303,7 @@
 
     var guide = '';
     if (payload.guide) {
-      guide = '<h3>' + esc(payload.guide[state.lang === 'gu' ? 'category_gu' : 'category_en']) + '</h3>';
+      guide = '<h3>' + esc(payload.guide[state.content === 'gu' ? 'category_gu' : 'category_en']) + '</h3>';
       if (payload.guide.steps && payload.guide.steps.length) {
         guide += '<h4>' + esc(t('stepsHeading')) + '</h4><ol class="step-list">' +
           payload.guide.steps.map(function (step) { return '<li>' + esc(step) + '</li>'; }).join('') + '</ol>';
@@ -431,7 +318,7 @@
     if (payload.departments && payload.departments.length) {
       offices = '<h3>' + esc(t('officesHeading')) + '</h3><ul class="cite-list">' +
         payload.departments.map(function (dep) {
-          var name = state.lang === 'gu' ? dep.name_gu : dep.name_en;
+          var name = state.content === 'gu' ? dep.name_gu : dep.name_en;
           var helpline = dep.helpline ? ' · <a href="tel:' + esc(dep.helpline) + '">' + esc(dep.helpline) + '</a>' : '';
           var portal = dep.portal_url ? ' · <a href="' + esc(dep.portal_url) + '" rel="noopener noreferrer" target="_blank">' + esc(dep.portal_label || dep.portal_url) + '</a>' : '';
           return '<li>' + esc(name) + ' ' + badge(dep.verification_status) + helpline + portal + '</li>';
@@ -445,9 +332,14 @@
       }).join('') + '</ul></div>';
     }
 
+    var languageNote = '';
+    if (payload.language_fallback) {
+      languageNote = '<div class="notice small" data-fallback="answer"><p>' + esc(t('answerFallback')) + '</p>' +
+        '<p class="tiny muted">' + esc(t('detectedScript')) + ': ' + esc((payload.detected_language || {}).script || '—') + '</p></div>';
+    }
     area.innerHTML = '<article class="card stack">' +
-      '<div class="panel-head"><h2>' + esc(t('answerHeading')) + '</h2><div>' + badges + '</div></div>' +
-      '<p class="answer">' + esc(payload.answer) + '</p>' +
+      '<div class="panel-head"><h2>' + esc(t('answerHeading')) + '</h2><div>' + badges + '</div></div>' + languageNote +
+      '<p class="answer" lang="' + esc(payload.language) + '" dir="ltr">' + esc(payload.answer) + '</p>' +
       warnings + guide + citations + offices +
       '<div class="notice small">' + payload.disclaimers.map(function (line) { return esc(line); }).join('<br>') + '</div>' +
       '<div class="row">' +
@@ -465,7 +357,7 @@
           return;
         }
         var utterance = new SpeechSynthesisUtterance(payload.answer);
-        utterance.lang = state.lang === 'gu' ? 'gu-IN' : 'en-IN';
+        utterance.lang = state.content === 'gu' ? 'gu-IN' : 'en-IN';
         utterance.rate = 0.95;
         utterance.onend = function () { speakBtn.textContent = '🔊 ' + t('speak'); };
         speakBtn.textContent = '⏹ ' + t('stopSpeak');
@@ -538,7 +430,7 @@
       if (!Recognition) { toast(t('micUnsupported')); return; }
       if (listening && recognition) { recognition.stop(); return; }
       recognition = new Recognition();
-      recognition.lang = state.lang === 'gu' ? 'gu-IN' : 'en-IN';
+      recognition.lang = ((langInfo() || {}).code || 'en') + '-IN';   // listen in the selected language
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
       recognition.onstart = function () {
@@ -656,7 +548,7 @@
   function complaintPayload(includeConfirm) {
     var form = state.complaint.form;
     var payload = {
-      language: state.lang,
+      language: state.content,
       category: form.category,
       title: form.title,
       description: form.description,
@@ -691,7 +583,7 @@
             body.append('file', files[i]);
             body.append('document_kind', 'evidence');
             try {
-              toast(state.lang === 'gu' ? 'અપલોડ થઈ રહ્યું છે…' : 'Uploading…');
+              toast(state.content === 'gu' ? 'અપલોડ થઈ રહ્યું છે…' : 'Uploading…');
               var record = await api('/documents', { method: 'POST', form: body });
               state.complaint.form.documents.push({
                 id: record.id, token: record.access_token, name: record.original_name,
@@ -777,7 +669,7 @@
             var note = document.createElement('div');
             note.className = 'notice warn';
             note.setAttribute('role', 'status');
-            note.textContent = (state.lang === 'gu'
+            note.textContent = (state.content === 'gu'
               ? 'આ ફરિયાદ પહેલેથી સબમિટ થઈ ગઈ છે. સંદર્ભ: ' + details.reference +
                 '. તેને ટોકન સાથે "સાચવેલી ફરિયાદ જુઓ" માંથી ખોલો.'
               : 'This complaint was already submitted. Reference: ' + details.reference +
@@ -868,7 +760,7 @@
   function renderComplaintSaved() {
     var saved = state.complaint.saved || {};
     var offices = (saved.departments || []).map(function (dep) {
-      return '<li>' + esc(state.lang === 'gu' ? dep.name_gu : dep.name_en) +
+      return '<li>' + esc(state.content === 'gu' ? dep.name_gu : dep.name_en) +
         (dep.helpline ? ' · <a href="tel:' + esc(dep.helpline) + '">' + esc(dep.helpline) + '</a>' : '') + '</li>';
     }).join('');
     return '<div class="card stack">' +
@@ -976,7 +868,7 @@
       }
       results.innerHTML = '<p class="small muted">' + esc(t('results') + ': ' + data.total + ' · ' + data.took_ms + ' ms') + '</p>' +
         data.items.map(function (item) {
-          var title = state.lang === 'gu' ? (item.title_gu || item.title_en) : (item.title_en || item.title_gu);
+          var title = state.content === 'gu' ? (item.title_gu || item.title_en) : (item.title_en || item.title_gu);
           return '<a class="article-item" href="#/library/' + esc(item.article_no) + '">' +
             '<div class="spread"><strong>' + esc(item.article_label) + '</strong>' +
             '<span>' + badge(item.verification_status) + ' ' + badge(item.text_status) + '</span></div>' +
@@ -989,9 +881,16 @@
   }
 
   function renderArticle(article) {
-    var title = state.lang === 'gu' ? (article.title_gu || article.title_en) : (article.title_en || article.title_gu);
-    var text = state.lang === 'gu' ? article.text_gu : article.text_en;
-    var explanation = state.lang === 'gu' ? article.citizen_explanation_gu : article.citizen_explanation_en;
+    var title = state.content === 'gu' ? (article.title_gu || article.title_en) : (article.title_en || article.title_gu);
+    var text = state.content === 'gu' ? article.text_gu : article.text_en;
+    var explanation = state.content === 'gu' ? article.citizen_explanation_gu : article.citizen_explanation_en;
+    var records = article.language_texts || [];
+    var statusBadges = records.map(function (rec) {
+      return '<span class="tiny">' + esc(nativeName(rec.language)) + ': ' + contentStatusBadge(rec.content_status) + '</span>';
+    }).join(' ');
+    var nativeRecord = article.native_record;      // text in the selected language, when it exists
+    if (nativeRecord && nativeRecord.available) { text = nativeRecord.text; title = nativeRecord.title || title; }
+    var notInLanguage = state.lang !== state.content && !(nativeRecord && nativeRecord.available);
     var sources = (article.sources || []).map(function (source) {
       return '<li><strong>' + esc(source.title) + '</strong><br>' + esc(source.publisher) +
         (source.url ? '<br><a href="' + esc(source.url) + '" rel="noopener noreferrer" target="_blank">' + esc(source.url) + '</a>' : '') +
@@ -1004,11 +903,12 @@
       '<div>' + badge(article.verification_status) + ' ' + badge(article.text_status) + '</div></div>' +
       '<p class="small muted">' + esc((article.part_no ? 'Part ' + article.part_no + ' — ' : '') + (article.part_title || '') +
         (article.chapter_title ? ' · ' + article.chapter_title : '')) + '</p>' +
-      '<div><h3>' + esc(t('articleText')) + '</h3>' +
+      (notInLanguage ? '<div class="notice small" data-fallback="article">' + esc(t('textUnavailableIn')) + ' ' + esc(t('contentFallback')) + '</div>' : '') +
+      '<div><h3>' + esc(t('articleText')) + '</h3>' + (statusBadges ? '<p>' + statusBadges + '</p>' : '') +
       (text ? '<p>' + esc(text) + '</p>'
         : '<div class="notice warn small">' + esc(t('textNotLoaded')) + '</div>') + '</div>' +
       '<div><h3>' + esc(t('explanation')) + '</h3><p>' + esc(explanation || '—') + '</p></div>' +
-      (article.notes ? '<details><summary class="small muted">' + esc(state.lang === 'gu' ? 'નોંધ' : 'Notes') + '</summary><p class="small">' + esc(article.notes) + '</p></details>' : '') +
+      (article.notes ? '<details><summary class="small muted">' + esc(state.content === 'gu' ? 'નોંધ' : 'Notes') + '</summary><p class="small">' + esc(article.notes) + '</p></details>' : '') +
       '<p class="small muted">' + esc(t('lastChecked') + ': ' + (article.last_checked_at || t('neverChecked'))) + '</p>' +
       (sources ? '<div><h3>' + esc(t('sourceHeading')) + '</h3><ul class="cite-list">' + sources + '</ul></div>' : '') +
       '<div class="notice small">' + (article.disclaimers || []).map(esc).join('<br>') + '</div>' +
@@ -1091,9 +991,10 @@
           return '<a class="article-item" href="#/legal/' + esc(item.category) + '/' + esc(encodeURIComponent(item.key)) + '">' +
             '<div class="spread"><strong>' + esc(categoryName(item.category) + (item.label ? ' · ' + item.label : '')) + '</strong>' +
             '<span>' + badge(item.verification_status) + ' <span class="badge badge-neutral">' + esc(kindLabel(item.content_kind)) + '</span></span></div>' +
-            '<h3>' + esc(item.title || '') + '</h3>' +
-            (item.snippet ? '<p class="snippet">' + esc(item.snippet) + '</p>' : '') +
-            '<p class="tiny muted">' + esc(t('availableIn') + ': ' + item.languages.map(function (l) { return l === 'gu' ? 'ગુજરાતી' : 'English'; }).join(', ') +
+            '<h3>' + highlight(item.title || '', data.matched_terms) + '</h3>' +
+            (item.snippet ? '<p class="snippet" lang="' + esc(item.content_language || '') + '">' + highlight(item.snippet, data.matched_terms) + '</p>' : '') +
+            (item.content_status ? '<p class="tiny">' + contentStatusBadge(item.content_status) + '</p>' : '') +
+            '<p class="tiny muted">' + esc(t('availableIn') + ': ' + item.languages.map(nativeName).join(', ') +
               ' · ' + t('sourceHeading') + ': ' + ((item.source && (item.source.title || item.source.url)) || t('noSource'))) + '</p></a>';
         }).join('') +
         '<div class="notice small">' + esc(data.notice) + '</div>';
@@ -1103,10 +1004,11 @@
   }
 
   function renderLegalItem(item) {
-    var lang = state.lang;
+    var lang = state.content;
     var other = lang === 'gu' ? 'en' : 'gu';
-    var title = item['title_' + lang] || item['title_' + other] || '';
-    var body = item['body_' + lang];
+    var native = (item.texts || {})[state.lang];
+    var title = (native && native.title) || item['title_' + lang] || item['title_' + other] || '';
+    var body = (native && native.body) || item['body_' + lang];
     var list = item['list_' + lang] || [];
     var src = item.source;
     var contact = item.contact || {};
@@ -1146,10 +1048,31 @@
     } catch (error) {
       counts = errorBlock(error);
     }
+    var matrix = '';
+    try {
+      var langs = await api('/languages');
+      var yes = function (flag) { return flag ? '✓' : '—'; };
+      matrix = '<h2>' + esc(t('langMatrixTitle')) + '</h2><p class="small muted">' + esc(t('langMatrixNote')) + '</p>' +
+        '<div class="table-scroll"><table class="matrix" id="langMatrix"><thead><tr>' +
+        ['colLanguage', 'colScript', 'colInterface', 'colSummaries', 'colOfficial', 'colVerified', 'colAssistant'].map(function (k) {
+          return '<th scope="col">' + esc(t(k)) + '</th>';
+        }).join('') + '</tr></thead><tbody>' + langs.items.map(function (l) {
+          var ui = l.statuses.indexOf('UI_READY') >= 0 ? 'UI_READY' : (l.statuses.indexOf('UI_PARTIAL') >= 0 ? 'UI_PARTIAL' : '—');
+          return '<tr data-lang="' + esc(l.code) + '"><th scope="row"><span lang="' + esc(l.tag) + '" dir="' + esc(l.direction) + '">' + esc(l.native_name) + '</span> <span class="tiny muted">' + esc(l.english_name) + '</span></th>' +
+            '<td>' + esc(l.script) + (l.direction === 'rtl' ? ' · RTL' : '') + '</td>' +
+            '<td>' + esc(ui) + '<br><span class="tiny muted">' + esc(l.ui.translation_status + ' · ' + l.ui.keys + '/' + l.ui.reference_keys) + '</span></td>' +
+            '<td>' + esc(String(l.content.owner_summaries)) + '</td>' +
+            '<td>' + esc(String(l.content.official_text_articles)) + '</td>' +
+            '<td>' + esc(String(l.content.human_verified_articles)) + '</td>' +
+            '<td>' + yes(l.assistant.answers_in_language) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    } catch (error) {
+      matrix = errorBlock(error);
+    }
     container.innerHTML = '<section class="card stack"><h1>' + esc(t('aboutTitle')) + '</h1>' +
       '<p>' + esc(t('aboutBody')) + '</p>' +
       '<h2>' + esc(t('aboutDeveloper')) + '</h2>' +
-      '<p class="attribution">' + esc(ATTRIBUTION) + '</p>' + counts + '</section>';
+      '<p class="attribution">' + esc(ATTRIBUTION) + '</p>' + counts + matrix + '</section>';
   }
 
   /* ---- departments ---- */
@@ -1161,8 +1084,8 @@
       container.innerHTML = '<section class="stack"><h1>' + esc(t('departmentsTitle')) + '</h1>' +
         '<div class="notice small">' + esc(data.notice) + '</div>' +
         '<div class="grid cols-2">' + data.items.map(function (dep) {
-          var name = state.lang === 'gu' ? dep.name_gu : dep.name_en;
-          var purpose = state.lang === 'gu' ? dep.purpose_gu : dep.purpose_en;
+          var name = state.content === 'gu' ? dep.name_gu : dep.name_en;
+          var purpose = state.content === 'gu' ? dep.purpose_gu : dep.purpose_en;
           return '<article class="card stack">' +
             '<div class="spread"><h2>' + esc(name) + '</h2>' + badge(dep.verification_status) + '</div>' +
             '<p class="small muted">' + esc(purpose || '') + '</p>' +
@@ -1252,13 +1175,58 @@
   }
 
   /* -------------------------------------------------------------- language */
-  function applyLanguage(lang, persist) {
-    state.lang = lang === 'en' ? 'en' : 'gu';
-    document.documentElement.lang = state.lang;
-    var gu = $('#langGu');
-    var en = $('#langEn');
-    gu.setAttribute('aria-pressed', String(state.lang === 'gu'));
-    en.setAttribute('aria-pressed', String(state.lang === 'en'));
+  function localeUrl(name) {
+    return new URL('locales/' + name + '.json', document.baseURI).href;
+  }
+
+  async function loadJson(url) {
+    var response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    return response.json();
+  }
+
+  async function loadCatalog(code) {
+    if (CATALOG[code]) return true;
+    try {
+      var data = await loadJson(localeUrl(code));
+      CATALOG[code] = data.strings || {};
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function renderLanguageNotice(loaded) {
+    var box = $('#langNotice');
+    if (!box) return;
+    var info = langInfo() || {};
+    var lines = [];
+    var en = CATALOG.en || {};
+    if (!loaded) lines.push(en.localeLoadFailed || 'The language file could not be loaded. Showing English.');
+    if (info.ui && info.ui.translation_status === 'MACHINE_TRANSLATED') {
+      lines.push(en.mtNotice || '');                         // always in English: it must be understood
+      if (!info.ui.essential_complete) lines.push(en.partialNotice || '');
+    }
+    if (state.lang !== state.content) lines.push(t('contentFallback'));
+    lines = lines.filter(Boolean);
+    box.hidden = !lines.length;
+    box.innerHTML = lines.map(function (line) { return '<p>' + esc(line) + '</p>'; }).join('');
+    box.setAttribute('data-ui-status', (info.ui && info.ui.translation_status) || '');
+  }
+
+  async function applyLanguage(lang, persist) {
+    var info = langInfo(lang) || langInfo('gu') || REGISTRY[0];
+    state.lang = info.code;
+    state.content = info.content_language === 'gu' ? 'gu' : 'en';
+    var loaded = await loadCatalog(state.lang);
+    var root = document.documentElement;
+    root.lang = info.tag || info.code;
+    root.dir = info.direction === 'rtl' ? 'rtl' : 'ltr';
+    root.setAttribute('data-script', info.script || '');
+    var select = $('#langSelect');
+    if (select) select.value = state.lang;
+    var label = $('#langSelectLabel');
+    if (label) label.textContent = t('langLabel');
     var navMap = {
       home: t('navHome'), assistant: t('navAssistant'), complaint: t('navComplaint'),
       library: t('navLibrary'), departments: t('navDepartments'), glossary: t('navGlossary'),
@@ -1270,20 +1238,31 @@
     });
     $('#brandTag').textContent = t('brandTag');
     $('#footerLine').textContent = t('footerLine');
+    renderLanguageNotice(loaded);
     if (persist) {
       try { localStorage.setItem(LS_LANG, state.lang); } catch (e) { /* storage may be blocked */ }
     }
     loadMeta().then(route);
   }
 
-  function init() {
+  async function init() {
     var stored = null;
     try { stored = localStorage.getItem(LS_LANG); } catch (e) { stored = null; }
-    state.lang = stored === 'en' ? 'en' : 'gu';
-    $('#langGu').addEventListener('click', function () { applyLanguage('gu', true); });
-    $('#langEn').addEventListener('click', function () { applyLanguage('en', true); });
+    try {
+      REGISTRY = (await loadJson(localeUrl('index'))).languages || [];
+    } catch (e) {
+      REGISTRY = [];
+    }
+    if (!REGISTRY.length) REGISTRY = FALLBACK_REGISTRY;
+    await loadCatalog('en');                     // the fallback catalogue for every language
+    var select = $('#langSelect');
+    select.innerHTML = REGISTRY.map(function (l) {
+      return '<option value="' + esc(l.code) + '" lang="' + esc(l.tag) + '">' + esc(l.native_name) +
+        (l.native_name !== l.english_name ? ' — ' + esc(l.english_name) : '') + '</option>';
+    }).join('');
+    select.addEventListener('change', function () { applyLanguage(select.value, true); });
     window.addEventListener('hashchange', route);
-    applyLanguage(state.lang, false);
+    await applyLanguage(langInfo(stored) ? stored : 'gu', false);
   }
 
   if (document.readyState === 'loading') {
@@ -1313,7 +1292,7 @@
     installBtn = document.createElement('button');
     installBtn.type = 'button';
     installBtn.className = 'btn btn-primary install-btn';
-    installBtn.textContent = state.lang === 'en' ? 'Install app' : 'આપમાં ઇન્સ્ટોલ કરો';
+    installBtn.textContent = state.content === 'en' ? 'Install app' : 'આપમાં ઇન્સ્ટોલ કરો';
     installBtn.style.display = 'none';
     installBtn.addEventListener('click', function () {
       if (!deferredPrompt) return;

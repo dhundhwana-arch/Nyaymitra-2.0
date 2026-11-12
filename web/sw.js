@@ -4,11 +4,14 @@
  * (they may contain personal data), so the app degrades gracefully offline.
  */
 
-const CACHE_NAME = "nyaymitra-v2";
+const CACHE_NAME = "nyaymitra-v3";   // bump whenever the app shell changes (cache-first)
 const APP_SHELL = [
   "/",
   "/config.js",
   "/app.js",
+  "/locales/index.json",
+  "/locales/en.json",
+  "/locales/gu.json",
   "/styles.css",
   "/manifest.webmanifest",
   "/favicon.svg",
@@ -98,7 +101,8 @@ self.addEventListener("fetch", (event) => {
         return cached;
       }
       return fetch(request).then((response) => {
-        if (response.ok && APP_SHELL.includes(url.pathname)) {
+        // Other interface catalogues are cached the first time a language is selected.
+        if (response.ok && (APP_SHELL.includes(url.pathname) || url.pathname.startsWith("/locales/"))) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }

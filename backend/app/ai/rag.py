@@ -17,6 +17,7 @@ import sqlite3
 import time
 from typing import Any
 
+from ..languages import normalize_text
 from ..config import Settings
 from ..errors import AppError
 from ..metrics import metrics
@@ -45,21 +46,37 @@ NO_INFO_EN = (
 
 # "Article 21A", "Art. 14", "અનુચ્છેદ ૨૧", "આર્ટિકલ 32"; "કલમ N" only when the question is
 # about the Constitution (કલમ is also used for sections of other Acts).
+# The word for a constitutional "article" (and common transliterations of the English word)
+# in the scripts of the target languages. Only the *reference* is recognised here; whether
+# the article exists is decided by the database, never by this list.
+_ARTICLE_WORDS = (
+    "અનુચ્છેદ", "આર્ટિકલ",                                  # Gujarati
+    "अनुच्छेद", "अनुच्छेदः", "आर्टिकल", "धारा",              # Devanagari (hi, mr, ne, sa, kok, mai, doi, brx)
+    "অনুচ্ছেদ", "আর্টিকেল", "আর্টিকল",                        # Bengali script (bn, as, mni)
+    "ਅਨੁਛੇਦ", "ਅਨੁੱਛੇਦ", "ਆਰਟੀਕਲ",                            # Gurmukhi
+    "ଅନୁଚ୍ଛେଦ", "ଧାରା",                                      # Odia
+    "உறுப்பு", "ஆர்டிகிள்",                                  # Tamil
+    "అధికరణం", "అధికరణ", "ఆర్టికల్",                          # Telugu
+    "ಅನುಚ್ಛೇದ", "ವಿಧಿ", "ಆರ್ಟಿಕಲ್",                           # Kannada
+    "അനുച്ഛേദം", "അനുച്ഛേദ", "ആർട്ടിക്കിൾ",                   # Malayalam
+    "آرٹیکل", "دفعہ", "آرٽيڪل", "دفعه",                      # Perso-Arabic (ur, ks, sd)
+)
 _ARTICLE_REF = re.compile(
-    r"(?:\barticle|\bart\.?|અનુચ્છેદ|આર્ટિકલ|(?P<kalam>કલમ))\s*[-:]?\s*"
-    r"(?P<no>[0-9\u0AE6-\u0AEF]{1,3}[A-Za-z]{0,2})(?![A-Za-z0-9])",
+    r"(?:\barticle|\bart\.?|" + "|".join(sorted(_ARTICLE_WORDS, key=len, reverse=True))
+    + r"|(?P<kalam>કલમ))\s*[-:]?\s*"
+    r"(?P<no>[0-9]{1,3}[A-Za-z]{0,2})(?![A-Za-z0-9])",
     re.IGNORECASE,
 )
-_GU_DIGITS = str.maketrans("૦૧૨૩૪૫૬૭૮૯", "0123456789")
 
 
 def requested_articles(question: str) -> list[str]:
     """Article numbers the user explicitly named, normalised to e.g. '21A'."""
     found: list[str] = []
-    for m in _ARTICLE_REF.finditer(question or ""):
+    question = normalize_text(question or "")      # digits of every script -> ASCII, NFC
+    for m in _ARTICLE_REF.finditer(question):
         if m.group("kalam") and "બંધારણ" not in question:
             continue
-        number = m.group("no").translate(_GU_DIGITS).upper()
+        number = m.group("no").upper()
         if number not in found:
             found.append(number)
     return found[:4]

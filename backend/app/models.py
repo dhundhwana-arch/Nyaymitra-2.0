@@ -127,6 +127,7 @@ class ArticleDetail(ArticleSummary):
     source_url: str | None
     notes: str | None
     sources: list[SourceRef]
+    language_texts: list[dict] = []
     disclaimers: list[str]
 
 
@@ -162,7 +163,16 @@ class CoverageResponse(BaseModel):
 # -------------------------------------------------------------------- AI layer
 class ExplainRequest(StrictModel):
     question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=5, max_length=1500)]
-    language: Language = "gu"
+    # Any language of the registry (backend/app/languages.py); answers are written in gu/en.
+    language: Annotated[str, StringConstraints(pattern=r"^[a-z]{2,3}$")] = "gu"
+
+    @field_validator("language")
+    @classmethod
+    def _registered_language(cls, value: str) -> str:
+        from .languages import is_known
+        if not is_known(value):
+            raise ValueError("language is not in the language registry (GET /api/v1/languages)")
+        return value
     category: str | None = None
 
     @field_validator("category")
@@ -206,6 +216,10 @@ class ExplainResponse(BaseModel):
     warnings: list[str]
     disclaimers: list[str]
     request_id: str
+    requested_language: str | None = None
+    detected_language: dict | None = None
+    language_fallback: bool = False
+    language_notice: str | None = None
 
 
 class TerminologyRequest(StrictModel):

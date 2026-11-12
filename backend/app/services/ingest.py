@@ -21,6 +21,7 @@ official source document supplied by the project owner, and it is dry-run by def
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import sqlite3
 from dataclasses import asdict, dataclass, field
@@ -29,18 +30,53 @@ from typing import Iterable
 
 MIN_BODY_CHARS = 40
 MAX_BODY_CHARS = 8000
+from ..languages import BY_CODE, normalize_digits
+
 MAX_ARTICLE_NUMBER = 500
 
-HEADING_RE = re.compile(r"(?m)^[ \t]*(?P<num>\d{1,3}[A-Z]?)\.[ \t]+(?P<rest>[^\n]{0,400})$")
-PART_RE = re.compile(r"(?m)^[ \t]*PART[ \t]+(?P<no>[IVXLC]+)\b[ \t]*(?:[—–:-][ \t]*)?(?P<title>.*)$")
-CHAPTER_RE = re.compile(
-    r"(?m)^[ \t]*CHAPTER[ \t]+(?P<no>[IVXLC]+)\b[ \t]*(?:[—–:-][ \t]*)?(?P<title>.*)$"
+HEADING_RE = re.compile(r"(?m)^[ \t]*(?P<num>\d{1,3}[A-Z]{0,2})\.[ \t]+(?P<rest>[^\n]{0,400})$")
+# "PART III", "PART IVA", and the same heading in Indic scripts ("ભાગ ૩", "भाग 4क" is NOT
+# matched: a lettered Part in another script cannot be mapped to IVA/IXA without a table).
+_PART_WORDS = r"(?:PART|ભાગ|भाग|ভাগ|ਭਾਗ|ଭାଗ|பகுதி|భాగం|ಭಾಗ|ഭാഗം|حصہ)"
+_CHAPTER_WORDS = r"(?:CHAPTER|પ્રકરણ|अध्याय|প্রকরণ|অধ্যায়|ਅਧਿਆਇ|ଅଧ୍ୟାୟ|அத்தியாயம்|అధ్యాయం|ಅಧ್ಯಾಯ|അദ്ധ്യായം|باب)"
+PART_RE = re.compile(
+    r"(?m)^[ \t]*" + _PART_WORDS + r"[ \t]+(?P<no>[IVXLC]+[AB]?|\d{1,2})(?![\w])[ \t]*(?:[—–:-][ \t]*)?(?P<title>.*)$"
 )
-EMBEDDED_HEADING_RE = re.compile(r"(?m)^[ \t]*\d{1,3}[A-Z]?\.[ \t]+\S")
+CHAPTER_RE = re.compile(
+    r"(?m)^[ \t]*" + _CHAPTER_WORDS + r"[ \t]+(?P<no>[IVXLC]+|\d{1,2})(?![\w])[ \t]*(?:[—–:-][ \t]*)?(?P<title>.*)$"
+)
+EMBEDDED_HEADING_RE = re.compile(r"(?m)^[ \t]*\d{1,3}[A-Z]{0,2}\.[ \t]+\S")
 PAGE_HEADER_RE = re.compile(
     r"(?m)^[ \t]*(?:THE CONSTITUTION OF INDIA|PART[ \t]+[IVXLC]+\b|CHAPTER[ \t]+[IVXLC]+\b)[ \t]*$"
 )
 EM_DASH = "\u2014"
+
+EXTRACTION_METHODS = ("text_layer", "ocr", "manual_entry", "structured_import", "machine_translation")
+_ROMAN = ((10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I"))
+
+
+def _roman(value: int) -> str:
+    out = ""
+    for number, numeral in _ROMAN:
+        while value >= number:
+            out += numeral
+            value -= number
+    return out
+
+
+def _part_number(raw: str) -> str:
+    """'III' stays 'III'; a Part numbered in digits of any script ('૩', '3') becomes 'III'."""
+    raw = normalize_digits(raw.strip())
+    return _roman(int(raw)) if raw.isdigit() and 0 < int(raw) < 40 else raw
+
+
+def content_status_for(extraction_method: str) -> str:
+    """What the text may be called. OCR output is never labelled as official source text."""
+    if extraction_method == "ocr":
+        return "OCR_REVIEW_REQUIRED"
+    if extraction_method == "machine_translation":
+        return "MACHINE_TRANSLATED"
+    return "OFFICIAL_SOURCE"
 REPLACEMENT = "\ufffd"
 
 
@@ -71,6 +107,10 @@ class IngestReport:
     characters: int = 0
     pages: int = 0
     ocr_confidence: float = 0.0
+    detached_marks_per_1000: float = 0.0
+    script_mismatch: str | None = None
+    extraction_method: str = "text_layer"
+    content_status: str = "OFFICIAL_SOURCE"
     articles_found: int = 0
     articles_written: int = 0
     articles_unchanged: int = 0
@@ -111,6 +151,27 @@ def read_source(path: Path) -> tuple[str, str]:
     return "\n".join(pages), kind
 
 
+def detached_marks_per_1000(text: str) -> float:
+    """Combining vowel signs that follow a space, per 1000 letters.
+
+    In correctly encoded Indic text a dependent sign is attached to its consonant, so this is
+    ~0. PDFs typeset with legacy fonts produce a text layer such as "ભારતન ું સુંવિધાન"
+    (detached and substituted signs); that text looks plausible but is not the published
+    wording and must not be imported as official text.
+    """
+    import unicodedata
+    letters = detached = 0
+    previous = ""
+    for ch in text:
+        category = unicodedata.category(ch)
+        if category[0] == "L":
+            letters += 1
+        elif category in ("Mn", "Mc") and previous in (" ", "\t", "\n", ""):
+            detached += 1
+        previous = ch
+    return round(1000.0 * detached / max(1, letters), 2)
+
+
 def ocr_confidence(text: str) -> float:
     """Very rough quality signal for extracted PDF text (0..1).
 
@@ -142,7 +203,8 @@ def parse_articles(text_or_pages: str | list[str]) -> tuple[list[ParsedArticle],
         match = HEADING_RE.match(line)
         if not match:
             continue
-        number = match.group("num").strip()
+        # Digits of any script are unified for the *number only*; the body is stored untouched.
+        number = normalize_digits(match.group("num").strip())
         digits = re.match(r"\d+", number)
         if not digits or int(digits.group()) < 1 or int(digits.group()) > MAX_ARTICLE_NUMBER:
             continue
@@ -175,7 +237,7 @@ def parse_articles(text_or_pages: str | list[str]) -> tuple[list[ParsedArticle],
                             break
                         part_title = re.sub(r"\s+", " ", candidate).strip(" .:;-—")
                         break
-                current_part = (part_match.group("no").strip(), part_title)
+                current_part = (_part_number(part_match.group("no")), part_title)
                 current_chapter = None
                 continue
             chapter_match = CHAPTER_RE.match(text)
@@ -183,13 +245,20 @@ def parse_articles(text_or_pages: str | list[str]) -> tuple[list[ParsedArticle],
                 current_chapter = re.sub(
                     r"\s+", " ", chapter_match.group("title") or ""
                 ).strip(" .:;-—") or f"Chapter {chapter_match.group('no').strip()}"
-        scan_start = end
+        # A PART/CHAPTER heading after this article's text opens the next article's structure:
+        # it ends this body (it is not part of the article) and is scanned on the next turn.
+        body_end = end
+        for probe in range(index + 1, end):
+            if PART_RE.match(lines[probe][1]) or CHAPTER_RE.match(lines[probe][1]):
+                body_end = probe
+                break
+        scan_start = body_end
 
         if EM_DASH in rest:
             title, first_line_body = rest.split(EM_DASH, 1)
         else:
             title, first_line_body = rest[:120], rest
-        body_lines = [first_line_body.strip()] + [ln.strip() for ln in (t for _, t in lines[index + 1:end])]
+        body_lines = [first_line_body.strip()] + [ln.strip() for ln in (t for _, t in lines[index + 1:body_end])]
         body = "\n".join(ln for ln in body_lines if ln).strip()
         title = re.sub(r"\s+", " ", title).strip(" .:;")
         if not title:
@@ -197,7 +266,7 @@ def parse_articles(text_or_pages: str | list[str]) -> tuple[list[ParsedArticle],
             title = f"Article {number}"
 
         page_start = lines[index][0]
-        page_end = lines[end - 1][0] if end - 1 >= index else page_start
+        page_end = lines[body_end - 1][0] if body_end - 1 >= index else page_start
         articles.append(
             ParsedArticle(
                 article_no=number,
@@ -261,6 +330,10 @@ def assess_quality(report: IngestReport) -> None:
         reasons.append("no_articles_found")
     if report.ocr_confidence < 0.9:
         reasons.append("low_text_quality")
+    if report.detached_marks_per_1000 > 2.0:
+        reasons.append("broken_indic_text_layer")
+    if report.script_mismatch:
+        reasons.append("script_mismatch")
     if report.duplicates:
         reasons.append("duplicate_article_numbers")
     if report.malformed:
@@ -282,6 +355,8 @@ def ingest_text(
     language: str = "en",
     dry_run: bool = True,
     replace_existing: bool = False,
+    extraction_method: str = "text_layer",
+    edition: str | None = None,
 ) -> IngestReport:
     """Parse and (unless dry-run) write an article set.
 
@@ -289,6 +364,10 @@ def ingest_text(
     but never a row a human has verified, and never silently: conflicts are counted and
     reported either way.
     """
+    if language not in BY_CODE:
+        raise ValueError(f"unknown language {language!r}: not in the language registry")
+    if extraction_method not in EXTRACTION_METHODS:
+        raise ValueError(f"extraction_method must be one of {', '.join(EXTRACTION_METHODS)}")
     pages = [text] if isinstance(text, str) else list(text)
     joined = "\n".join(pages)
     report = IngestReport(
@@ -299,6 +378,23 @@ def ingest_text(
         pages=len(pages),
     )
     report.ocr_confidence = ocr_confidence(joined)
+    report.extraction_method = extraction_method
+    report.content_status = content_status_for(extraction_method)
+    report.detached_marks_per_1000 = detached_marks_per_1000(joined)
+    if report.detached_marks_per_1000 > 2.0:
+        report.warnings.append(
+            "broken_indic_text_layer: vowel signs are detached from their consonants — the text "
+            "layer comes from a legacy font and does not reproduce the printed wording."
+        )
+    from ..languages import script_counts  # local import: avoids a cycle at module import
+    counts = script_counts(joined)
+    expected = BY_CODE[language].script
+    if counts and language != "en":
+        share = counts.get(expected, 0) / max(1, sum(counts.values()))
+        if share < 0.3:
+            dominant = max(counts, key=counts.get)
+            report.script_mismatch = f"expected {expected}, found mostly {dominant} ({share:.0%} {expected})"
+            report.warnings.append("script_mismatch: " + report.script_mismatch)
     if report.ocr_confidence < 0.9:
         report.warnings.append(
             "low_text_quality: extracted text contains replacement or control characters; "
@@ -337,14 +433,41 @@ def ingest_text(
         return report
 
     source = conn.execute(
-        "SELECT id FROM legal_sources WHERE source_key = ?", (source_key,)
+        "SELECT id, source_type FROM legal_sources WHERE source_key = ?", (source_key,)
     ).fetchone()
     if source is None:
         raise ValueError(f"unknown source_key {source_key!r}: add it to data/seed/sources.json first")
     source_id = source["id"]
+    content_status = content_status_for(extraction_method)
+    if content_status == "OFFICIAL_SOURCE" and source["source_type"] != "official":
+        raise ValueError(
+            f"source {source_key!r} is registered as {source['source_type']!r}, not 'official': "
+            "its text cannot be stored as OFFICIAL_SOURCE"
+        )
 
+    core = language in ("en", "gu")          # languages that also have legacy columns
     text_column = "text_gu" if language == "gu" else "text_en"
     title_column = "title_gu" if language == "gu" else "title_en"
+
+    def upsert_text(article_id: int, article: ParsedArticle, body: str, locator: str) -> None:
+        conn.execute(
+            """INSERT INTO article_texts
+                 (article_id, language, title, body, part_title, chapter_title, source_id,
+                  source_locator, source_pages, edition, extraction_method, content_status,
+                  verification_status, content_sha256)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'requires_human_verification',?)
+               ON CONFLICT(article_id, language) DO UPDATE SET
+                 title = excluded.title, body = excluded.body, part_title = excluded.part_title,
+                 chapter_title = excluded.chapter_title, source_id = excluded.source_id,
+                 source_locator = excluded.source_locator, source_pages = excluded.source_pages,
+                 edition = excluded.edition, extraction_method = excluded.extraction_method,
+                 content_status = excluded.content_status,
+                 verification_status = 'requires_human_verification',
+                 content_sha256 = excluded.content_sha256, updated_at = datetime('now')""",
+            (article_id, language, article.title, body, article.part_title, article.chapter_title,
+             source_id, locator, article.pages_label, edition, extraction_method, content_status,
+             hashlib.sha256(body.encode("utf-8")).hexdigest()),
+        )
 
     seen_numbers: set[str] = set()
     for article in articles:
@@ -352,79 +475,100 @@ def ingest_text(
             continue
         seen_numbers.add(article.article_no)
         existing = conn.execute(
-            f"SELECT id, verification_status, {text_column} AS existing_text"
+            f"SELECT id, verification_status, {text_column} AS legacy_text, text_en"
             " FROM constitution_articles WHERE article_no = ?",
             (article.article_no,),
         ).fetchone()
+        prior = None
+        if existing:
+            prior = conn.execute(
+                "SELECT body, verification_status FROM article_texts WHERE article_id = ? AND language = ?",
+                (existing["id"], language),
+            ).fetchone()
         payload_body = article.body[:20000]
         locator = f"pages {article.pages_label} of {source_file} (line {article.line_no})"
 
-        if existing and existing["verification_status"] == "verified":
+        if (existing and core and existing["verification_status"] == "verified") or (
+            prior and prior["verification_status"] == "verified"
+        ):
             report.articles_skipped_verified += 1
             continue
-        if existing and (existing["existing_text"] or "").strip():
-            if existing["existing_text"].strip() == payload_body.strip():
+        existing_text = ((existing["legacy_text"] if core else None) if existing else None) or (
+            prior["body"] if prior else None
+        ) or ""
+        if existing_text.strip():
+            if existing_text.strip() == payload_body.strip():
+                if prior is None:      # imported before migration 005: add the provenance record
+                    upsert_text(existing["id"], article, payload_body, locator)
                 report.articles_unchanged += 1
                 continue
             if not replace_existing:
                 report.articles_conflicting += 1
                 continue
-        if existing:
+        if existing and core:
+            # The single legacy source slot follows English; another language only fills it
+            # when no English text is present. Per-language provenance lives in article_texts.
+            owns_slot = language == "en" or not (existing["text_en"] or "").strip()
             conn.execute(
                 f"""UPDATE constitution_articles
                     SET {text_column} = COALESCE(NULLIF(?, ''), {text_column}),
                         {title_column} = COALESCE(NULLIF(?, ''), {title_column}),
-                        part_no = COALESCE(?, part_no),
-                        part_title = COALESCE(?, part_title),
-                        chapter_title = COALESCE(?, chapter_title),
+                        part_no = COALESCE(part_no, ?),
+                        part_title = CASE WHEN ? THEN COALESCE(?, part_title) ELSE COALESCE(part_title, ?) END,
+                        chapter_title = CASE WHEN ? THEN COALESCE(?, chapter_title) ELSE COALESCE(chapter_title, ?) END,
                         text_status = 'verified_source_text',
-                        source_id = ?, source_locator = ?, source_pages = ?,
+                        source_id = CASE WHEN ? THEN ? ELSE source_id END,
+                        source_locator = CASE WHEN ? THEN ? ELSE source_locator END,
+                        source_pages = CASE WHEN ? THEN ? ELSE source_pages END,
                         updated_at = datetime('now')
                     WHERE id = ?""",
                 (
-                    payload_body,
-                    article.title,
-                    article.part_no,
-                    article.part_title,
-                    article.chapter_title,
-                    source_id,
-                    locator,
-                    article.pages_label,
+                    payload_body, article.title, article.part_no,
+                    language == "en", article.part_title, article.part_title,
+                    language == "en", article.chapter_title, article.chapter_title,
+                    owns_slot, source_id, owns_slot, locator, owns_slot, article.pages_label,
                     existing["id"],
                 ),
             )
+            article_id = existing["id"]
+        elif existing:
+            article_id = existing["id"]
         else:
-            conn.execute(
+            cursor = conn.execute(
                 """INSERT INTO constitution_articles
                    (article_key, article_no, article_label, part_no, part_title, chapter_title,
                     title_en, title_gu, text_en, text_gu, text_status, verification_status,
                     source_id, source_locator, source_pages, source_url, sort_order, notes)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,'verified_source_text','requires_human_verification',
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,'requires_human_verification',
                            ?,?,?,?,?,?)""",
                 (
                     f"article-{article.article_no.lower()}",
                     article.article_no,
                     f"Article {article.article_no}",
                     article.part_no,
-                    article.part_title,
-                    article.chapter_title,
+                    article.part_title if language == "en" else None,
+                    article.chapter_title if language == "en" else None,
                     article.title if language == "en" else None,
                     article.title if language == "gu" else None,
                     payload_body if language == "en" else None,
                     payload_body if language == "gu" else None,
-                    source_id,
-                    locator,
-                    article.pages_label,
+                    "verified_source_text" if core else "not_available",
+                    source_id if core else None,
+                    locator if core else None,
+                    article.pages_label if core else None,
                     None,
                     int(re.match(r"\d+", article.article_no).group()),
                     (
-                        "Imported from the supplied source document. text_status is "
-                        "verified_source_text (it came from the document) but the article has "
-                        "NOT been checked by a legal professional: verification_status stays "
+                        "Imported from the supplied source document. text_status "
+                        "'verified_source_text' only means the text came from that document; "
+                        "see article_texts.content_status for how it was extracted. The article "
+                        "has NOT been checked by a legal professional: verification_status stays "
                         "requires_human_verification."
                     ),
                 ),
             )
+            article_id = cursor.lastrowid
+        upsert_text(article_id, article, payload_body, locator)
         report.articles_written += 1
 
     conn.execute(

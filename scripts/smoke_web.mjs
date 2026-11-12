@@ -49,6 +49,7 @@ async function openPage(path) {
 const dom = await openPage("/");
 const { window } = dom;
 const document = window.document;
+const setLang = (code) => { const sel = document.querySelector("#langSelect"); sel.value = code; sel.dispatchEvent(new window.Event("change")); };
 
 const go = async (hash) => {
   window.location.hash = hash;
@@ -72,12 +73,12 @@ await go("#/library");
 check(document.activeElement === document.querySelector("#main"), "route change did not move focus to main");
 
 /* language toggle */
-document.querySelector("#langEn").click();
+setLang("en");
 await wait(400);
 const englishHome = await go("#/home");
 check(/Your rights|Know your|legal information/i.test(englishHome), "language toggle did not switch the UI to English");
 check(document.documentElement.lang === "en", "html[lang] was not updated to en");
-document.querySelector("#langGu").click();
+setLang("gu");
 await wait(300);
 const gujaratiHome = await go("#/home");
 check(/[\u0A80-\u0AFF]/.test(gujaratiHome), "language toggle did not switch the UI back to Gujarati");

@@ -15,6 +15,7 @@ from ..models import (
     SearchResponse,
     VerificationStatus,
 )
+from .. import languages
 from ..services import constitution
 
 router = APIRouter(prefix="/constitution", tags=["constitution"])
@@ -49,6 +50,21 @@ def list_parts(conn: sqlite3.Connection = Depends(db_dependency)) -> list[dict]:
 @router.get("/coverage", response_model=CoverageResponse)
 def corpus_coverage(conn: sqlite3.Connection = Depends(db_dependency)) -> dict:
     return constitution.coverage(conn)
+
+
+@router.get("/articles/{identifier}/text")
+def article_text(
+    identifier: str = Path(..., min_length=1, max_length=32, pattern=r"^[A-Za-z0-9\-]+$"),
+    lang: str = Query("en", pattern=r"^[a-z]{2,3}$", description="Any language of the registry"),
+    conn: sqlite3.Connection = Depends(db_dependency),
+) -> dict:
+    """The article's text in exactly the requested language, or an explicit UNAVAILABLE."""
+    if not languages.is_known(lang):
+        raise AppError("validation_failed", "Unknown language code. See GET /api/v1/languages.").to_http()
+    result = constitution.article_in_language(conn, identifier, lang)
+    if result is None:
+        raise AppError("not_found", "No article with that number is loaded in the corpus.").to_http()
+    return result
 
 
 @router.get("/articles/{identifier}", response_model=ArticleDetail)

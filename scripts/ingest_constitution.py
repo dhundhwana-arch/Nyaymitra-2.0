@@ -31,6 +31,7 @@ Exit codes: 0 success, 2 file/source problem, 3 quality gate blocked the run.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -39,14 +40,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from backend.app.config import load_settings  # noqa: E402
 from backend.app.db import backup_database, get_db, init_database  # noqa: E402
-from backend.app.services.ingest import ingest_text, read_pages  # noqa: E402
+from backend.app.languages import CODES as LANGUAGE_CODES  # noqa: E402
+from backend.app.services.ingest import EXTRACTION_METHODS, ingest_text, read_pages  # noqa: E402
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Ingest the Constitution from an official document")
     parser.add_argument("--file", required=True, help="path to the .pdf / .txt source")
     parser.add_argument("--source-key", required=True, help="legal_sources.source_key for this document")
-    parser.add_argument("--language", default="en", choices=["en", "gu"])
+    parser.add_argument("--language", default="en", choices=sorted(LANGUAGE_CODES),
+                        help="language of the source text (any code in the language registry)")
+    parser.add_argument("--extraction-method", default=None, choices=list(EXTRACTION_METHODS),
+                        help="how the text was obtained. REQUIRED for text files; 'ocr' stores the "
+                             "text as OCR_REVIEW_REQUIRED, never as official source text")
+    parser.add_argument("--edition", help="edition / 'as on' date printed in the source")
     parser.add_argument("--apply", action="store_true", help="write to the database (default: dry run)")
     parser.add_argument("--force", action="store_true",
                         help="apply even if the quality gate failed (recorded as a warning run)")
@@ -63,6 +70,15 @@ def main() -> int:
         return 2
 
     pages, kind = read_pages(path)
+    method = args.extraction_method
+    if method is None:
+        if path.suffix.lower() != ".pdf" and args.apply:
+            print("--extraction-method is required to --apply text input (text_layer, ocr, manual_entry …): "
+                  "the importer cannot know whether a text file came from OCR.", file=sys.stderr)
+            return 2
+        method = "text_layer"
+    sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    print(f"SHA-256 {sha256}  extraction_method={method}")
     characters = sum(len(page) for page in pages)
     print(f"Read {characters:,} characters from {len(pages)} page(s) ({kind}) in {path.name}")
 
@@ -73,6 +89,8 @@ def main() -> int:
             source_key=args.source_key,
             source_file=path.name,
             language=args.language,
+            extraction_method=method,
+            edition=args.edition,
             dry_run=True,
         )
 
@@ -109,6 +127,8 @@ def main() -> int:
             source_key=args.source_key,
             source_file=path.name,
             language=args.language,
+            extraction_method=method,
+            edition=args.edition,
             dry_run=False,
             replace_existing=args.replace_existing,
         )

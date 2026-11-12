@@ -260,6 +260,11 @@ def get_article(conn: sqlite3.Connection, identifier: str | int) -> dict | None:
             }
             for s in sources
         ],
+        "language_texts": [
+            {k: rec[k] for k in ("language", "content_status", "verification_status",
+                                 "extraction_method", "edition", "source_pages")}
+            for rec in text_records(conn, row["id"]).values()
+        ],
         "disclaimers": DISCLAIMERS
         + (
             ["The authoritative text of this article has not been loaded yet — only a human-written "
@@ -310,5 +315,93 @@ def coverage(conn: sqlite3.Connection) -> dict:
             "The Constitution as published in 1950 had 395 articles; later amendments inserted and "
             "repealed articles, so the total is not a fixed number. Only articles actually loaded in "
             "this database are served — missing articles are reported here rather than filled in."
+        ),
+    }
+
+
+# ------------------------------------------------------------ per-language text records
+def _source_brief(conn: sqlite3.Connection, source_id: int | None) -> dict | None:
+    source = get_source(conn, source_id)
+    if not source:
+        return None
+    return {k: source.get(k) for k in ("source_key", "title", "publisher", "source_type", "url",
+                                       "document_ref", "published_on", "retrieved_on")}
+
+
+def text_records(conn: sqlite3.Connection, article_id: int) -> dict[str, dict]:
+    """language -> text record (with body) for every language that really has text."""
+    out: dict[str, dict] = {}
+    for r in conn.execute("SELECT * FROM article_texts WHERE article_id = ?", (article_id,)):
+        if not (r["body"] or "").strip():
+            continue
+        out[r["language"]] = {
+            "language": r["language"], "available": True, "title": r["title"], "text": r["body"],
+            "part_title": r["part_title"], "chapter_title": r["chapter_title"],
+            "content_status": r["content_status"], "verification_status": r["verification_status"],
+            "extraction_method": r["extraction_method"], "edition": r["edition"],
+            "source": _source_brief(conn, r["source_id"]), "source_pages": r["source_pages"],
+            "source_locator": r["source_locator"], "updated_at": r["updated_at"],
+        }
+    row = conn.execute("SELECT * FROM constitution_articles WHERE id = ?", (article_id,)).fetchone()
+    if row is not None and row["text_status"] == "verified_source_text":
+        for lang in ("en", "gu"):          # text imported before migration 005
+            body = (row[f"text_{lang}"] or "").strip()
+            if body and lang not in out:
+                out[lang] = {
+                    "language": lang, "available": True, "title": row[f"title_{lang}"], "text": body,
+                    "part_title": row["part_title"], "chapter_title": row["chapter_title"],
+                    "content_status": "OFFICIAL_SOURCE", "verification_status": row["verification_status"],
+                    "extraction_method": None, "edition": None,
+                    "source": _source_brief(conn, row["source_id"]),
+                    "source_pages": row["source_pages"] if "source_pages" in row.keys() else None,
+                    "source_locator": row["source_locator"], "updated_at": row["updated_at"],
+                }
+    return out
+
+
+def article_in_language(conn: sqlite3.Connection, identifier: str, language: str) -> dict | None:
+    """One article in one language, or an explicit UNAVAILABLE record plus what exists instead.
+
+    Never substitutes one language's text for another's: when the requested language has no
+    text the record says so, and the fallback (official text in another language if any,
+    otherwise the owner-written explanation) is returned separately and labelled.
+    """
+    from .. import languages
+
+    article = get_article(conn, identifier)
+    if article is None:
+        return None
+    row = conn.execute(
+        "SELECT id FROM constitution_articles WHERE article_no = ? COLLATE NOCASE", (article["article_no"],)
+    ).fetchone()
+    records = text_records(conn, row["id"])
+    record = records.get(language) or {
+        "language": language, "available": False, "title": None, "text": None,
+        "content_status": "UNAVAILABLE", "verification_status": None, "extraction_method": None,
+        "edition": None, "source": None, "source_pages": None, "source_locator": None, "updated_at": None,
+    }
+    fallback = None
+    if not record["available"]:
+        for candidate in (languages.content_language(language), "en", "gu"):
+            if candidate in records:
+                fallback = records[candidate]
+                break
+    summary_language = languages.content_language(language)
+    explanation = article.get(f"citizen_explanation_{summary_language}")
+    return {
+        "article_no": article["article_no"], "article_label": article["article_label"],
+        "part_no": article["part_no"], "part_title": article["part_title"],
+        "chapter_title": article["chapter_title"],
+        "requested_language": language, "record": record, "fallback": fallback,
+        "explanation": ({
+            "language": summary_language, "text": explanation,
+            "title": article.get(f"title_{summary_language}"),
+            "kind": "owner_authored_summary", "is_official_text": False,
+            "verification_status": article["verification_status"],
+        } if explanation else None),
+        "available_text_languages": sorted(records),
+        "notice": None if record["available"] else (
+            f"No text of this article is stored in {languages.get(language).english_name}. "
+            "Nothing has been translated automatically."
         ),
     }
