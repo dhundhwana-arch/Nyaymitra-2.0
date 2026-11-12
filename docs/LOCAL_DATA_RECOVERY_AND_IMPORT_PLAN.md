@@ -148,3 +148,10 @@ the end-to-end script, and a manual read of sample articles in both languages. A
 2. Formats and column layouts are unknown, so the importer changes in step 2 cannot be finalised.
 3. Whether the OCR text is Unicode Gujarati (not a legacy font encoding) is unknown.
 4. A legal reviewer is still needed before anything is shown as verified.
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+Section 3's gaps 3, 4, 5, 6, 7 and 8 are closed and two further defects found while fixing them (Part headings between articles; heading text left in the previous article) are fixed — see [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §5. Gap 1 (no CSV/JSON importer) and gap 2 (contents pages) remain. Two findings from reading the official files' first pages change step 0: the "English" PDF is a Hindi–English diglot, and the Gujarati PDF's extracted text shows detached vowel signs — see [DATA_SOURCE_REGISTER.md](DATA_SOURCE_REGISTER.md). The owner's files are still not available; no import was run.

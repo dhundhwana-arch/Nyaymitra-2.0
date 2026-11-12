@@ -71,3 +71,10 @@ commit; the deploy job is now manual-only. See the Actions tab for the result on
 - `docs/DEPLOYMENT_GUIDE.md` and `DEPLOY_MANUAL.md` predate the separate-site option; this file and
   `docs/NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md` take precedence.
 - SQLite supports one server instance; do not scale to several instances.
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+Tests are now 389 backend + 15, end-to-end 43/43 in both layouts. Additional checklist items: back up the database before the first start of this version (migration 005); publish `web/locales/` with the frontend; get the machine-translated interface text reviewed by native speakers before promoting the languages publicly.

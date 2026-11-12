@@ -93,3 +93,15 @@ Honest list, in the order it is likely to bite.
 Loading the official texts and completing human verification (items 1–3) moves the project from
 “legal-information prototype with honest gaps” to “usable legal information”. Nothing else on this
 list is a release blocker for a supervised pilot; items 1–3 are.
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+* No official Constitution text exists in any language.
+* Interface text outside Gujarati and English is machine-generated and unreviewed, covers about 12 of 157 strings, and is partial for Bodo, Dogri, Manipuri and Santali.
+* Content (explanations, offices, guides, glossary) exists in Gujarati and English only; other languages see English with a notice.
+* The assistant answers in Gujarati or English only.
+* Rendering on real devices is untested; Ol Chiki and Nastaliq need a suitable font on the device.
+* Full list: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §12.

@@ -125,3 +125,10 @@ python scripts/init_db.py --info               # counts per table
 Seeding is idempotent and **never overwrites a human decision**: an article marked `verified` with a
 `checked_by` value survives re-seeding unchanged (test:
 `test_seed_is_idempotent_and_preserves_human_decisions`).
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+Migration `005_article_texts.sql` adds `article_texts` — one row per (article, language) with title, body, source, pages, edition, `extraction_method`, `content_status` (`OFFICIAL_SOURCE`, `OCR_REVIEW_REQUIRED`, `MACHINE_TRANSLATED`, `HUMAN_REVIEWED`, `VERIFIED`), `verification_status` and SHA-256. No existing table is altered. Reversible with `005_article_texts.down.sql` (back up first). Details: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §4.

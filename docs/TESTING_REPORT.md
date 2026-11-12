@@ -180,3 +180,10 @@ were deprecation notices about the actions' Node runtime, not failures.
    metadata, documents, legacy rows; create a backup; check `backups/` has a new file.
 10. Resize to 360 px wide and check no horizontal scrolling; tab through the form and confirm
     focus rings are visible.
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+Backend suite: **389 passed** (was 262). Source-quality tool: 15 passed. End-to-end (jsdom): **43/43** on one site and 43/43 with frontend and backend on separate origins. These are simulated-browser tests; real-device rendering of the 23 scripts is not tested. Details and gaps: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §9.

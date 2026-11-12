@@ -1,7 +1,7 @@
 # NYAYMITRA 2.0
 
 **Inclusive justice-access and legal-navigation platform.** It helps a citizen describe a problem
-in Gujarati or English, find the constitutional provision that applies, understand the official
+in Gujarati or English (interface selectable in 23 Indian languages — see the language table below), find the constitutional provision that applies, understand the official
 next step, prepare a complaint draft, and reach the right department or free-legal-aid channel.
 
 It is **not** a lawyer, a court or a judge. It does not decide cases, predict outcomes or
@@ -20,13 +20,16 @@ guarantee results, and it never presents unverified material as official law.
 
 | Area | Status |
 |---|---|
-| Backend API (37 operations in the OpenAPI schema), database, migrations, seeds | **COMPLETE AND TESTED** |
+| Backend API (41 operations in the OpenAPI schema), database, 5 migrations, seeds | **COMPLETE AND TESTED** |
 | Retrieval-before-generation, citation validation, offline grounded answers | **COMPLETE AND TESTED** |
 | Complaint intake with deterministic summary, review gate, one-time token | **COMPLETE AND TESTED** |
 | Document upload (PDF/image), extraction status, owner-token download | **COMPLETE AND TESTED** |
 | Citizen web app (8 routes, gu/en) and admin console | **IMPLEMENTED AND TESTED IN JSDOM** — no real phone/browser session yet |
 | Legal Library (`#/legal`, `GET /api/v1/library`): all 43 stored items, search, category and language filters | **COMPLETE AND TESTED** |
 | Frontend and backend as separate websites (configurable API address + CORS allowlist) | **COMPLETE AND TESTED LOCALLY** — not verified on the live sites |
+| Multilingual architecture: registry of 23 languages, per-language article text with provenance, fallback labelling, RTL | **COMPLETE AND TESTED** (jsdom; no real-device rendering test) |
+| Interface text in languages other than Gujarati/English | **MACHINE-TRANSLATED, UNREVIEWED** — essential labels in 17 languages, partial in 4 |
+| Legal content in languages other than Gujarati/English | **NONE** — shown in English with a notice; nothing is machine-translated |
 | Live deployment | **NOT UPDATED** — nothing from this branch has been deployed |
 | Voice input / speech output | **IMPLEMENTED BUT NOT TESTED** (browser APIs) |
 | Live LLM provider (`openai_compatible`) | **IMPLEMENTED BUT NOT TESTED** (no API key available) |
@@ -35,7 +38,7 @@ guarantee results, and it never presents unverified material as official law.
 | Dependency vulnerability audit | **COMPLETE** — `pip-audit` clean after upgrading 3 packages |
 | Authoritative Article text in Gujarati/English | **BLOCKED** — no source file or extraction exists in the repository; the owner's local files have not been supplied (see [`docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md`](docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md)) |
 | Legal accuracy of every explanation, helpline and department entry | **REQUIRES HUMAN VERIFICATION** (queue in `/admin`) |
-| Automated test suite | **262 backend tests + 15 source-tool tests, all passing**; 31-step jsdom end-to-end script passing in both hosting layouts |
+| Automated test suite | **389 backend tests + 15 source-tool tests, all passing**; 43-step jsdom end-to-end script passing in both hosting layouts |
 
 The corpus ships with **9 human-written article explanations and 0 authoritative texts**. The API
 says so on every answer, and the UI shows a warning banner. See
@@ -52,7 +55,7 @@ Browser ── web/ (static single-page app, no build step, no CDN)
 FastAPI  backend/app  ── /api/v1/…   (CORS only for NYAYMITRA_ALLOWED_ORIGINS)
    │   constitution · library · ai (assistant) · departments · complaints · documents · admin
    ▼
-SQLite   NYAYMITRA_DB_PATH   schema = backend/migrations/001–004
+SQLite   NYAYMITRA_DB_PATH   schema = backend/migrations/001–005
    ▲
 data/seed/*.json  (loaded idempotently at start-up)      data/raw/*.pdf → scripts/ingest_constitution.py
 ```
@@ -65,6 +68,27 @@ Two supported hosting layouts: **one site** (the backend serves `web/` itself �
 What a visitor can use today: Home, Assistant, Complaint, Constitution (4 Parts, 9 articles),
 Legal Library (43 items), Offices (11), Glossary (18), About. Every Constitution entry is an
 owner-written explanation marked `requires_human_verification`; **0 articles have official text**.
+
+---
+
+## Languages
+
+23 languages can be selected: Assamese, Bengali, Bodo, Dogri, Gujarati, Hindi, Kannada, Kashmiri,
+Konkani, Maithili, Malayalam, Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi,
+Tamil, Telugu, Urdu and English. Urdu, Sindhi and Kashmiri are laid out right-to-left.
+
+| What | Gujarati, English | 17 languages | Bodo, Dogri, Manipuri, Santali |
+|---|---|---|---|
+| Interface | complete, project-authored | essential labels, **machine-translated, not reviewed** | a few labels, rest in English |
+| Explanations of 9 articles | yes (owner-written, not official text) | shown in English, with a notice | shown in English, with a notice |
+| Official Constitution text | **0 articles** | **0 articles** | **0 articles** |
+| Human-verified content | none | none | none |
+| Assistant | answers in the language | understands the script and article number, answers in English and says so | same |
+
+Interface translation, machine translation, official text and verified text are four separate
+states and are labelled separately everywhere. The Constitution is never machine-translated.
+Live table: `GET /api/v1/languages`, the About page, or
+[`docs/LANGUAGE_AVAILABILITY_MATRIX.md`](docs/LANGUAGE_AVAILABILITY_MATRIX.md).
 
 ---
 
@@ -107,15 +131,16 @@ backend/app/          FastAPI application (factory `create_app`)
   services/           constitution search, textsearch, complaints, documents, departments,
                       triage, glossary, seeding, ingestion, monitoring
 backend/migrations/   versioned SQL with down-migrations
-backend/tests/        262 pytest tests
+backend/tests/        389 pytest tests
 web/                  self-hosted SPA (no CDN) + admin console; config.js sets the API address
+web/locales/          interface text: one JSON catalogue per language + index.json (registry)
 data/seed/            curated seed JSON (sources, 9 articles, departments, triage, glossary)
 data/legacy/          quarantined 2,125 legacy rows (gzip + sha256), never served to citizens
 data/raw/             where the owner puts official Constitution PDFs (git-ignored)
 scripts/              init_db, backup_db, purge_data, ingest_constitution,
                       constitution_coverage, verify_changeset, verify_ai_provider,
                       export_legacy, smoke_web, e2e_activation, configure_frontend,
-                      inventory_local_data
+                      inventory_local_data, build_locales, language_matrix
 ingestion/            official-PDF download + text-quality checks (never writes to a database)
 docs/                 audit, architecture, API, schema, testing, security, legal, deployment
 ```
@@ -129,12 +154,12 @@ not served.
 ## Tests
 
 ```bash
-python -m pytest                                  # 262 passed
+python -m pytest                                  # 389 passed
 python -m pytest tests                            # 15 passed (ingestion/ source-quality tool)
 python -m pytest -q --cov=backend/app             # coverage report
 node --check web/app.js web/admin.js              # frontend syntax
 node scripts/smoke_web.mjs http://127.0.0.1:8000  # optional jsdom journeys (needs jsdom)
-node scripts/e2e_activation.mjs <frontend-url> [<backend-url>]      # 31 data-activation checks (needs jsdom)
+node scripts/e2e_activation.mjs <frontend-url> [<backend-url>]      # 43 end-to-end checks incl. all 23 languages (needs jsdom)
 pip-audit --vulnerability-service pypi -r backend/requirements.txt   # dependency audit
 python scripts/constitution_coverage.py           # what the corpus really contains
 python scripts/purge_data.py                      # what retention would delete (dry run)
@@ -167,6 +192,9 @@ Detailed, honest results — including what is *not* covered — are in
 | [FINAL_COMPLETION_REPORT.md](docs/FINAL_COMPLETION_REPORT.md) | Task register, results, completion percentage |
 | [NYAYMITRA_DATA_ACTIVATION_REPORT.md](docs/NYAYMITRA_DATA_ACTIVATION_REPORT.md) | Every dataset found, what is displayed, what is missing |
 | [NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md](docs/NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md) | Why the live site was empty, what was fixed, test results |
+| [MULTILINGUAL_IMPLEMENTATION_REPORT.md](docs/MULTILINGUAL_IMPLEMENTATION_REPORT.md) | The 23-language architecture, database/API/frontend changes, tests, limits |
+| [LANGUAGE_AVAILABILITY_MATRIX.md](docs/LANGUAGE_AVAILABILITY_MATRIX.md) | What really exists in each language (generated) |
+| [DATA_SOURCE_REGISTER.md](docs/DATA_SOURCE_REGISTER.md) | Official sources located, with provenance and what is still unknown |
 | [LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md](docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md) | Search for the owner's local Constitution files, and the import plan |
 | [REPOSITORY_AND_PRODUCTION_READINESS.md](docs/REPOSITORY_AND_PRODUCTION_READINESS.md) | Branch state and the deployment checklist |
 | [REMAINING_BLOCKERS.md](docs/REMAINING_BLOCKERS.md) | The three external blockers and who owns them |

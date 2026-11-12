@@ -364,3 +364,10 @@ A single small VM (1 vCPU, 1 GB RAM) is sufficient for a help-desk workload: SQL
 searches in milliseconds at this corpus size, and the offline AI path is CPU-light. The limits are
 concurrent uploads (bounded) and PDF extraction (5 pages). Measure before scaling; if you need
 multiple processes, move rate limiting to Redis and the database to PostgreSQL first.
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+Nothing was deployed. For the current procedure (one site or separate frontend/backend) use [REPOSITORY_AND_PRODUCTION_READINESS.md](REPOSITORY_AND_PRODUCTION_READINESS.md). New in this milestone: migration 005 runs at start-up (take a backup first); a separately hosted frontend must publish `web/locales/`; after changing a catalogue run `python scripts/build_locales.py`.

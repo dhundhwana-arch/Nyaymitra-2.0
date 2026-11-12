@@ -168,3 +168,10 @@ The quality gate is advisory in the library and enforced by the CLI: `--apply` e
 `--force` is given, and a forced run is recorded as `completed_with_warnings` so the override stays
 visible. Extraction is never treated as verification: imported rows keep
 `verification_status = requires_human_verification`.
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+A language registry (`backend/app/languages.py`), per-language interface catalogues (`web/locales/`), a fallback-labelling middleware and the `article_texts` table were added. See [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §3–4.

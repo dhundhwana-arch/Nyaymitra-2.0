@@ -197,3 +197,10 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/admin/backup -H "X-Admin-Token: $TO
 `/api/v1` is the only public prefix today. Breaking changes get `/api/v2`; additive fields do not
 bump the version. The unlisted `/api` alias exists for earlier front-end builds and will stay until
 they are retired.
+
+
+---
+
+## Update 2026-11-12 — multilingual milestone
+
+New: `GET /api/v1/languages`, `GET /api/v1/languages/{code}`, `POST /api/v1/languages/detect`, `GET /api/v1/constitution/articles/{no}/text?lang=<code>`. Changed (backwards compatible): `?language=` accepts every registry code and labels fallbacks with `Content-Language` / `X-Requested-Language` / `X-Language-Fallback`; `POST /api/v1/ai/explain` accepts every registry code and returns `requested_language`, `detected_language`, `language_fallback`, `language_notice`; library items carry `content_language`, `content_status`. Details: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §6.
