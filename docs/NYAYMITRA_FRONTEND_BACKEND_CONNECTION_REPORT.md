@@ -87,7 +87,7 @@ explanation labels, citation links.
 | Layout | Result |
 |---|---|
 | Same origin — backend serves the site (`:8000`) | **31/31 passed** |
-| Separate sites — static frontend `:3000`, backend `:8000`, CORS enforced by the script | **30/30 passed** (run before one check was added; not re-run in this layout) |
+| Separate sites — static frontend `:3000`, backend `:8000`, CORS enforced by the script | **31/31 passed** |
 | Wrong origin | no `Access-Control-Allow-Origin` header returned |
 | Existing `scripts/smoke_web.mjs` | OK — all citizen journeys; admin console skipped (no token set) |
 
