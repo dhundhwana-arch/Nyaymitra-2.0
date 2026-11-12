@@ -57,3 +57,9 @@ whether the URLs are valid. They are **unverified**.
 script) text from a bilingual "As on November, 2025" edition, not English-only text. The table
 also has no Gujarati columns although `backend/database.py` expects them. This table was left
 untouched; official text is designed to go to a separate `official_constitution_articles` table.
+
+---
+**Correction (Phase 3D, 2026-11-12):** the Santali data issue above was *not* newly found in
+Phase 3C. It was documented and quarantined on `arena/812d6894-nyaymitra-2-0` on 2026-11-07.
+Phase 3C was built on a branch cut from `main`, which does not contain that work. See
+`docs/PHASE_3D_DATABASE_AUDIT.md`.
