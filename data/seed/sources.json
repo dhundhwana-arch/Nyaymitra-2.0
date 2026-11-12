@@ -1,0 +1,173 @@
+{
+  "_note": "Every legal statement in NYAYMITRA must point at one of these sources. `retrieved_on`/`last_checked_at` are null wherever a human has not yet verified the record: the API and UI surface that gap instead of hiding it.",
+  "sources": [
+    {
+      "source_key": "india-code-constitution",
+      "title": "The Constitution of India (as amended up to the 106th Amendment Act, 2023)",
+      "publisher": "Legislative Department, Ministry of Law and Justice, Government of India",
+      "source_type": "official",
+      "url": "https://www.indiacode.nic.in/handle/123456789/15240",
+      "document_ref": "India Code — Constitution of India (full text, English)",
+      "published_on": null,
+      "retrieved_on": null,
+      "licence_note": "Government of India publication; reproduced with attribution.",
+      "notes": "Canonical source for article numbering and statutory text. NOT retrieved in this environment (no outbound access to indiacode.nic.in). The project owner must supply the PDF/text; run scripts/ingest_constitution.py."
+    },
+    {
+      "source_key": "legacy-santhali-edition-2025",
+      "title": "The Constitution of India — Santhali (Ol Chiki) edition, first edition",
+      "publisher": "Ministry of Law and Justice / National Translation Mission, CIIL Mysuru",
+      "source_type": "official",
+      "url": "https://legislative.gov.in/",
+      "document_ref": "Santhali (Ol Chiki) edition, November 2025",
+      "published_on": "2025-11-01",
+      "retrieved_on": null,
+      "licence_note": "Government of India publication.",
+      "notes": "This is the document the legacy importer read. It is NOT usable as the article corpus: chunk-level extraction produced bogus article numbers and a fabricated remedy field. Quarantined; see docs/REPOSITORY_AUDIT.md section 6 and data/legacy/LEGACY_DATA_NOTE.md."
+    },
+    {
+      "source_key": "owner-authored-citizen-notes",
+      "title": "Project owner's citizen-facing Gujarati and English explanations",
+      "publisher": "NYAYMITRA project owner (Divyesh Bambhaniya)",
+      "source_type": "owner_authored",
+      "url": null,
+      "document_ref": "backend/database.py + frontend/app_core.js @ commit 53df9ea",
+      "published_on": null,
+      "retrieved_on": "2026-11-07",
+      "licence_note": "Original project text (MIT licensed repository).",
+      "notes": "Human-written paraphrases, not statutory text. Any row using this source must be labelled owner_authored_summary and requires legal review before being described as law."
+    },
+    {
+      "source_key": "nalsa",
+      "title": "National Legal Services Authority (NALSA)",
+      "publisher": "National Legal Services Authority, Government of India",
+      "source_type": "official",
+      "url": "https://nalsa.gov.in/",
+      "document_ref": "NALSA portal — free legal aid, helpline 15100",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Contact details must be re-checked by a human before being shown as verified."
+    },
+    {
+      "source_key": "legal-services-authorities-act-1987",
+      "title": "The Legal Services Authorities Act, 1987",
+      "publisher": "Legislative Department, Ministry of Law and Justice, Government of India",
+      "source_type": "official",
+      "url": "https://www.indiacode.nic.in/handle/123456789/1926",
+      "document_ref": "Act No. 39 of 1987, section 12 (criteria for free legal aid)",
+      "published_on": "1987-10-12",
+      "retrieved_on": null,
+      "notes": "Section 12 sets out who is entitled to free legal services. Text not fetched in this environment."
+    },
+    {
+      "source_key": "cybercrime-portal",
+      "title": "National Cyber Crime Reporting Portal",
+      "publisher": "Ministry of Home Affairs, Government of India",
+      "source_type": "official",
+      "url": "https://cybercrime.gov.in/",
+      "document_ref": "Cyber crime incident reporting + financial-fraud helpline 1930",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Helpline and reporting flow to be verified by a human."
+    },
+    {
+      "source_key": "gujarat-anyror",
+      "title": "AnyRoR — Gujarat land records portal",
+      "publisher": "Revenue Department, Government of Gujarat",
+      "source_type": "official",
+      "url": "https://anyror.gujarat.gov.in/",
+      "document_ref": "7/12 and 8-A land record extracts",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Portal reachable by citizens; DILR measurement application is filed at the taluka office, not through this portal."
+    },
+    {
+      "source_key": "gujarat-cm-helpline",
+      "title": "Gujarat CM Helpline (1076) / state grievance system",
+      "publisher": "Government of Gujarat",
+      "source_type": "official",
+      "url": "https://www.gujaratindia.gov.in/",
+      "document_ref": "State grievance redressal helpline",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Helpline number must be re-confirmed by a human before display as verified."
+    },
+    {
+      "source_key": "pgportal",
+      "title": "CPGRAMS — Centralised Public Grievance Redress and Monitoring System",
+      "publisher": "Department of Administrative Reforms and Public Grievances, Government of India",
+      "source_type": "official",
+      "url": "https://pgportal.gov.in/",
+      "document_ref": "Central government grievance registration",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Used for grievances against central government departments; state issues normally go to the state portal."
+    },
+    {
+      "source_key": "rti-online",
+      "title": "RTI Online",
+      "publisher": "Department of Personnel and Training, Government of India",
+      "source_type": "official",
+      "url": "https://rtionline.gov.in/",
+      "document_ref": "Right to Information Act, 2005 request filing",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Only for central public authorities; each state has its own RTI portal."
+    },
+    {
+      "source_key": "e-daakhil",
+      "title": "e-Daakhil — consumer grievance filing",
+      "publisher": "Department of Consumer Affairs, Government of India",
+      "source_type": "official",
+      "url": "https://edaakhil.nic.in/",
+      "document_ref": "Consumer Protection Act, 2019 — online complaint filing",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Filing fee, jurisdiction and limitation period must be confirmed by a human."
+    },
+    {
+      "source_key": "tele-law",
+      "title": "Tele-Law — legal advice through Common Service Centres",
+      "publisher": "Department of Justice, Government of India",
+      "source_type": "official",
+      "url": "https://www.tele-law.in/",
+      "document_ref": "Tele-Law service delivered via CSC centres",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Availability depends on the local CSC; verify per district."
+    },
+    {
+      "source_key": "erss-112",
+      "title": "Emergency Response Support System (112)",
+      "publisher": "Ministry of Home Affairs, Government of India",
+      "source_type": "official",
+      "url": "https://112.gov.in/",
+      "document_ref": "Single emergency number for police, fire and ambulance",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Number carried over from the legacy UI; page not fetched in this environment."
+    },
+    {
+      "source_key": "gujarat-wcd-181",
+      "title": "Abhayam women's helpline (181), Gujarat",
+      "publisher": "Women and Child Development Department, Government of Gujarat",
+      "source_type": "official",
+      "url": "https://wcd.gujarat.gov.in/",
+      "document_ref": "State women's helpline",
+      "published_on": null,
+      "retrieved_on": null,
+      "notes": "Carried over from the legacy UI and NOT independently confirmed. Kept because removing a functioning helpline would be worse than labelling it, but it must never be shown as verified."
+    },
+    {
+      "source_key": "bns-2023",
+      "title": "Bharatiya Nyaya Sanhita, 2023",
+      "publisher": "Legislative Department, Ministry of Law and Justice, Government of India",
+      "source_type": "official",
+      "url": "https://www.indiacode.nic.in/handle/123456789/20122",
+      "document_ref": "Bharatiya Nyaya Sanhita, 2023 (in force from 1 July 2024)",
+      "published_on": "2023-12-25",
+      "retrieved_on": null,
+      "notes": "Replaces the Indian Penal Code. Section numbering differs from the IPC; the legacy repository paired BNS 303 with IPC 379 and BNS 318 with IPC 420 without a source. Those pairings must be confirmed against this Act before display."
+    }
+  ]
+}

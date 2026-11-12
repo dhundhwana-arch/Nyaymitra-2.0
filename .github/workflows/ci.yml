@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pytest (python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements-dev.txt
+
+      - name: Run the test suite
+        env:
+          # Tests create their own temporary database; these just keep the run quiet.
+          NYAYMITRA_ENV: test
+          NYAYMITRA_LOG_LEVEL: WARNING
+        run: python -m pytest -q --cov=backend/app --cov-report=term-missing
+
+      - name: Database bootstrap from an empty directory
+        run: |
+          rm -rf /tmp/ci-db && mkdir -p /tmp/ci-db
+          NYAYMITRA_DB_PATH=/tmp/ci-db/nyaymitra.db \
+          NYAYMITRA_STORAGE_DIR=/tmp/ci-db/documents \
+          NYAYMITRA_BACKUP_DIR=/tmp/ci-db/backups \
+            python scripts/init_db.py --info --json > /tmp/ci-db/report.json
+          python - <<'PY'
+          import json
+          report = json.load(open("/tmp/ci-db/report.json"))
+          counts = report["counts"]
+          assert counts["constitution_articles"] >= 9, counts
+          assert counts["legacy_import_chunks"] == 2125, counts
+          assert counts["departments"] >= 10, counts
+          assert "constitution_fts" in counts, "FTS5 virtual table missing"
+          print("bootstrap OK:", counts)
+          PY
+
+      - name: Backup and restore round-trip
+        run: |
+          NYAYMITRA_DB_PATH=/tmp/ci-db/nyaymitra.db \
+          NYAYMITRA_BACKUP_DIR=/tmp/ci-db/backups \
+            python scripts/backup_db.py
+          NYAYMITRA_DB_PATH=/tmp/ci-db/nyaymitra.db \
+          NYAYMITRA_BACKUP_DIR=/tmp/ci-db/backups \
+            python scripts/backup_db.py --list
+
+  security:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install audit tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements-dev.txt
+      - name: Audit pinned runtime dependencies
+        run: pip-audit --vulnerability-service pypi -r backend/requirements.txt --progress-spinner off
+
+  frontend:
+    name: frontend syntax checks (node 20)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: JavaScript syntax
+        run: |
+          node --check web/app.js
+          node --check web/admin.js
+          node --check scripts/smoke_web.mjs
+      - name: No third-party assets or inline code
+        run: |
+          if grep -nE '(src|href)="https?://' web/index.html web/admin.html; then
+            echo "external asset reference found" >&2; exit 1
+          fi
+          if grep -n 'style="' web/app.js web/admin.js web/index.html web/admin.html; then
+            echo "inline style attribute found (blocked by the CSP)" >&2; exit 1
+          fi
+          echo "frontend checks OK"
