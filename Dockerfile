@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 COPY backend backend
 COPY web web
 COPY scripts scripts
+COPY data/seed data/seed
 
 RUN useradd --system --uid 10001 --home-dir /app --shell /usr/sbin/nologin nyaymitra \
     && mkdir -p /data/documents /data/backups \

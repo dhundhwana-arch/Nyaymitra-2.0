@@ -73,7 +73,17 @@ def main() -> int:
         if report.get("rolled_back"):
             print(f"Rolled back: {', '.join(report['rolled_back'])}")
         if report.get("seeded"):
-            print("Seeded:   " + ", ".join(f"{k}={v}" for k, v in report["seeded"].items()))
+            seeded = report["seeded"]
+            print("Seeded:   imported={} skipped={} failed={} errors={}".format(
+                seeded.get("total_imported", 0),
+                seeded.get("total_skipped", 0),
+                seeded.get("total_failed", 0),
+                len(seeded.get("errors", [])),
+            ))
+            for table, stats in seeded.get("tables", {}).items():
+                print(f"  {table}: imported={stats['imported']} skipped={stats['skipped']} failed={stats['failed']}")
+            for err in seeded.get("errors", []):
+                print(f"  ERROR: {err}")
         print("Tables:")
         for table, count in sorted(report["counts"].items()):
             print(f"  {table:<28} {count:>8}")
