@@ -6,3 +6,9 @@ __pycache__/
 venv/
 env/
 .DS_Store
+.venv/
+.pytest_cache/
+# Official source PDFs are large binaries: fetched by `python -m ingestion.pipeline acquire`,
+# identified by the SHA-256 recorded in data/sources/manifest.json.
+data/raw/*.pdf
+data/raw/*.part
