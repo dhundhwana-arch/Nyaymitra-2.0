@@ -1,3 +1,5 @@
+# The CSP connect source list must include the backend origin when frontend and backend are separate websites.
+# Run: python scripts/configure_frontend.py --api-base https://YOUR-BACKEND
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
@@ -24,3 +26,7 @@
 
 /*.svg
   Cache-Control: public, max-age=31536000, immutable
+
+/config.js
+  Content-Type: application/javascript
+  Cache-Control: no-cache

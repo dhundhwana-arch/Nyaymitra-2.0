@@ -1,8 +1,11 @@
-# SPA fallback - hash-based routes are handled client-side, so no server redirect needed
-# But we keep this for direct API path access and root fallback
+# Cloudflare Pages redirects for the NYAYMITRA static frontend.
+#
+# Cloudflare Pages cannot proxy /api/* to another domain from this file (proxying only
+# works for paths on this same site). The frontend therefore calls the backend directly,
+# using the address in /config.js. See docs/NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md.
 
-# API routes should go to the backend (configured separately)
-/api/*  https://YOUR_BACKEND_URL/api/:splat  200
+# The admin console is a separate page.
+/admin   /admin.html   200
 
-# Everything else serves the SPA
-/*    /index.html  200
+# Everything else serves the single-page app (routes are hash based).
+/*       /index.html   200

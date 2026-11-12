@@ -4,7 +4,10 @@
 (function () {
   'use strict';
 
-  var API = '/api/v1';
+  var CONFIG = window.NYAYMITRA_CONFIG || {};
+  var API_ORIGIN = String(CONFIG.apiBase || '').replace(/\/+$/, '');
+  var API = API_ORIGIN + '/api/v1';
+  var ATTRIBUTION = 'Created & Developed by Bambhaniya Divyesh Nonghanbhai';
   var LS_LANG = 'nyaymitra.lang';
 
   var state = {
@@ -20,6 +23,19 @@
       brandTag: 'ન્યાય સુલભતા અને માર્ગદર્શન',
       navHome: 'મુખ્ય પૃષ્ઠ', navAssistant: 'સહાયક', navComplaint: 'ફરિયાદ',
       navLibrary: 'બંધારણ', navDepartments: 'કચેરીઓ', navGlossary: 'શબ્દકોશ',
+      navLegal: 'પુસ્તકાલય', navAbout: 'વિશે',
+      legalTitle: 'કાનૂની પુસ્તકાલય', legalSub: 'ડેટાબેઝમાં હાલ ઉપલબ્ધ તમામ સામગ્રી — બંધારણ, માર્ગદર્શિકા, કચેરીઓ અને શબ્દકોશ.',
+      legalSearch: 'પુસ્તકાલયમાં શોધો (ગુજરાતી કે English)', allCategories: 'બધી શ્રેણીઓ',
+      catConstitution: 'બંધારણ', catGuide: 'માર્ગદર્શિકા', catDepartment: 'કચેરીઓ', catGlossary: 'શબ્દકોશ',
+      anyLanguage: 'કોઈપણ ભાષા', onlyGu: 'ગુજરાતી સામગ્રી', onlyEn: 'અંગ્રેજી સામગ્રી',
+      contentKind: 'સામગ્રીનો પ્રકાર', kindOfficial: 'સ્રોત દસ્તાવેજનું લખાણ', kindSummary: 'સમજૂતી (સત્તાવાર લખાણ નથી)',
+      kindNone: 'લખાણ ઉપલબ્ધ નથી', availableIn: 'ઉપલબ્ધ ભાષા', noSource: 'સ્રોત નોંધાયેલ નથી',
+      otherLanguageOnly: 'આ સામગ્રી પસંદ કરેલી ભાષામાં ઉપલબ્ધ નથી.', backToLegal: 'પુસ્તકાલય',
+      cardLegalTitle: 'કાનૂની પુસ્તકાલય', cardLegalBody: 'બધી ઉપલબ્ધ સામગ્રી શોધો — ભાષા અને શ્રેણી પ્રમાણે.',
+      partsHeading: 'બંધારણના ભાગ', articlesWord: 'કલમ',
+      errorNetwork: 'સર્વર સાથે જોડાણ થઈ શક્યું નથી. ઇન્ટરનેટ તપાસો અથવા થોડી વાર પછી પ્રયાસ કરો.',
+      aboutTitle: 'NYAYMITRA 2.0 વિશે', aboutBody: 'NYAYMITRA 2.0 નાગરિકોને સરળ ભાષામાં કાનૂની માહિતી, યોગ્ય કચેરી અને ફરિયાદ તૈયાર કરવામાં મદદ કરે છે. તે ન્યાયાધીશ કે વકીલ નથી.',
+      aboutData: 'હાલ ઉપલબ્ધ ડેટા', aboutDeveloper: 'ડેવલપર',
       heroEyebrow: 'તમારો હક, તમારો અવાજ',
       heroTitle: 'કાનૂની માહિતી, સરળ ભાષામાં',
       heroBody: 'તમારી સમસ્યા લખો કે બોલો. અમે સંબંધિત કાનૂની માહિતી, યોગ્ય સરકારી કચેરી અને આગળના પગલાં દર્શાવીશું — સ્રોત સાથે. અમે ન્યાય આપતા નથી.',
@@ -85,6 +101,19 @@
       brandTag: 'Justice access & navigation',
       navHome: 'Home', navAssistant: 'Assistant', navComplaint: 'Complaint',
       navLibrary: 'Constitution', navDepartments: 'Departments', navGlossary: 'Glossary',
+      navLegal: 'Library', navAbout: 'About',
+      legalTitle: 'Legal Library', legalSub: 'Everything currently stored in the database — Constitution, guides, offices and glossary.',
+      legalSearch: 'Search the library (Gujarati or English)', allCategories: 'All categories',
+      catConstitution: 'Constitution', catGuide: 'Guides', catDepartment: 'Offices', catGlossary: 'Glossary',
+      anyLanguage: 'Any language', onlyGu: 'Gujarati content', onlyEn: 'English content',
+      contentKind: 'Content type', kindOfficial: 'Text from the source document', kindSummary: 'Explanation (not the official text)',
+      kindNone: 'Text not available', availableIn: 'Available in', noSource: 'No source recorded',
+      otherLanguageOnly: 'This item is not available in the selected language.', backToLegal: 'Library',
+      cardLegalTitle: 'Legal Library', cardLegalBody: 'Search everything available — by language and category.',
+      partsHeading: 'Parts of the Constitution', articlesWord: 'articles',
+      errorNetwork: 'Could not reach the server. Check your connection or try again shortly.',
+      aboutTitle: 'About NYAYMITRA 2.0', aboutBody: 'NYAYMITRA 2.0 helps citizens with legal information in plain language, the right office to approach, and drafting a complaint. It is not a judge or a lawyer.',
+      aboutData: 'Data currently available', aboutDeveloper: 'Developer',
       heroEyebrow: 'Your rights, your voice',
       heroTitle: 'Legal information, in plain language',
       heroBody: 'Describe your problem. We show relevant legal information, the right government office and the next steps — with sources. We do not decide cases.',
@@ -199,7 +228,7 @@
     try {
       response = await fetch(API + path, init);
     } catch (networkError) {
-      var offline = new Error(t('errorGeneric'));
+      var offline = new Error(t('errorNetwork'));
       offline.code = 'network_error';
       throw offline;
     }
@@ -267,6 +296,7 @@
       ['#/assistant', t('cardAssistantTitle'), t('cardAssistantBody')],
       ['#/complaint', t('cardComplaintTitle'), t('cardComplaintBody')],
       ['#/library', t('cardLibraryTitle'), t('cardLibraryBody')],
+      ['#/legal', t('cardLegalTitle'), t('cardLegalBody')],
       ['#/departments', t('cardDepartmentsTitle'), t('cardDepartmentsBody')]
     ];
     return '<section class="hero stack">' +
@@ -283,7 +313,8 @@
       '</section>' +
       '<section class="card"><h2>' + esc(t('glossaryTitle')) + '</h2>' +
       '<p class="small muted">' + esc(t('glossarySub')) + '</p>' +
-      '<a class="btn btn-sm btn-ghost" href="#/glossary">' + esc(t('openCta')) + ' →</a></section>';
+      '<a class="btn btn-sm btn-ghost" href="#/glossary">' + esc(t('openCta')) + ' →</a></section>' +
+      '<p class="attribution">' + esc(ATTRIBUTION) + '</p>';
   }
 
   /* ---- assistant ---- */
@@ -377,7 +408,7 @@
     if (payload.citations && payload.citations.length) {
       citations = '<h3>' + esc(t('citationsHeading')) + '</h3><ul class="cite-list">' +
         payload.citations.map(function (cite) {
-          return '<li><a href="#/library/' + esc(cite.article_label.replace(/[^0-9A-Za-z]/g, '')) + '">' +
+          return '<li><a href="#/library/' + esc(cite.article_label.replace(/^Article\s+/i, '').replace(/[^0-9A-Za-z]/g, '')) + '">' +
             esc(cite.article_label) + '</a> ' + badge(cite.verification_status) +
             (cite.title ? ' <span class="small muted">' + esc(cite.title) + '</span>' : '') + '</li>';
         }).join('') + '</ul>';
@@ -903,7 +934,20 @@
         '<div class="field field-flush"><label class="sr-only" for="libPart">' + esc(t('allParts')) + '</label>' +
         '<select id="libPart">' + options + '</select></div>' +
         '<button class="btn btn-primary" type="submit">' + esc(t('search')) + '</button></form>' +
+        '<div><h2 class="small">' + esc(t('partsHeading')) + '</h2><div class="row" id="libParts">' +
+        parts.map(function (part) {
+          return '<button type="button" class="btn btn-sm btn-ghost" data-part="' + esc(part.part_no || '') + '">' +
+            esc((part.part_no ? 'Part ' + part.part_no + ' — ' : '') + (part.part_title || '') +
+              ' (' + part.article_count + ' ' + t('articlesWord') + ')') + '</button>';
+        }).join('') + '</div></div>' +
         '<div id="libResults" aria-live="polite"></div></section>';
+      Array.prototype.forEach.call(document.querySelectorAll('#libParts [data-part]'), function (button) {
+        button.addEventListener('click', function () {
+          $('#libPart').value = button.getAttribute('data-part');
+          $('#libQuery').value = '';
+          runLibrarySearch();
+        });
+      });
       var form = $('#libForm');
       form.addEventListener('submit', function (event) { event.preventDefault(); runLibrarySearch(); });
       $('#libPart').addEventListener('change', runLibrarySearch);
@@ -972,6 +1016,142 @@
       '</article>';
   }
 
+  /* ---- legal library (all stored datasets) ---- */
+  var legalState = { q: '', category: '', contentLanguage: '' };
+
+  function kindLabel(kind) {
+    if (kind === 'verified_source_text') return t('kindOfficial');
+    if (kind === 'not_available') return t('kindNone');
+    return t('kindSummary');
+  }
+
+  function categoryName(category) {
+    return t({ constitution: 'catConstitution', guide: 'catGuide', department: 'catDepartment', glossary: 'catGlossary' }[category] || 'allCategories');
+  }
+
+  async function viewLegal(category, key) {
+    var container = $('#view');
+    if (category && key) {
+      container.innerHTML = loadingBlock();
+      try {
+        var item = await api('/library/' + encodeURIComponent(category) + '/' + encodeURIComponent(key));
+        container.innerHTML = renderLegalItem(item);
+      } catch (error) {
+        container.innerHTML = errorBlock(error) +
+          '<a class="btn btn-sm btn-ghost" href="#/legal">← ' + esc(t('backToLegal')) + '</a>';
+      }
+      return;
+    }
+    var cats = ['constitution', 'guide', 'department', 'glossary'];
+    container.innerHTML = '<section class="card stack"><h1>' + esc(t('legalTitle')) + '</h1>' +
+      '<p class="small muted">' + esc(t('legalSub')) + '</p>' +
+      '<form id="legalForm" class="row"><div class="field field-grow">' +
+      '<label class="sr-only" for="legalQuery">' + esc(t('legalSearch')) + '</label>' +
+      '<input type="search" id="legalQuery" maxlength="200" placeholder="' + esc(t('legalSearch')) + '"></div>' +
+      '<div class="field field-flush"><label class="sr-only" for="legalCategory">' + esc(t('allCategories')) + '</label>' +
+      '<select id="legalCategory"><option value="">' + esc(t('allCategories')) + '</option>' +
+      cats.map(function (c) { return '<option value="' + c + '">' + esc(categoryName(c)) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field field-flush"><label class="sr-only" for="legalLang">' + esc(t('anyLanguage')) + '</label>' +
+      '<select id="legalLang"><option value="">' + esc(t('anyLanguage')) + '</option>' +
+      '<option value="gu">' + esc(t('onlyGu')) + '</option><option value="en">' + esc(t('onlyEn')) + '</option></select></div>' +
+      '<button class="btn btn-primary" type="submit">' + esc(t('search')) + '</button></form>' +
+      '<div id="legalResults" aria-live="polite"></div></section>';
+    $('#legalQuery').value = legalState.q;
+    $('#legalCategory').value = legalState.category;
+    $('#legalLang').value = legalState.contentLanguage;
+    $('#legalForm').addEventListener('submit', function (event) { event.preventDefault(); runLegalSearch(); });
+    $('#legalCategory').addEventListener('change', runLegalSearch);
+    $('#legalLang').addEventListener('change', runLegalSearch);
+    await runLegalSearch();
+  }
+
+  async function runLegalSearch() {
+    var results = $('#legalResults');
+    if (!results) return;
+    results.innerHTML = loadingBlock();
+    legalState.q = $('#legalQuery').value.trim();
+    legalState.category = $('#legalCategory').value;
+    legalState.contentLanguage = $('#legalLang').value;
+    var params = ['page_size=50', 'language=' + state.lang];
+    if (legalState.q) params.push('q=' + encodeURIComponent(legalState.q));
+    if (legalState.category) params.push('category=' + encodeURIComponent(legalState.category));
+    if (legalState.contentLanguage) params.push('content_language=' + encodeURIComponent(legalState.contentLanguage));
+    try {
+      var data = await api('/library?' + params.join('&'));
+      var facets = Object.keys(data.facets).map(function (c) {
+        return '<span class="badge badge-neutral">' + esc(categoryName(c) + ': ' + data.facets[c]) + '</span>';
+      }).join(' ');
+      if (!data.items.length) {
+        results.innerHTML = '<p>' + facets + '</p><div class="notice" role="status"><p>' + esc(t('noResults')) + '</p>' +
+          '<p class="small muted">' + esc(t('noResultsHint')) + '</p></div>';
+        return;
+      }
+      results.innerHTML = '<p class="small muted">' + esc(t('results') + ': ' + data.total) + '</p><p>' + facets + '</p>' +
+        data.items.map(function (item) {
+          return '<a class="article-item" href="#/legal/' + esc(item.category) + '/' + esc(encodeURIComponent(item.key)) + '">' +
+            '<div class="spread"><strong>' + esc(categoryName(item.category) + (item.label ? ' · ' + item.label : '')) + '</strong>' +
+            '<span>' + badge(item.verification_status) + ' <span class="badge badge-neutral">' + esc(kindLabel(item.content_kind)) + '</span></span></div>' +
+            '<h3>' + esc(item.title || '') + '</h3>' +
+            (item.snippet ? '<p class="snippet">' + esc(item.snippet) + '</p>' : '') +
+            '<p class="tiny muted">' + esc(t('availableIn') + ': ' + item.languages.map(function (l) { return l === 'gu' ? 'ગુજરાતી' : 'English'; }).join(', ') +
+              ' · ' + t('sourceHeading') + ': ' + ((item.source && (item.source.title || item.source.url)) || t('noSource'))) + '</p></a>';
+        }).join('') +
+        '<div class="notice small">' + esc(data.notice) + '</div>';
+    } catch (error) {
+      results.innerHTML = errorBlock(error);
+    }
+  }
+
+  function renderLegalItem(item) {
+    var lang = state.lang;
+    var other = lang === 'gu' ? 'en' : 'gu';
+    var title = item['title_' + lang] || item['title_' + other] || '';
+    var body = item['body_' + lang];
+    var list = item['list_' + lang] || [];
+    var src = item.source;
+    var contact = item.contact || {};
+    return '<article class="card stack">' +
+      '<a class="btn btn-sm btn-ghost" href="#/legal">← ' + esc(t('backToLegal')) + '</a>' +
+      '<div class="spread"><h1>' + esc((item.label ? item.label + ': ' : '') + title) + '</h1>' +
+      '<div>' + badge(item.verification_status) + '</div></div>' +
+      '<p class="small muted">' + esc(categoryName(item.category) + (item.group ? ' · ' + item.group : '')) + '</p>' +
+      '<p class="small"><strong>' + esc(t('contentKind')) + ':</strong> ' + esc(kindLabel(item.content_kind)) + '</p>' +
+      (body ? '<p>' + esc(body) + '</p>'
+        : '<div class="notice warn small">' + esc(t('otherLanguageOnly')) + '</div>' +
+          (item['body_' + other] ? '<p lang="' + other + '">' + esc(item['body_' + other]) + '</p>' : '')) +
+      (list.length ? '<ol class="step-list">' + list.map(function (step) { return '<li>' + esc(step) + '</li>'; }).join('') + '</ol>' : '') +
+      ((contact.helpline || contact.portal_url) ? '<div class="row">' +
+        (contact.helpline ? '<a class="btn btn-sm btn-primary" href="tel:' + esc(contact.helpline) + '">📞 ' + esc(contact.helpline) + '</a>' : '') +
+        (contact.portal_url ? '<a class="btn btn-sm btn-ghost" href="' + esc(contact.portal_url) + '" target="_blank" rel="noopener noreferrer">' + esc(contact.portal_label || t('portal')) + '</a>' : '') +
+        '</div>' : '') +
+      '<div><h3>' + esc(t('sourceHeading')) + '</h3>' +
+      (src ? '<ul class="cite-list"><li><strong>' + esc(src.title || '') + '</strong>' +
+          (src.publisher ? '<br>' + esc(src.publisher) : '') +
+          (src.url ? '<br><a href="' + esc(src.url) + '" rel="noopener noreferrer" target="_blank">' + esc(src.url) + '</a>' : '') +
+          (item.source_locator ? '<br><span class="tiny muted">' + esc(item.source_locator) + '</span>' : '') + '</li></ul>'
+        : '<p class="small muted">' + esc(t('noSource')) + '</p>') + '</div>' +
+      (item.category === 'constitution' ? '<a class="btn btn-sm btn-ghost" href="#/library/' + esc(encodeURIComponent(item.key)) + '">' + esc(t('navLibrary')) + ' →</a>' : '') +
+      '</article>';
+  }
+
+  /* ---- about ---- */
+  async function viewAbout() {
+    var container = $('#view');
+    var counts = '';
+    try {
+      var data = await api('/library?page_size=1&language=' + state.lang);
+      counts = '<h2>' + esc(t('aboutData')) + '</h2><ul>' + Object.keys(data.facets).map(function (c) {
+        return '<li>' + esc(categoryName(c) + ': ' + data.facets[c]) + '</li>';
+      }).join('') + '</ul><div class="notice small">' + esc(data.notice) + '</div>';
+    } catch (error) {
+      counts = errorBlock(error);
+    }
+    container.innerHTML = '<section class="card stack"><h1>' + esc(t('aboutTitle')) + '</h1>' +
+      '<p>' + esc(t('aboutBody')) + '</p>' +
+      '<h2>' + esc(t('aboutDeveloper')) + '</h2>' +
+      '<p class="attribution">' + esc(ATTRIBUTION) + '</p>' + counts + '</section>';
+  }
+
   /* ---- departments ---- */
   async function viewDepartments() {
     var container = $('#view');
@@ -1032,7 +1212,7 @@
   function parseRoute() {
     var hash = window.location.hash.replace(/^#\/?/, '');
     var parts = hash.split('/').filter(Boolean);
-    return { name: parts[0] || 'home', param: parts[1] || null };
+    return { name: parts[0] || 'home', param: parts[1] || null, param2: parts[2] || null };
   }
 
   async function route() {
@@ -1055,6 +1235,10 @@
       setupComplaint();
     } else if (current.name === 'library') {
       await viewLibrary(current.param);
+    } else if (current.name === 'legal') {
+      await viewLegal(current.param, current.param2);
+    } else if (current.name === 'about') {
+      await viewAbout();
     } else if (current.name === 'departments') {
       await viewDepartments();
     } else if (current.name === 'glossary') {
@@ -1077,7 +1261,8 @@
     en.setAttribute('aria-pressed', String(state.lang === 'en'));
     var navMap = {
       home: t('navHome'), assistant: t('navAssistant'), complaint: t('navComplaint'),
-      library: t('navLibrary'), departments: t('navDepartments'), glossary: t('navGlossary')
+      library: t('navLibrary'), departments: t('navDepartments'), glossary: t('navGlossary'),
+      legal: t('navLegal'), about: t('navAbout')
     };
     Object.keys(navMap).forEach(function (key) {
       var link = document.querySelector('[data-nav="' + key + '"]');

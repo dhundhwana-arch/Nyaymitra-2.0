@@ -1,13 +1,12 @@
 """Phase 3C tests. All fixtures are SYNTHETIC placeholder text - not constitutional content."""
 import hashlib
 import json
-import sqlite3
 import unicodedata
 
 import pymupdf
 import pytest
 
-from ingestion import VERIFICATION_STATUS, ingest, pipeline
+from ingestion import pipeline
 from ingestion.acquire import AcquisitionError, acquire_all, download, sha256_file, verify_checksums
 from ingestion.extract import extract_articles
 from ingestion.pdfio import ExtractionError, page_texts, pdf_metadata
@@ -169,15 +168,6 @@ def test_no_unicode_normalisation_applied():
     assert art.text_raw != unicodedata.normalize("NFC", art.text_raw)
 
 
-def test_gujarati_roundtrip_through_database_and_json(tmp_path):
-    arts = extract_articles(GU_PAGES, "gu")["articles"]
-    db = tmp_path / "t.db"
-    ingest.apply(db, {"constitution-gu": ("sha", arts)}, {"g": {"passed": True}})
-    rows = sqlite3.connect(db).execute(
-        f"SELECT article_label_raw, text_raw, verification_status FROM {ingest.TABLE} ORDER BY id").fetchall()
-    assert [r[0] for r in rows] == [a.label_raw for a in arts]
-    assert [r[1] for r in rows] == [a.text_raw for a in arts]
-    assert json.loads(json.dumps(arts[0].to_dict(), ensure_ascii=False))["text_raw"] == arts[0].text_raw
 
 
 def test_gujarati_quality_flags_legacy_font_and_scans():
@@ -201,49 +191,21 @@ def test_numbering_comparison_reports_without_mapping():
 
 
 # ---------- gated ingestion ----------
-def test_apply_refused_when_any_gate_fails(tmp_path):
-    db = tmp_path / "t.db"
-    arts = extract_articles(EN_PAGES, "en")["articles"]
-    with pytest.raises(ingest.GateError):
-        ingest.apply(db, {"constitution-en": ("sha", arts)},
-                     {"ok": {"passed": True}, "bad": {"passed": False}})
-    assert not db.exists()
 
 
-def test_dry_run_writes_nothing_and_seed_table_is_untouched(tmp_path):
-    db = tmp_path / "t.db"
-    c = sqlite3.connect(db)
-    c.execute("CREATE TABLE constitution_articles (id INTEGER PRIMARY KEY, article_no TEXT, description_en TEXT)")
-    c.execute("INSERT INTO constitution_articles VALUES (1, 'Article 14', 'seed summary')")
-    c.commit(); c.close()
-    before = db.read_bytes()
-    arts = extract_articles(EN_PAGES, "en")["articles"]
-    batches = {"constitution-en": ("sha", arts)}
-    p = ingest.plan(db, batches)
-    assert p["sources"]["constitution-en"]["would_insert"] == 4 and p["rows_written"] == 0
-    assert db.read_bytes() == before
-
-    ingest.apply(db, batches, {"g": {"passed": True}})
-    ingest.apply(db, batches, {"g": {"passed": True}})  # idempotent
-    c = sqlite3.connect(db)
-    assert c.execute("SELECT * FROM constitution_articles").fetchall() == [(1, "Article 14", "seed summary")]
-    assert c.execute(f"SELECT count(*), count(DISTINCT verification_status), min(verification_status),"
-                     f" count(verified_by) FROM {ingest.TABLE}").fetchone() == (4, 1, VERIFICATION_STATUS, 0)
-    assert ingest.plan(db, batches)["sources"]["constitution-en"]["already_present"] == 4
 
 
-def test_pipeline_end_to_end_stays_dry_and_refuses_apply(tmp_path):
+def test_pipeline_end_to_end_writes_reports_only(tmp_path):
     src = make_pdf(tmp_path / "src.pdf", pages=["1. Alpha.\u2014body", "2. Beta.\u2014body"])
     acquire_all(manifest_path=tmp_path / "m.json", root=tmp_path,
                 fetch=fake_fetch_from(src), sources=one_source(tmp_path))
     kw = dict(root=tmp_path, manifest_path=tmp_path / "m.json", report_dir=tmp_path / "rep",
-              db_path=tmp_path / "t.db", exceptions_path=tmp_path / "none.json")
+              exceptions_path=tmp_path / "none.json")
     rep = pipeline.run(**kw)
     assert rep["gates"]["constitution-en:checksum"]["passed"]
     assert not rep["gates"]["constitution-en:coverage"]["passed"]      # 393 numbers missing
-    assert rep["import"]["mode"] == "dry-run" and not (tmp_path / "t.db").exists()
-    rep = pipeline.run(apply=True, **kw)
-    assert rep["import"]["status"] == "REFUSED" and not (tmp_path / "t.db").exists()
+    assert rep["import"]["mode"] == "none" and rep["import"]["rows_written"] == 0
+    assert not list(tmp_path.rglob("*.db"))
     assert rep["numbering_comparison"]["status"] == "not_run"
 
 

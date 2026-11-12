@@ -10,7 +10,6 @@ RAW_DIR = ROOT / "data" / "raw"
 REPORT_DIR = ROOT / "data" / "reports"
 MANIFEST_PATH = ROOT / "data" / "sources" / "manifest.json"
 EXCEPTIONS_PATH = ROOT / "data" / "sources" / "accepted_exceptions.json"
-DB_PATH = ROOT / "backend" / "justice_access.db"
 
 # "claimed_*" values were supplied by the project owner and are NOT verified by
 # this pipeline until the PDF itself has been downloaded and inspected by a human.

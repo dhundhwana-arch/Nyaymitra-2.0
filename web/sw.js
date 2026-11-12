@@ -4,14 +4,14 @@
  * (they may contain personal data), so the app degrades gracefully offline.
  */
 
-const CACHE_NAME = "nyaymitra-v1";
+const CACHE_NAME = "nyaymitra-v2";
 const APP_SHELL = [
   "/",
+  "/config.js",
   "/app.js",
   "/styles.css",
   "/manifest.webmanifest",
   "/favicon.svg",
-  "/api/openapi.json",
 ];
 
 const APP_SHELL_ICONS = [

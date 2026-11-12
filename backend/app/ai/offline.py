@@ -46,7 +46,9 @@ def compose(
             for art in articles:
                 title = art.get("title_gu") or art.get("title_en") or ""
                 explanation = art.get("citizen_explanation_gu") or art.get("text_gu")
-                cited.append(f"{art['article_label']} — {title}" + (f": {explanation}" if explanation else ""))
+                kind = (" [સમજૂતી — સત્તાવાર લખાણ નથી]" if art.get("citizen_explanation_gu") or not explanation
+                        else " [સ્રોત દસ્તાવેજનું લખાણ — માનવ ચકાસણી બાકી]")
+                cited.append(f"{art['article_label']} — {title}" + (f": {explanation}" if explanation else "") + kind)
             blocks.append("સંબંધિત બંધારણીય જોગવાઈઓ (સ્રોત સાથે):\n" + _bullet(cited))
         if departments:
             blocks.append(
@@ -81,7 +83,9 @@ def compose(
             for art in articles:
                 title = art.get("title_en") or art.get("title_gu") or ""
                 explanation = art.get("citizen_explanation_en") or art.get("text_en")
-                cited.append(f"{art['article_label']} — {title}" + (f": {explanation}" if explanation else ""))
+                kind = (" [explanation — not the official text]" if art.get("citizen_explanation_en") or not explanation
+                        else " [text from the source document — human verification pending]")
+                cited.append(f"{art['article_label']} — {title}" + (f": {explanation}" if explanation else "") + kind)
             blocks.append("Relevant constitutional provisions (with source):\n" + _bullet(cited))
         if departments:
             blocks.append(

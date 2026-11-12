@@ -58,6 +58,16 @@ def get_guide(conn: sqlite3.Connection, key: str) -> sqlite3.Row | None:
     return conn.execute("SELECT * FROM triage_guides WHERE guide_key = ?", (key,)).fetchone()
 
 
+def _keyword_in(keyword: str, text: str) -> bool:
+    """Latin keywords must match as whole words ("rti" is not inside "property");
+    Indic keywords keep substring matching because of inflected endings."""
+    if not keyword:
+        return False
+    if keyword.isascii():
+        return re.search(r"(?<![a-z0-9])" + re.escape(keyword) + r"(?![a-z0-9])", text) is not None
+    return keyword in text
+
+
 def match(conn: sqlite3.Connection, text: str, category: str | None = None) -> sqlite3.Row | None:
     if category and category in CATEGORY_TO_GUIDE and CATEGORY_TO_GUIDE[category]:
         row = get_guide(conn, CATEGORY_TO_GUIDE[category])
@@ -67,7 +77,7 @@ def match(conn: sqlite3.Connection, text: str, category: str | None = None) -> s
     best: sqlite3.Row | None = None
     best_score = 0
     for row in all_guides(conn):
-        score = sum(1 for kw in _loads(row["keywords"]) if str(kw).lower() in lowered)
+        score = sum(1 for kw in _loads(row["keywords"]) if _keyword_in(str(kw).lower(), lowered))
         if score > best_score:
             best, best_score = row, score
     return best

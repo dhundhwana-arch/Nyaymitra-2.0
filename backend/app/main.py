@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -90,6 +91,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(BodySizeLimitMiddleware, settings=settings)
     app.add_middleware(SecurityHeadersMiddleware, settings=settings)
     app.add_middleware(RequestContextMiddleware)
+    if settings.allowed_origins:
+        # The static frontend (e.g. Cloudflare Pages) is a different origin from the API.
+        # Only the origins listed in NYAYMITRA_ALLOWED_ORIGINS may call it; no cookies are used.
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(settings.allowed_origins),
+            allow_credentials=False,
+            allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+            allow_headers=["Content-Type", "X-Admin-Token", "X-Access-Token", "X-Request-ID"],
+            expose_headers=["X-Request-ID", "Retry-After"],
+            max_age=600,
+        )
 
     app.include_router(api_router, prefix=settings.api_prefix)
     app.include_router(api_router, prefix="/api", include_in_schema=False)
@@ -119,6 +132,15 @@ def _mount_web(app: FastAPI, settings: Settings) -> None:
         @app.get("/styles.css", include_in_schema=False)
         def styles() -> FileResponse:
             return FileResponse(web_dir / "styles.css", media_type="text/css")
+
+        @app.get("/config.js", include_in_schema=False)
+        def config_js() -> FileResponse:
+            return FileResponse(web_dir / "config.js", media_type="application/javascript")
+
+        @app.get("/sw.js", include_in_schema=False)
+        def service_worker() -> FileResponse:
+            return FileResponse(web_dir / "sw.js", media_type="application/javascript",
+                                headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"})
 
         @app.get("/admin.js", include_in_schema=False)
         def admin_js() -> FileResponse:

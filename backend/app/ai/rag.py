@@ -12,6 +12,7 @@ Pipeline
 """
 from __future__ import annotations
 
+import re
 import sqlite3
 import time
 from typing import Any
@@ -40,6 +41,37 @@ NO_INFO_EN = (
     "loaded in the database, so I will not guess. Call free legal aid on 15100 or contact your "
     "nearest DLSA office."
 )
+
+
+# "Article 21A", "Art. 14", "અનુચ્છેદ ૨૧", "આર્ટિકલ 32"; "કલમ N" only when the question is
+# about the Constitution (કલમ is also used for sections of other Acts).
+_ARTICLE_REF = re.compile(
+    r"(?:\barticle|\bart\.?|અનુચ્છેદ|આર્ટિકલ|(?P<kalam>કલમ))\s*[-:]?\s*"
+    r"(?P<no>[0-9\u0AE6-\u0AEF]{1,3}[A-Za-z]{0,2})(?![A-Za-z0-9])",
+    re.IGNORECASE,
+)
+_GU_DIGITS = str.maketrans("૦૧૨૩૪૫૬૭૮૯", "0123456789")
+
+
+def requested_articles(question: str) -> list[str]:
+    """Article numbers the user explicitly named, normalised to e.g. '21A'."""
+    found: list[str] = []
+    for m in _ARTICLE_REF.finditer(question or ""):
+        if m.group("kalam") and "બંધારણ" not in question:
+            continue
+        number = m.group("no").translate(_GU_DIGITS).upper()
+        if number not in found:
+            found.append(number)
+    return found[:4]
+
+
+def _missing_note(missing: list[str], language: str) -> str:
+    labels = ", ".join(f"Article {n}" for n in missing)
+    if language == "gu":
+        return (f"નોંધ: {labels} હાલ NYAYMITRA ડેટાબેઝમાં ઉપલબ્ધ નથી, તેથી તેના વિશે કોઈ માહિતી "
+                "આપવામાં આવી નથી. સત્તાવાર લખાણ માટે India Code (indiacode.nic.in) જુઓ.")
+    return (f"Note: {labels} is not available in the NYAYMITRA database yet, so nothing is stated "
+            "about it here. For the official text see India Code (indiacode.nic.in).")
 
 
 def _citations(rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
@@ -82,6 +114,19 @@ def answer_question(
     guide_row = triage.match(conn, question, category)
     guide = triage.shape_guide(guide_row, language) if guide_row else None
     rows = constitution.retrieve_for_ai(conn, question, limit=4)
+    # An explicitly named article is looked up exactly: shown first if stored, and reported
+    # as unavailable (never guessed) if it is not.
+    missing: list[str] = []
+    for number in requested_articles(question):
+        exact = conn.execute(
+            "SELECT * FROM constitution_articles WHERE article_no = ? COLLATE NOCASE", (number,)
+        ).fetchone()
+        if exact is None:
+            missing.append(number)
+        elif all(r["id"] != exact["id"] for r in rows):
+            rows = [exact, *rows][:4]
+    if missing:
+        warnings.extend(f"article_not_available:{n}" for n in missing)
     deps = departments.get_many(conn, [guide["department_key"]] if guide and guide["department_key"] else [])
     if not deps:
         # No category matched: suggest the free legal-aid channels only. Dumping the
@@ -169,6 +214,9 @@ def answer_question(
                 )
                 provider_name, model, degraded = "offline", None, True
                 grounded = True
+
+    if missing:
+        answer_text = _missing_note(missing, language) + "\n\n" + (answer_text or "")
 
     latency = int((time.perf_counter() - started) * 1000)
     query_log_id = _log(

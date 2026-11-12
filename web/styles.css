@@ -318,3 +318,13 @@ th { color: var(--gold-soft); font-size: 0.78rem; text-transform: uppercase; let
 @media (max-width: 719px) {
   .install-btn { min-height: 44px; }
 }
+
+/* Developer attribution (footer of every page, home and About). */
+.attribution {
+  margin: 0.9rem 0 0.4rem;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}

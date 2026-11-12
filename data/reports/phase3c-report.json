@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T11:30:45Z",
+  "generated_at": "2026-11-12T12:32:39Z",
   "checksums": {
     "constitution-en": {
       "ok": false,
@@ -37,10 +37,8 @@
   },
   "all_gates_passed": false,
   "import": {
-    "mode": "dry-run",
-    "table": "official_constitution_articles",
+    "mode": "none",
     "rows_written": 0,
-    "existing_seed_rows_untouched": 2125,
-    "sources": {}
+    "note": "this tool does not write to any database; use scripts/ingest_constitution.py"
   }
 }

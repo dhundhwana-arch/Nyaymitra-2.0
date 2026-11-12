@@ -26,6 +26,10 @@ services:
         value: offline
       - key: NYAYMITRA_AUTO_SEED
         value: "true"
+      # If the frontend is hosted elsewhere (e.g. Cloudflare Pages), set this in the Render
+      # dashboard to that website's origin, e.g. https://nyaymitra-frontend.pages.dev
+      - key: NYAYMITRA_ALLOWED_ORIGINS
+        sync: false
       # Set these in the Render dashboard, never in this file.
       - key: NYAYMITRA_ADMIN_TOKEN
         sync: false

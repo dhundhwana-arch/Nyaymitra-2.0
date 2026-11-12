@@ -1,8 +1,12 @@
 """Phase 3C command line.
 
     python -m ingestion.pipeline acquire     # download PDFs, update manifest
-    python -m ingestion.pipeline run         # extract + reports + DRY-RUN import (default)
-    python -m ingestion.pipeline run --apply # import, only if every gate passes
+    python -m ingestion.pipeline run         # extract + quality/coverage/comparison reports
+
+This package is a SOURCE-QUALITY tool only. It never writes to a database: importing
+into the application database is done by scripts/ingest_constitution.py (canonical schema,
+backend/migrations). The separate ``official_constitution_articles`` table proposed in
+Phase 3C was retired so that there is exactly one schema.
 """
 from __future__ import annotations
 
@@ -11,12 +15,11 @@ import json
 import sys
 from pathlib import Path
 
-from . import ingest
 from .acquire import acquire_all, verify_checksums
 from .extract import extract_articles
 from .pdfio import ExtractionError, page_texts
 from .quality import compare_numbering, coverage_report, text_quality
-from .sources import (DB_PATH, EXCEPTIONS_PATH, MANIFEST_PATH, REPORT_DIR, ROOT, load_manifest,
+from .sources import (EXCEPTIONS_PATH, MANIFEST_PATH, REPORT_DIR, ROOT, load_manifest,
                       now_utc, write_json)
 
 
@@ -54,12 +57,11 @@ def build_gates(checks: dict, quality: dict, coverage: dict, errors: dict, excep
     return gates
 
 
-def run(apply: bool = False, root: Path = ROOT, manifest_path: Path = MANIFEST_PATH,
-        report_dir: Path = REPORT_DIR, db_path: Path = DB_PATH,
-        exceptions_path: Path = EXCEPTIONS_PATH) -> dict:
+def run(root: Path = ROOT, manifest_path: Path = MANIFEST_PATH,
+        report_dir: Path = REPORT_DIR, exceptions_path: Path = EXCEPTIONS_PATH) -> dict:
     manifest = load_manifest(manifest_path)
     checks = verify_checksums(manifest, root)
-    quality, coverage, extracted, errors, batches = {}, {}, {}, {}, {}
+    quality, coverage, extracted, errors = {}, {}, {}, {}
     for sid, entry in manifest.get("sources", {}).items():
         if not checks[sid]["ok"]:
             continue  # never extract from a file whose provenance is not established
@@ -74,7 +76,6 @@ def run(apply: bool = False, root: Path = ROOT, manifest_path: Path = MANIFEST_P
         coverage[sid] = coverage_report(res["articles"], lang)
         coverage[sid]["rejected_heading_candidates"] = len(res["rejected"])
         extracted[sid] = res
-        batches[sid] = (entry["sha256"], res["articles"])
         write_json(report_dir / f"articles-{lang}.json", {
             "source_id": sid, "source_sha256": entry["sha256"],
             "verification_status": "requires_human_verification",
@@ -86,14 +87,8 @@ def run(apply: bool = False, root: Path = ROOT, manifest_path: Path = MANIFEST_P
     gates = build_gates(checks, quality, coverage, errors, _load_exceptions(exceptions_path))
     all_passed = bool(gates) and all(g["passed"] for g in gates.values())
 
-    dry = ingest.plan(db_path, batches)
-    if apply and all_passed:
-        import_result = ingest.apply(db_path, batches, gates)
-    elif apply:
-        import_result = {"mode": "apply", "status": "REFUSED", "rows_written": 0,
-                         "reason": "quality gates failed", "dry_run": dry}
-    else:
-        import_result = dry
+    import_result = {"mode": "none", "rows_written": 0,
+                     "note": "this tool does not write to any database; use scripts/ingest_constitution.py"}
 
     report = {"generated_at": now_utc(), "checksums": checks, "extraction_errors": errors,
               "text_quality": quality, "coverage": coverage, "numbering_comparison": comparison,
@@ -106,8 +101,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("acquire")
-    r = sub.add_parser("run")
-    r.add_argument("--apply", action="store_true", help="write to the database (only if all gates pass)")
+    sub.add_parser("run")
     args = ap.parse_args(argv)
     if args.cmd == "acquire":
         m = acquire_all()
@@ -115,7 +109,7 @@ def main(argv=None) -> int:
             print(f"{sid}: {e['last_attempt_status']}" + (f" - {e['last_attempt_error']}" if e["last_attempt_error"] else
                   f" sha256={e['sha256']} pages={e['page_count']}"))
         return 0 if all(e["last_attempt_status"] == "ok" for e in m["sources"].values()) else 1
-    rep = run(apply=args.apply)
+    rep = run()
     for name, g in rep["gates"].items():
         print(("PASS " if g["passed"] else "FAIL ") + name + ("" if g["passed"] else f"  {g['detail']}"))
     print("import:", json.dumps(rep["import"], ensure_ascii=False))

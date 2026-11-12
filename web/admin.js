@@ -1,7 +1,8 @@
 /* NYAYMITRA 2.0 — administration console (vanilla JS, no CDN). */
 (function () {
   'use strict';
-  var API = '/api/v1';
+  var CONFIG = window.NYAYMITRA_CONFIG || {};
+  var API = String(CONFIG.apiBase || '').replace(/\/+$/, '') + '/api/v1';
   var TOKEN_KEY = 'nyaymitra.adminToken';
 
   function $(sel) { return document.querySelector(sel); }
