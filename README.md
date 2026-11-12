@@ -7,29 +7,64 @@ next step, prepare a complaint draft, and reach the right department or free-leg
 It is **not** a lawyer, a court or a judge. It does not decide cases, predict outcomes or
 guarantee results, and it never presents unverified material as official law.
 
+**Created & Developed by Bambhaniya Divyesh Nonghanbhai**
+
+> **Where the current work is:** branch `arena/08f8f3c5-nyaymitra-2-0`. It contains the full rebuild
+> (both earlier rebuild branches merged in) plus the data-activation work. `main` still holds the
+> original 4 November prototype; nothing has been merged into it. See
+> [`docs/REPOSITORY_AND_PRODUCTION_READINESS.md`](docs/REPOSITORY_AND_PRODUCTION_READINESS.md).
+
 ---
 
 ## Current status (be precise before you rely on it)
 
 | Area | Status |
 |---|---|
-| Backend API (31 endpoints), database, migrations, seeds | **COMPLETE AND TESTED** |
+| Backend API (37 operations in the OpenAPI schema), database, migrations, seeds | **COMPLETE AND TESTED** |
 | Retrieval-before-generation, citation validation, offline grounded answers | **COMPLETE AND TESTED** |
 | Complaint intake with deterministic summary, review gate, one-time token | **COMPLETE AND TESTED** |
 | Document upload (PDF/image), extraction status, owner-token download | **COMPLETE AND TESTED** |
-| Citizen web app (6 routes, gu/en) and admin console | **IMPLEMENTED AND TESTED IN JSDOM** — no real phone/browser session yet |
+| Citizen web app (8 routes, gu/en) and admin console | **IMPLEMENTED AND TESTED IN JSDOM** — no real phone/browser session yet |
+| Legal Library (`#/legal`, `GET /api/v1/library`): all 43 stored items, search, category and language filters | **COMPLETE AND TESTED** |
+| Frontend and backend as separate websites (configurable API address + CORS allowlist) | **COMPLETE AND TESTED LOCALLY** — not verified on the live sites |
+| Live deployment | **NOT UPDATED** — nothing from this branch has been deployed |
 | Voice input / speech output | **IMPLEMENTED BUT NOT TESTED** (browser APIs) |
 | Live LLM provider (`openai_compatible`) | **IMPLEMENTED BUT NOT TESTED** (no API key available) |
 | Complaint duplicate-submission protection | **COMPLETE AND TESTED** (idempotency key + fingerprint window) |
 | Data-retention purge of complaints/documents | **COMPLETE AND TESTED** (`scripts/purge_data.py`, dry-run default) |
 | Dependency vulnerability audit | **COMPLETE** — `pip-audit` clean after upgrading 3 packages |
-| Authoritative Article text in Gujarati/English | **BLOCKED** — official source PDFs not supplied by the owner |
+| Authoritative Article text in Gujarati/English | **BLOCKED** — no source file or extraction exists in the repository; the owner's local files have not been supplied (see [`docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md`](docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md)) |
 | Legal accuracy of every explanation, helpline and department entry | **REQUIRES HUMAN VERIFICATION** (queue in `/admin`) |
-| Automated test suite | **226 tests, 92 % line coverage, all passing** |
+| Automated test suite | **262 backend tests + 15 source-tool tests, all passing**; 31-step jsdom end-to-end script passing in both hosting layouts |
 
 The corpus ships with **9 human-written article explanations and 0 authoritative texts**. The API
 says so on every answer, and the UI shows a warning banner. See
 [`docs/LEGAL_VERIFICATION_CHECKLIST.md`](docs/LEGAL_VERIFICATION_CHECKLIST.md).
+
+---
+
+## Architecture (as it actually is)
+
+```
+Browser ── web/ (static single-page app, no build step, no CDN)
+   │          web/config.js  → apiBase: "" (same site)  or  "https://<backend>" (separate site)
+   ▼
+FastAPI  backend/app  ── /api/v1/…   (CORS only for NYAYMITRA_ALLOWED_ORIGINS)
+   │   constitution · library · ai (assistant) · departments · complaints · documents · admin
+   ▼
+SQLite   NYAYMITRA_DB_PATH   schema = backend/migrations/001–004
+   ▲
+data/seed/*.json  (loaded idempotently at start-up)      data/raw/*.pdf → scripts/ingest_constitution.py
+```
+
+Two supported hosting layouts: **one site** (the backend serves `web/` itself — the default) or
+**two sites** (static host for `web/` + API host). For two sites run
+`python scripts/configure_frontend.py --api-base https://<backend>` and set
+`NYAYMITRA_ALLOWED_ORIGINS=https://<frontend>` on the backend.
+
+What a visitor can use today: Home, Assistant, Complaint, Constitution (4 Parts, 9 articles),
+Legal Library (43 items), Offices (11), Glossary (18), About. Every Constitution entry is an
+owner-written explanation marked `requires_human_verification`; **0 articles have official text**.
 
 ---
 
@@ -68,18 +103,20 @@ With no AI key configured the app runs fully offline in rule-based, source-groun
 ```
 backend/app/          FastAPI application (factory `create_app`)
   ai/                 provider abstraction, retrieval, citation validation, safety guard
-  routers/            health, constitution, ai, complaints, documents, departments, feedback, admin
+  routers/            health, constitution, library, ai, complaints, documents, departments, feedback, admin
   services/           constitution search, textsearch, complaints, documents, departments,
                       triage, glossary, seeding, ingestion, monitoring
 backend/migrations/   versioned SQL with down-migrations
-backend/tests/        226 pytest tests
-web/                  self-hosted SPA (no CDN) + admin console
+backend/tests/        262 pytest tests
+web/                  self-hosted SPA (no CDN) + admin console; config.js sets the API address
 data/seed/            curated seed JSON (sources, 9 articles, departments, triage, glossary)
 data/legacy/          quarantined 2,125 legacy rows (gzip + sha256), never served to citizens
 data/raw/             where the owner puts official Constitution PDFs (git-ignored)
 scripts/              init_db, backup_db, purge_data, ingest_constitution,
                       constitution_coverage, verify_changeset, verify_ai_provider,
-                      export_legacy, smoke_web
+                      export_legacy, smoke_web, e2e_activation, configure_frontend,
+                      inventory_local_data
+ingestion/            official-PDF download + text-quality checks (never writes to a database)
 docs/                 audit, architecture, API, schema, testing, security, legal, deployment
 ```
 
@@ -92,10 +129,12 @@ not served.
 ## Tests
 
 ```bash
-python -m pytest                                  # 226 passed, 92% coverage
+python -m pytest                                  # 262 passed
+python -m pytest tests                            # 15 passed (ingestion/ source-quality tool)
 python -m pytest -q --cov=backend/app             # coverage report
 node --check web/app.js web/admin.js              # frontend syntax
 node scripts/smoke_web.mjs http://127.0.0.1:8000  # optional jsdom journeys (needs jsdom)
+node scripts/e2e_activation.mjs <frontend-url> [<backend-url>]      # 31 data-activation checks (needs jsdom)
 pip-audit --vulnerability-service pypi -r backend/requirements.txt   # dependency audit
 python scripts/constitution_coverage.py           # what the corpus really contains
 python scripts/purge_data.py                      # what retention would delete (dry run)
@@ -126,6 +165,10 @@ Detailed, honest results — including what is *not* covered — are in
 | [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Local, server, backups, retention, metrics, upgrades, rollback |
 | [HANDOVER.md](docs/HANDOVER.md) | Where the work is, backup + integrity proof, real-model status, repo separation |
 | [FINAL_COMPLETION_REPORT.md](docs/FINAL_COMPLETION_REPORT.md) | Task register, results, completion percentage |
+| [NYAYMITRA_DATA_ACTIVATION_REPORT.md](docs/NYAYMITRA_DATA_ACTIVATION_REPORT.md) | Every dataset found, what is displayed, what is missing |
+| [NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md](docs/NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md) | Why the live site was empty, what was fixed, test results |
+| [LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md](docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md) | Search for the owner's local Constitution files, and the import plan |
+| [REPOSITORY_AND_PRODUCTION_READINESS.md](docs/REPOSITORY_AND_PRODUCTION_READINESS.md) | Branch state and the deployment checklist |
 | [REMAINING_BLOCKERS.md](docs/REMAINING_BLOCKERS.md) | The three external blockers and who owns them |
 | [RELEASE_READINESS_CHECKLIST.md](docs/RELEASE_READINESS_CHECKLIST.md) | Gate-by-gate release decision |
 

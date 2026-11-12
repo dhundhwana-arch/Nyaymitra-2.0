@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy_frontend:
+        description: "Deploy web/ to Cloudflare Pages (only on main)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -100,6 +105,9 @@ jobs:
           node --check web/app.js
           node --check web/admin.js
           node --check scripts/smoke_web.mjs
+          node --check scripts/e2e_activation.mjs
+          node --check web/config.js
+          node --check web/sw.js
       - name: No third-party assets or inline code
         run: |
           if grep -nE '(src|href)="https?://' web/index.html web/admin.html; then
@@ -110,11 +118,14 @@ jobs:
           fi
           echo "frontend checks OK"
 
+  # Deployment is MANUAL ONLY: Actions tab -> CI -> "Run workflow" on main with the box ticked.
+  # (The previous job used `secrets.*` in a job-level `if:`, which GitHub rejects, so the whole
+  # workflow failed to start. Nothing deploys automatically on push or merge.)
   deploy-frontend:
-    name: deploy frontend to Cloudflare Pages
+    name: deploy frontend to Cloudflare Pages (manual)
     needs: [test, security, frontend]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && secrets.CLOUDFLARE_API_TOKEN != ''
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_frontend && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to Cloudflare Pages
@@ -125,11 +136,3 @@ jobs:
           projectName: nyaymitra-frontend
           directory: web
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy-frontend-skip:
-    name: deploy frontend (skip if no Cloudflare token)
-    needs: [test, security, frontend]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && secrets.CLOUDFLARE_API_TOKEN == ''
-    steps:
-      - run: echo "Skipping Cloudflare Pages deployment: CLOUDFLARE_API_TOKEN not configured. Add it as a repository secret to enable automatic frontend deployment."
