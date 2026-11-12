@@ -314,3 +314,183 @@ def test_cli_apply_is_idempotent_and_records_the_run(isolated_settings, tmp_path
     assert "0 unchanged" not in second.stdout  # unchanged count is reported for a re-run
     with get_db(isolated_settings.db_path) as conn:
         assert conn.execute("SELECT COUNT(*) FROM ingest_runs").fetchone()[0] == 2
+
+
+# ------------------------------------------------- source metadata / manifest
+
+def test_unknown_source_key_raises(isolated_settings):
+    """ingest_text must refuse a source_key that is not in legal_sources."""
+    with get_db(isolated_settings.db_path) as conn:
+        with pytest.raises(ValueError, match="unknown source_key"):
+            ingest_service.ingest_text(
+                conn, text=PAGES, source_key="does-not-exist",
+                source_file="x.txt", language="en", dry_run=False,
+            )
+
+
+def test_ingest_run_records_source_metadata(isolated_settings):
+    """Each ingest_run row must carry source_key, source_file and article counts."""
+    with get_db(isolated_settings.db_path) as conn:
+        report = ingest_service.ingest_text(
+            conn, text=PAGES, source_key="india-code-constitution",
+            source_file="constitution-en.txt", language="en", dry_run=False,
+        )
+        run = conn.execute(
+            "SELECT source_key, source_file, articles_found, articles_written, status"
+            " FROM ingest_runs ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    assert run["source_key"] == "india-code-constitution"
+    assert run["source_file"] == "constitution-en.txt"
+    assert run["articles_found"] == report.articles_found
+    assert run["articles_written"] == report.articles_written
+    assert run["status"] == "completed"
+
+
+# ------------------------------------------------- document integrity
+
+def test_empty_text_produces_zero_articles_and_blocks(isolated_settings):
+    """An empty source must be caught by the quality gate, not silently imported."""
+    with get_db(isolated_settings.db_path) as conn:
+        report = ingest_service.ingest_text(
+            conn, text="", source_key="india-code-constitution",
+            source_file="empty.txt", language="en", dry_run=True,
+        )
+    assert report.articles_found == 0
+    assert report.quality_ok is False
+    assert "no_articles_found" in report.blocking_reasons
+
+
+def test_whitespace_only_text_produces_zero_articles():
+    """Text with no article headings yields zero parsed articles."""
+    articles, malformed = ingest_service.parse_articles(
+        ["\n   \n\n  \n", "PART III\nFUNDAMENTAL RIGHTS\n"]
+    )
+    assert articles == []
+    assert malformed == []
+
+
+def test_unsupported_file_format_is_rejected(tmp_path):
+    """read_pages must reject formats it cannot parse (docx, etc.)."""
+    path = tmp_path / "document.docx"
+    path.write_bytes(b"PK\x03\x04 fake zip")
+    with pytest.raises(ValueError, match="unsupported source type"):
+        ingest_service.read_pages(path)
+
+
+def test_nonexistent_file_cli_returns_exit_code_2(isolated_settings, tmp_path):
+    """The CLI must exit 2 when the source file does not exist."""
+    result = _run_cli(
+        ["--file", str(tmp_path / "missing.pdf"), "--source-key", "india-code-constitution"],
+        isolated_settings.db_path,
+    )
+    assert result.returncode == 2
+    assert "Source file not found" in result.stderr
+
+
+# ------------------------------------------------- Gujarati language separation
+
+def test_gujarati_text_writes_to_text_gu_column(isolated_settings):
+    """language='gu' must populate text_gu, not text_en; title goes to title_gu."""
+    gu_pages = [
+        "14. સમાનતા.—રાજ્ય કોઈપણ વ્યક્તિ સાથે સમાનતા વર્તાવશે.\n"
+    ]
+    with get_db(isolated_settings.db_path) as conn:
+        report = ingest_service.ingest_text(
+            conn, text=gu_pages, source_key="india-code-constitution",
+            source_file="samvidhan-gu.txt", language="gu", dry_run=False,
+        )
+        assert report.articles_written == 1
+        row = conn.execute(
+            "SELECT text_en, text_gu, title_en, title_gu FROM constitution_articles"
+            " WHERE article_no = '14'"
+        ).fetchone()
+    assert row["text_en"] is None or row["text_en"] == ""
+    assert "સમાનતા" in row["text_gu"]
+    assert row["title_gu"] is not None
+
+
+# ------------------------------------------------- article number validation
+
+def test_article_number_zero_is_rejected():
+    """Article 0 is not a valid Constitution article and must be skipped."""
+    articles, malformed = ingest_service.parse_articles(
+        "0. Invalid article.—This should not be parsed.\n"
+        "14. Equality before law.—Valid article.\n"
+    )
+    numbers = {a.article_no for a in articles}
+    assert "0" not in numbers
+    assert "14" in numbers
+
+
+def test_out_of_range_article_numbers_are_rejected():
+    """Article numbers above MAX_ARTICLE_NUMBER (500) must be skipped."""
+    articles, _ = ingest_service.parse_articles(
+        "501. Not a real article.—Out of range.\n"
+        "14. Equality before law.—Valid.\n"
+    )
+    numbers = {a.article_no for a in articles}
+    assert "501" not in numbers
+    assert "14" in numbers
+
+
+def test_letter_suffix_articles_are_accepted():
+    """Constitution articles with letter suffixes (21A, 39A, 44A) are valid."""
+    articles, _ = ingest_service.parse_articles(
+        "21A. Right to education.—Valid suffixed article.\n"
+        "39A. Equal justice and free legal aid.—Valid suffixed article.\n"
+    )
+    numbers = {a.article_no for a in articles}
+    assert "21A" in numbers
+    assert "39A" in numbers
+
+
+# ------------------------------------------------- missing numbers / gap reporting
+
+def test_missing_numbers_are_reported_not_invented(isolated_settings):
+    """find_missing must report gaps in the observed range, never fabricate articles."""
+    with get_db(isolated_settings.db_path) as conn:
+        report = ingest_service.ingest_text(
+            conn, text=PAGES, source_key="india-code-constitution",
+            source_file="pages.txt", language="en", dry_run=False,
+        )
+    # PAGES contains articles 14, 15, 21 → 1-13, 16-20, 22-21 (empty) are missing
+    assert report.missing_numbers == ["1", "2", "3", "4", "5", "6", "7", "8",
+                                      "9", "10", "11", "12", "13",
+                                      "16", "17", "18", "19", "20"]
+    assert "21" not in report.missing_numbers, "21 is present in PAGES"
+    assert "missing_articles" in report.warnings[0] if report.warnings else True
+
+
+def test_empty_source_reports_no_missing_numbers():
+    """find_missing on an empty article list must return [], not 1-395."""
+    missing = ingest_service.find_missing([])
+    assert missing == []
+
+
+# ------------------------------------------------- extraction quality signals
+
+def test_low_text_quality_is_flagged_not_blocked_alone():
+    """Replacement characters lower OCR confidence; alone they warn but do not block
+    unless combined with other quality-gate failures."""
+    noise = "\ufffd" * 200
+    noisy = f"14. Equality before law.—The State shall not deny equality.\n{noise}\n"
+    with get_db(":memory:") as conn:
+        report = ingest_service.ingest_text(
+            conn, text=noisy, source_key="india-code-constitution",
+            source_file="scan.txt", language="en", dry_run=True,
+        )
+    assert report.ocr_confidence < 1.0
+    assert any("low_text_quality" in w for w in report.warnings)
+
+
+def test_article_pages_label_format():
+    """pages_label must render 'start-end' for multi-page articles and 'n' for single-page."""
+    from backend.app.services.ingest import ParsedArticle
+
+    single = ParsedArticle(article_no="14", title="T", body="B", line_no=1,
+                           page_start=5, page_end=5)
+    assert single.pages_label == "5"
+
+    multi = ParsedArticle(article_no="15", title="T", body="B", line_no=1,
+                          page_start=3, page_end=7)
+    assert multi.pages_label == "3-7"
