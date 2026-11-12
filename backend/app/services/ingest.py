@@ -144,7 +144,7 @@ def parse_articles(text_or_pages: str | list[str]) -> tuple[list[ParsedArticle],
             continue
         number = match.group("num").strip()
         digits = re.match(r"\d+", number)
-        if not digits or int(digits.group()) > MAX_ARTICLE_NUMBER:
+        if not digits or int(digits.group()) < 1 or int(digits.group()) > MAX_ARTICLE_NUMBER:
             continue
         heading_positions.append((index, number, match.group("rest").strip()))
 
