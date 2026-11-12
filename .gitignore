@@ -37,6 +37,12 @@ data/raw/*
 
 # Node (optional jsdom smoke test)
 node_modules/
-node_modules
 package-lock.json
-package.json
+
+# Android build outputs (keep source, ignore generated binaries)
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# Capacitor native plugin templates (generated)
+android/capacitor-cordova-android-plugins/
