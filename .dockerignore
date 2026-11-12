@@ -5,8 +5,13 @@ __pycache__
 .pytest_cache
 .coverage
 node_modules
-data
-storage
-backups
+data/nyaymitra.db*
+data/nyaymitra.db-wal
+data/nyaymitra.db-shm
+data/raw/*
+!data/raw/README.md
+data/legacy/*
+backups/
+storage/
 frontend/legacy
 docs
