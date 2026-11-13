@@ -116,3 +116,30 @@ list is a release blocker for a supervised pilot; items 1–3 are.
 * The assistant answers in Gujarati or English only.
 * Rendering on real devices is untested; Ol Chiki and Nastaliq need a suitable font on the device.
 * Full list: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §12.
+
+---
+
+## Licensing — optional ingestion dependency (verified 2026-11-12)
+
+`requirements-ingestion.txt` pins **`pymupdf>=1.24`**, which is **AGPL-3.0** (or a paid Artifex
+commercial licence). AGPL is a strong copyleft: distributing a derivative work that links it
+obliges the distributor to offer the corresponding source under AGPL. This matters because the
+project anticipates a *government submission package*.
+
+**Verified containment (no contamination of what is distributed or served):**
+
+| Check | Result |
+|---|---|
+| `pymupdf` in `backend/requirements.txt` (runtime) | **no** — the 7 runtime packages are all permissive (MIT/BSD/Apache) |
+| `pymupdf` in the `Dockerfile` build | **no** — the image installs `backend/requirements.txt` only |
+| `pymupdf` imported by `backend/app/**` | **no** |
+| Who imports it | `ingestion/pdfio.py` and `tests/test_phase3c.py` only — offline, developer-side tooling |
+
+The running application and its container image contain **no AGPL code**.
+
+**Action for the owner before any distribution that bundles the ingestion tooling:**
+pick one of — (a) keep `requirements-ingestion.txt` out of every distributed artefact (current
+behaviour), (b) switch `ingestion/pdfio.py` to a permissive PDF library, or (c) purchase the
+Artifex commercial licence. `scripts/license_audit.py --all` reports this correctly as
+`1 copyleft (pymupdf) + 2 unknown (pymupdf4llm, pymupdf_layout)`; those two "unknown" entries are
+transitive companions of pymupdf and are likewise absent from runtime.
