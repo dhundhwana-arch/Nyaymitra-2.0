@@ -21,5 +21,6 @@ pip install --quiet -r backend/requirements.txt
 echo "==> migrating database"
 python scripts/init_db.py --json >/dev/null
 
-echo "==> NYAYMITRA listening on http://0.0.0.0:${PORT} (docs: /api/docs)"
+echo "==> NYAYMITRA listening on http://0.0.0.0:${PORT}"
+echo "    OpenAPI schema: http://127.0.0.1:${PORT}/api/openapi.json  (Swagger UI is intentionally disabled: it needs a CDN)"
 exec uvicorn backend.app.main:app --host 0.0.0.0 --port "$PORT"
