@@ -30,3 +30,33 @@ page numbers and amendment footnotes (`Article 1996`, `Article 3359`), titles sl
 the same text repeated at 1 000-character offsets, and no way to tell which row is a real article.
 Validation (does the number exist? does the text repeat? is the script even the target language?)
 was absent.
+
+---
+
+## Reconciliation addendum — 2026-11-12 (`arena/2497125a-nyaymitra-2-0`)
+
+When `main` (`53df9ea`) was reconciled into the canonical branch, every file from the old
+prototype that had no archived counterpart was restored here **byte-for-byte** (SHA-256 verified
+against `origin/main`). Nothing from `main` was discarded.
+
+| Restored to | Source on `main` | Why it is here |
+|---|---|---|
+| `scripts/legacy/database.py` | `backend/database.py` | The superseded schema (`title_gu`, `description_gu`, `remedy_gu`) that **contradicted** the committed database. Kept as evidence for `docs/REPOSITORY_AUDIT.md` §5.2. Never imported by the application. |
+| `frontend/legacy/data/library_fix.js` | `frontend/library_fix.js` | The 2,125-row Santhali-derived dataset as it was actually shipped (4.9 MB). The same rows are preserved as evidence in `data/legacy/*.jsonl.gz` and mirrored into the admin-only `legacy_import_chunks` table. **Not served.** |
+| `frontend/legacy/data/interactive_library.js` | `frontend/interactive_library.js` | 470 placeholder records, every one `"Article N/A"`. Zero information value; kept only so the reconciliation loses nothing. **Not served.** |
+
+`frontend/index_v2.html` was **not** restored: it is byte-identical to `frontend/legacy/index.html`
+(md5 `95b0c137047691502d26a0d363219198`), so restoring it would preserve a duplicate, not a file.
+
+### Containment
+
+Only `web/` is mounted and served by `backend/app/main.py` (`_mount_web`). Nothing under
+`frontend/legacy/` or `scripts/legacy/` is reachable over HTTP, imported by application code, or
+collected by CI. Verified:
+
+```
+grep -rn "library_fix|interactive_library|legacy/data|app_core" web/ backend/app/   ->  no matches
+```
+
+The quarantine remains intact and unmodified: `data/legacy/constitution_articles_legacy_2026-11-07.jsonl.gz`
+sha256 `b59f00b8c10f7d6845c4e2e4d97dd493c8c02b99ab6edd43a38ea022e5a0107f`, 2,125 records.
