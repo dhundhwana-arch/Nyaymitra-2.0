@@ -220,3 +220,72 @@ or `[… human verification pending]`, so the distinction is visible in the answ
 - `main` unchanged.
 - No legal content invented, translated, or marked verified.
 - No test deleted or skipped to make the suite pass.
+
+---
+
+## 10. Final validation record — measured on the reconciled branch
+
+Every figure below was produced by running the command in this session, on
+`arena/2497125a-nyaymitra-2-0`, after the merges in §4.
+
+| Check | Command | Actual result |
+|---|---|---|
+| Backend tests | `pytest backend/tests` | **389 passed**, 1 deprecation warning, ~36 s |
+| Tool tests | `pytest tests/` | **15 passed** |
+| Combined | `pytest backend/tests tests/` | **404 passed**, 1 warning |
+| Coverage | `pytest --cov=backend/app` | **92%** — 3,158 statements, 265 missed |
+| JS syntax | `node --check` × 6 files | **all pass** |
+| External assets / inline style | CI grep | **none / none** |
+| Dependency audit | `pip-audit -r backend/requirements.txt` | **No known vulnerabilities found** |
+| Clean-DB migrations | `scripts/init_db.py --info` | 5 applied, 21 tables, seeded 9/11/5/18/15 + 2,125 quarantined |
+| Migration rollback | down-migrations 005→001 | leaves only `schema_migrations`; `integrity_check = ok` |
+| API surface | OpenAPI | **41 operations**, 11 routers |
+| Frontend served | HTTP GET × 10 paths | `/`, `/admin`, `/styles.css`, `/app.js`, `/config.js`, `/manifest.webmanifest`, `/locales/{index,gu,sat}.json`, `/favicon.svg` → **all 200** |
+| Assistant grounding | 7 live queries | gu Article 14 → `grounded=True`, cites Article 14; en Article 21 → cites Article 21; **gu + en gibberish → `grounded=False`, `citations=[]`**; gu cyber/land → triage without invented articles; injection attempt → `grounded=False` |
+| Admin auth | 4 token cases | no token 401, wrong token 401, valid 200; monitor is read-only by design |
+| Complaint flow | preview → confirm → retrieve | `NYM-…` + token created; token required; **wrong token and wrong reference return identical 404** (no enumeration oracle) |
+| Idempotency | same `client_request_id` twice | 201 then **409** |
+| Security headers | `GET /` | CSP `default-src 'self'; script-src 'self'; style-src 'self'`, `X-Frame-Options: DENY`, `nosniff`, `no-referrer`, `Permissions-Policy` |
+| Rate limiting | exhaust each bucket | 429 with `Retry-After` and `{"error":{"code":"rate_limited"}}`; `/health` exempt |
+| CORS (default) | no allowlist | **no ACAO header** |
+| CORS (separate site) | `NYAYMITRA_ALLOWED_ORIGINS=http://127.0.0.1:3366` | allowed origin echoed, **unknown origin refused**, preflight 200 with correct methods/headers |
+| E2E same-origin | `node scripts/e2e_activation.mjs :8255` | **43/43 checks passed** |
+| E2E separate-site | `node scripts/e2e_activation.mjs :3366 :8266` | **43/43 checks passed**, 143 calls, **0 blocked** |
+| Browser smoke | `node scripts/smoke_web.mjs :8255` | **OK — all citizen journeys and the admin console worked** |
+| Multilingual | `/api/v1/languages` | **23 languages**, all scripts resolve + auto-detect, RTL = ks/sd/ur |
+| Quarantine | sha256 + row count | `b59f00b8…`, **2,125 records**, unchanged |
+
+### 10.1 Note on intermittent E2E failures (not a defect)
+
+`e2e_activation.mjs` issues ~143 API calls. The default limits are `read` 120 / 60 s **per client
+IP** and `admin` 10 / 60 s. When another run, browser or smoke test has used the same IP within the
+same minute, later checks receive `429` and cascade to "0 items"/"0 articles". Verified by reading
+the server log (`rate limit hit bucket=read … 429 Too Many Requests`) and by confirmation that on a
+**fresh** server the identical script returns **43/43** and the smoke test prints **OK**. Recorded as
+`docs/KNOWN_LIMITATIONS.md` item 32.
+
+## 11. Deployment readiness (nothing deployed)
+
+| Artefact | Present | Executed |
+|---|---|---|
+| `Dockerfile` + `.dockerignore` | yes | **no** (no Docker in sandbox) |
+| `deploy/nyaymitra.service` (systemd) | yes | **no** |
+| `render.yaml` / `deploy/render.persistent.yaml` | yes | **no** |
+| `wrangler.toml` + `web/_headers` + `web/_redirects` (Cloudflare Pages) | yes | **no** |
+| `capacitor.config.js` + `android/` | yes | **no** (no Android SDK) |
+| CI deploy job | **manual-only**, `refs/heads/main`-guarded | never triggered |
+
+Verified live: 0 GitHub deployments, no Pages site, no environments, no releases, no tags (other
+than the local checkpoint). **No deployment was performed and none should be performed** until B-1
+and B-2 are closed.
+
+## 12. Exact next action required
+
+1. **Owner only** — promote the reconciled branch to `main` (one fast-forward, safe):
+   `git push origin arena/2497125a-nyaymitra-2-0:main`
+2. **Owner only** — correct the GitHub repository description, which still reads
+   *"Next-Gen Legal AI Justice Access System (Gemini Production Engine)"*. There is no Gemini
+   engine; the tested engine is the deterministic offline composer. This session's token is not
+   permitted to change repository settings (HTTP 403).
+3. **Then** close B-1 (official Constitution text) and B-2 (named human legal reviewer) before any
+   public use.

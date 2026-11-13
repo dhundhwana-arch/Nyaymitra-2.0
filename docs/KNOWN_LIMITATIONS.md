@@ -82,6 +82,17 @@ Honest list, in the order it is likely to bite.
 28. **No i18n framework** — translations are a dictionary in `web/app.js`; adding a language means
     editing code.
 
+32. **The default rate limits are tighter than the E2E scripts assume.** Measured in this
+    reconciliation: `read` 120 / 60 s **per client IP**, `write` 30, `ai` 20, **`admin` 10**.
+    A single `node scripts/e2e_activation.mjs` run is ~143 API calls, so if any other browser,
+    script or test has used the same IP inside the same 60-second window, the run ends with
+    `429 Too Many Requests` and the later checks cascade to "0 items"/"0 articles". This is the
+    limiter working as designed, not a rendering defect: on a fresh server the same scripts pass
+    **43/43** (e2e) and print **OK** (smoke). `GET /api/v1/health` is exempt, so probes are
+    unaffected. For test runs either restart the server (the bucket is in-process) or raise
+    `NYAYMITRA_RATE_LIMIT_READ` / `..._ADMIN` for the duration. A 429 is well-behaved: it carries
+    `Retry-After` and the standard `{"error":{"code":"rate_limited", ...}}` body.
+
 ## Security
 
 29. **Shared operator token**, no individual accounts or MFA; see `SECURITY_AUDIT.md` R-7.
