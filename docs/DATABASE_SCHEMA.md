@@ -132,3 +132,14 @@ Seeding is idempotent and **never overwrites a human decision**: an article mark
 ## Update 2026-11-12 — multilingual milestone
 
 Migration `005_article_texts.sql` adds `article_texts` — one row per (article, language) with title, body, source, pages, edition, `extraction_method`, `content_status` (`OFFICIAL_SOURCE`, `OCR_REVIEW_REQUIRED`, `MACHINE_TRANSLATED`, `HUMAN_REVIEWED`, `VERIFIED`), `verification_status` and SHA-256. No existing table is altered. Reversible with `005_article_texts.down.sql` (back up first). Details: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §4.
+
+## Update 2026-11-13 — migration 006 (Phase 4)
+
+`006_article_text_normalized.sql` (reversible with its `.down.sql`):
+
+* `article_texts.body_normalized` — optional cleaned copy of OCR text. `body` always holds the text exactly as supplied.
+* `article_texts.normalization_json` — list of the clean-up steps applied. Setting both columns to NULL undoes normalisation.
+* `import_changes` — journal of every row an import run created or replaced (`run_id`, `article_id`, `article_no`, `language`, `created_article`, `prev_article_json`, `prev_text_json`, `new_sha256`). Used by `scripts/import_constitution_data.py rollback RUN_ID`.
+* `ingest_runs.status` now also takes `running` and `rolled_back`.
+
+Migrations are now 001–006.

@@ -105,3 +105,13 @@ list is a release blocker for a supervised pilot; items 1–3 are.
 * The assistant answers in Gujarati or English only.
 * Rendering on real devices is untested; Ol Chiki and Nastaliq need a suitable font on the device.
 * Full list: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §12.
+
+## Update 2026-11-13 — Phase 4 (data import)
+
+* Still no official Constitution text in the database (English 0, Gujarati 0); the importer is ready but the owner's files have not been received.
+* Diglot separation and Gujarati OCR checks are verified on synthetic data only.
+* Rule-based OCR checks find layout damage (detached vowel signs, broken conjuncts), not wrongly recognised characters.
+* Article numbers with a non-Latin letter suffix are rejected until a mapping is confirmed from the edition.
+* Legacy non-Unicode Gujarati font encodings are not converted.
+* `body_normalized` is stored but not displayed.
+* The diglot option needs PyMuPDF, which is not in `requirements.txt` (tool-only; AGPL licence — review before bundling).

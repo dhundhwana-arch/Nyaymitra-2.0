@@ -1,0 +1,23 @@
+[
+  {
+    "article_no": "14",
+    "part_no": "III",
+    "part_title": "PLACEHOLDER PART TITLE",
+    "chapter": null,
+    "title": {"en": "PLACEHOLDER TITLE (replace)", "gu": "PLACEHOLDER શીર્ષક (બદલો)"},
+    "text": {
+      "en": "PLACEHOLDER — replace with the English text exactly as printed.",
+      "gu": "PLACEHOLDER — અહીં ગુજરાતી લખાણ જેમ છે તેમ મૂકો."
+    },
+    "pages": "45",
+    "source": "my-file.pdf"
+  },
+  {
+    "article_no": "243ZA",
+    "part_no": "IXA",
+    "title": {"en": "PLACEHOLDER TITLE (replace)"},
+    "text": {"en": "PLACEHOLDER — a row that has English only."},
+    "pages": "120-121",
+    "source": "my-file.pdf"
+  }
+]
