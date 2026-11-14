@@ -159,3 +159,7 @@ Section 3's gaps 3, 4, 5, 6, 7 and 8 are closed and two further defects found wh
 ## Update 2026-11-13 — Phase 4 tooling
 
 Article-wise files (CSV, JSON, JSONL, TXT, folders) are now imported with `scripts/import_constitution_data.py` (`inspect` → `check` → `apply` → `rollback`). Transfer commands for Termux and the full procedure: `docs/PHASE4_DATA_IMPORT_REPORT.md` §9. Templates: `data/templates/`.
+
+## Update 2026-11-14 — Phase 4A
+
+The copy-paste Termux procedure, the transfer package layout and the checksum steps are in `docs/PHASE4A_DATA_RECOVERY_GUIDE.md`.

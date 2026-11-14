@@ -191,3 +191,11 @@ Backend suite: **389 passed** (was 262). Source-quality tool: 15 passed. End-to-
 ## Update 2026-11-13 — Phase 4 (data import)
 
 Backend `pytest`: **443 passed** (54 new in `backend/tests/test_phase4_import.py`). `pytest tests`: 15 passed. jsdom e2e 43/43, smoke OK (simulations, not a real browser). All import tests use synthetic sample sentences; no real Constitution file, real diglot PDF or real OCR output has been tested. Details: `docs/PHASE4_DATA_IMPORT_REPORT.md` §8.
+
+## Update 2026-11-14 — Phase 4A
+
+Backend `pytest`: **454 passed** (11 new in `backend/tests/test_data_recovery.py`: read-only inventory, privacy, package manifest, importer dry-run on recovered-style files). Synthetic data and temporary databases only.
+
+## Update 2026-11-14 — Phase 4A final readiness audit
+
+Backend `pytest`: **460 passed** (6 more in `backend/tests/test_data_recovery.py` covering the defects fixed in inventory tool 2.1). Synthetic data and temporary databases only.

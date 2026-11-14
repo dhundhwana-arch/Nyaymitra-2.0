@@ -201,3 +201,5 @@ python scripts/import_constitution_data.py rollback <RUN_ID>      # if needed
 8. Unchanged from before: deployed URLs and deploy approval; decision on the two earlier unapproved merges into this branch (`d6bd5dc`, `e07747a`) and what becomes `main`; native-speaker review of 21 machine-translated catalogues.
 
 Nothing was deployed. `main` was not modified. No branch was merged, deleted or force-pushed in this phase.
+
+> Update 2026-11-14: the transfer procedure in §9 is superseded by `docs/PHASE4A_DATA_RECOVERY_GUIDE.md` (inventory tool 2.0 with Markdown report, privacy rules and a verified transfer package).
