@@ -280,3 +280,103 @@ def test_gujarati_text_survives_byte_for_byte(tmp_path):
     records, _ = si.build_records(loaded, si.infer_mapping(loaded, "gu"), "gu", "ocr", normalize=True)
     assert records[0].text == tricky and records[0].text.encode("utf-8") == tricky.encode("utf-8")
     assert records[0].article_no == "1"
+
+
+# ----------------------------------------------------------------------------- final readiness audit (tool 2.1)
+def test_personal_data_and_archives_are_listed_but_never_packaged(device):
+    tmp, project, shared = device
+    (project / "exports").mkdir()
+    (project / "exports" / "complaints_export.csv").write_text("id,name,phone\n1,Private Person,9876543210\n", encoding="utf-8")
+    (project / "data" / "users.json").write_text('[{"name": "Private Person"}]', encoding="utf-8")
+    (project / "data" / "constitution_backup.zip").write_bytes(b"PK-not-a-real-zip Private Person")
+    package = tmp / "pkg"
+    proc = run_tool(project, "--search", shared, "--package", package, "--out", tmp / "inv.json")
+    report = json.loads((tmp / "inv.json").read_text(encoding="utf-8"))
+    reasons = {Path(x["path"]).name: x["reason"] for x in report["package"]["not_packaged"]}
+    assert reasons["complaints_export.csv"].startswith("possible personal data")
+    assert reasons["users.json"].startswith("possible personal data")
+    assert reasons["constitution_backup.zip"].startswith("archive")
+    entry = next(f for f in report["files"] if f["path"].endswith("complaints_export.csv"))
+    assert "columns" not in entry and "rows" not in entry and len(entry["sha256"]) == 64
+    names = [p.name for p in package.rglob("*") if p.is_file()]
+    assert not {"complaints_export.csv", "users.json", "constitution_backup.zip"} & set(names)
+    with tarfile.open(str(package) + ".tar.gz") as tar:
+        blob = b"".join(tar.extractfile(m).read() for m in tar.getmembers() if m.isfile())
+    assert b"Private Person" not in blob and b"9876543210" not in blob
+    # every omission is named on the console and in the readable report, not only counted
+    for name in ("complaints_export.csv", "users.json", "constitution_backup.zip", "nyaymitra.db"):
+        assert f"NOT COPIED: {project}" in proc.stdout and name in proc.stdout
+        assert name in (package / "INVENTORY.md").read_text(encoding="utf-8")
+
+
+def test_large_file_omission_is_printed(device):
+    tmp, project, shared = device
+    proc = run_tool(project, "--search", shared, "--package", tmp / "pkg", "--max-file-mb", "0.001")
+    line = next(l for l in proc.stdout.splitlines() if "Gujarati_Constitution_2024.pdf" in l)
+    assert line.strip().startswith("NOT COPIED") and "larger than 0.001 MB" in line
+    assert "Gujarati_Constitution_2024.pdf" in (tmp / "pkg" / "INVENTORY.md").read_text(encoding="utf-8")
+
+
+def test_source_info_can_be_edited_without_breaking_verification(device):
+    tmp, project, shared = device
+    package = tmp / "nyaymitra-transfer"
+    run_tool(project, "--search", shared, "--package", package)
+    manifest = (package / "MANIFEST.sha256").read_text(encoding="utf-8")
+    assert "SOURCE_INFO.md" not in manifest
+    copied = [p for p in package.rglob("*") if p.is_file() and p.parts[len(package.parts)] in ("gujarati", "english", "unclassified")]
+    assert copied and all(p.relative_to(package).as_posix() in manifest for p in copied)   # every data file is in the manifest
+    with (package / "SOURCE_INFO.md").open("a", encoding="utf-8") as handle:
+        handle.write("- Edition: answered by the owner\n")
+    assert "not checksummed" in run_tool("--verify-package", package).stdout             # exit 0 after the edit
+    # the guide's re-archive step, then the receiver's checks
+    subprocess.run(["tar", "-czf", "nyaymitra-transfer.tar.gz", "nyaymitra-transfer"], cwd=tmp, check=True)
+    received = tmp / "received"
+    with tarfile.open(tmp / "nyaymitra-transfer.tar.gz") as tar:
+        tar.extractall(received)
+    run_tool("--verify-package", received / "nyaymitra-transfer")
+    assert "answered by the owner" in (received / "nyaymitra-transfer" / "SOURCE_INFO.md").read_text(encoding="utf-8")
+    # an added or removed data file is still caught
+    (received / "nyaymitra-transfer" / "gujarati" / "extra.txt").write_text("x", encoding="utf-8")
+    assert "NOT IN MANIFEST" in run_tool("--verify-package", received / "nyaymitra-transfer", expect=1).stdout
+    (received / "nyaymitra-transfer" / "gujarati" / "extra.txt").unlink()
+    (received / "nyaymitra-transfer" / "gujarati" / "NYAYMITRA-AI" / "ocr_output" / "page_010.txt").unlink()
+    assert "MISMATCH" in run_tool("--verify-package", received / "nyaymitra-transfer", expect=1).stdout
+
+
+def test_existing_archive_is_never_overwritten(device):
+    tmp, project, _ = device
+    archive = tmp / "pkg.tar.gz"
+    archive.write_bytes(b"an earlier archive")
+    proc = subprocess.run([sys.executable, str(TOOL), str(project), "--package", str(tmp / "pkg")], capture_output=True, text=True)
+    assert proc.returncode != 0 and "will not be overwritten" in proc.stderr
+    assert archive.read_bytes() == b"an earlier archive" and not (tmp / "pkg").exists()
+
+
+def test_verification_does_not_modify_package_or_originals(device):
+    tmp, project, shared = device
+    package = tmp / "pkg"
+    run_tool(project, "--search", shared, "--package", package)
+    before = snapshot(tmp / "home"), snapshot(tmp / "storage"), snapshot(package)
+    run_tool("--verify-package", package)
+    assert (snapshot(tmp / "home"), snapshot(tmp / "storage"), snapshot(package)) == before
+
+
+def test_file_changed_during_packaging_fails_loudly(device, monkeypatch):
+    import importlib.util
+
+    tmp, project, _ = device
+    spec = importlib.util.spec_from_file_location("inventory_tool", TOOL)
+    tool = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tool)
+    real_copy = tool.shutil.copyfile
+
+    def corrupting_copy(src, dst):
+        real_copy(src, dst)
+        if str(src).endswith("page_010.txt"):
+            Path(dst).write_text("damaged in transit", encoding="utf-8")
+
+    monkeypatch.setattr(tool.shutil, "copyfile", corrupting_copy)
+    code = tool.main([str(project), "--package", str(tmp / "pkg"), "--out", str(tmp / "inv.json")])
+    report = json.loads((tmp / "inv.json").read_text(encoding="utf-8"))
+    assert code == 1 and report["package"]["copies_verified"] is False
+    assert report["originals"]["unchanged"] is True

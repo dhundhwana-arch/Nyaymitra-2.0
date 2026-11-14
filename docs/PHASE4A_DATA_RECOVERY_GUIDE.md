@@ -12,7 +12,7 @@ Created & Developed by Bambhaniya Divyesh Nonghanbhai
 
 | Item | Path | State |
 |---|---|---|
-| Inventory + package tool | `scripts/inventory_local_data.py` | Existed; had defects (below); now version 2.0, tested |
+| Inventory + package tool | `scripts/inventory_local_data.py` | Existed; had defects (below); now version 2.1, tested |
 | Importer | `scripts/import_constitution_data.py` | `inspect`, `check`, `apply`, `rollback`, `runs` — reviewed, see §6 |
 | Phase 4 report | `docs/PHASE4_DATA_IMPORT_REPORT.md` | formats, rejection reasons, report format |
 | Templates | `data/templates/articles_template.csv`, `articles_template.json`, `mapping_template.json` | optional; your files need not match them |
@@ -56,11 +56,17 @@ python scripts/import_constitution_data.py rollback RUN_ID
 | Everything else | not opened, not hashed, not named — only counted |
 
 Never entered: `Android`, `DCIM`, `Pictures`, `Movies`, `Music`, `node_modules`, `.git`, virtual environments.
-Never copied into a package: files that look like credentials (`.env`, keys, files containing something shaped like an API key or password) and SQLite databases (they may hold complaints). They are listed with a checksum only.
+Never copied into a package (listed with path, size and checksum, each with its reason — on screen as `NOT COPIED:` lines and in `INVENTORY.md`):
+
+* files that look like credentials (key files, or text containing something shaped like an API key or password);
+* files whose name suggests data about people: complaint, grievance, citizen, user(s), feedback, chat, conversation, session, contact, aadhaar, personal, private — their content is not inspected either;
+* SQLite databases (they may hold complaints) unless `--include-databases`;
+* `.zip` / `.gz` archives (contents cannot be checked) unless `--include-archives`;
+* files larger than `--max-file-mb`.
 
 The inventory holds file facts (path, size, checksum, column names, row counts, share of Gujarati/Latin letters, duplicate and gap counts). It does not contain article text.
 
-**Limit:** a file whose name mentions the Constitution but is personal would still be listed. Read the Markdown report before sending anything.
+**Limits:** these rules work on file names and on the first 2 MB of text files. A personal file with an innocent name inside the project folder, or a secret further than 2 MB into a file, would not be caught. Read `INVENTORY.md` and the `tar -tzf` listing before sending anything.
 
 ## 4. Termux procedure — copy and paste
 
@@ -69,11 +75,14 @@ Replace `~/NYAYMITRA-AI` with your real project folder if it differs (step B fin
 **A. Prepare (one time)**
 
 ```bash
-pkg install -y python
+pkg install -y python curl nano
 termux-setup-storage
 curl -fsSL -o ~/inventory_local_data.py https://raw.githubusercontent.com/dhundhwana-arch/Nyaymitra-2.0/arena/08f8f3c5-nyaymitra-2-0/scripts/inventory_local_data.py
 python ~/inventory_local_data.py --help | head -5
+grep -m1 TOOL_VERSION ~/inventory_local_data.py        # must show 2.1
 ```
+
+If the download fails: `pkg install -y git && git clone -b arena/08f8f3c5-nyaymitra-2-0 https://github.com/dhundhwana-arch/Nyaymitra-2.0.git ~/Nyaymitra-2.0 && cp ~/Nyaymitra-2.0/scripts/inventory_local_data.py ~/`
 
 **B. Find the project folder and the known file (read-only)**
 
@@ -116,7 +125,7 @@ Then rebuild the archive so it contains your answers (the data files are not tou
 cd ~ && tar -czf nyaymitra-transfer.tar.gz nyaymitra-transfer && sha256sum nyaymitra-transfer.tar.gz | tee nyaymitra-transfer.tar.gz.sha256
 ```
 
-(`SOURCE_INFO.md` will then differ from the manifest line for it; that one mismatch is expected and I will ignore it. Every data file must still match.)
+`SOURCE_INFO.md` is your notes file: it is deliberately not in the checksum manifest, so editing it does not break verification. Every data file is in the manifest. If `nyaymitra-transfer.tar.gz` already exists the tool never overwrites it; the `tar` command above replaces only that archive, which is a copy.
 
 **F. Check the package**
 
@@ -191,7 +200,7 @@ Known gaps in the importer for the files you describe (cannot be closed without 
 
 | Suite | Result |
 |---|---|
-| `pytest` backend | **454 passed** (11 new in `backend/tests/test_data_recovery.py`) |
+| `pytest` backend | **460 passed** (17 in `backend/tests/test_data_recovery.py`) |
 | `pytest tests` | 15 passed |
 
 Proof that originals are not modified (`test_data_recovery.py`, synthetic "tablet" with a project folder and shared storage):
@@ -206,6 +215,22 @@ Proof that originals are not modified (`test_data_recovery.py`, synthetic "table
 The shared development database `data/nyaymitra.db` had the same checksum before and after the full test run. All tests use temporary databases.
 
 Not tested: a real Android/Termux device, real shared-storage permissions, your real files, very large folders (speed), attaching to a chat.
+
+### Final readiness audit (2026-11-14, tool 2.1)
+
+Defects found in 2.0 and fixed:
+
+| Defect | Fix |
+|---|---|
+| A file such as `complaints_export.csv` inside the project folder was copied into the package | personal-data names are listed only, never inspected or copied |
+| `.zip`/`.gz` files were copied although their contents cannot be checked | not copied unless `--include-archives` |
+| Editing `SOURCE_INFO.md` made `--verify-package` fail | notes file is not checksummed; verification passes after editing |
+| An existing `NAME.tar.gz` was silently overwritten | the tool refuses and changes nothing |
+| A copy differing from its original was recorded but the tool still exited 0 | exit code 1 and an error telling you not to send the package |
+| Files left out were only counted on screen | each is printed as `NOT COPIED: path (size) — reason` |
+| The guide used `nano` without installing it | added to the install line |
+
+Each fix has a test in `backend/tests/test_data_recovery.py`.
 
 ## 8. Still needed from the owner
 

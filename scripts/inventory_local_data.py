@@ -26,7 +26,8 @@ Guarantees
     * Original files are opened for reading only. Nothing is modified, renamed, moved, deleted,
       uploaded, OCR'd or imported. After the run the tool re-checks size and modification time
       of every file it touched (and, when packaging, the SHA-256) and reports the result.
-    * Files that look like credentials, and SQLite databases, are never copied into a package.
+    * Files that look like credentials or personal data (complaints, users, chats), SQLite
+      databases and .zip/.gz archives are listed with a checksum but never copied into a package.
     * Language and "OCR or PDF text" labels are GUESSES from file names and letters, marked as
       such. You confirm them in SOURCE_INFO.md.
 
@@ -48,7 +49,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
-TOOL_VERSION = "2.0"
+TOOL_VERSION = "2.1"
 EXTENSIONS = {".pdf", ".csv", ".tsv", ".json", ".jsonl", ".ndjson", ".txt", ".text", ".md", ".log", ".yaml", ".yml",
               ".db", ".sqlite", ".sqlite3", ".xlsx", ".gz", ".zip"}
 DATABASES = {".db", ".sqlite", ".sqlite3"}
@@ -71,6 +72,12 @@ SECRET_CONTENT = re.compile(
     + r"|\b" + re.escape(_KEY_PREFIXES[2]) + r"[A-Za-z0-9]{20,}"
     + r"|\bgh[pousr]_[A-Za-z0-9]{30,}|\bxox[baprs]-[A-Za-z0-9-]{10,}"
     + r"|(?:api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token|password|passwd)\"?\s*[:=]\s*\"?[^\s\"',]{8,}", re.I)
+# Names that suggest data about people (complaints, users, chats). Such files are listed with a
+# checksum only: their content is not inspected and they are never copied into a package.
+PERSONAL_NAME = re.compile(r"complaint|grievance|citizen|(^|[_\-./])users?([_\-./]|$)|feedback|chat|conversation|session"
+                           r"|contact|aadhaar|aadhar|personal|private|ફરિયાદ", re.I)
+ARCHIVES = {".gz", ".zip"}
+OWNER_NOTES = "SOURCE_INFO.md"          # edited by the owner after packaging, so it is not checksummed
 SAMPLE_BYTES = 2_000_000
 ARTICLE_NO = re.compile(r"^\s*([0-9\u0AE6-\u0AEF\u0966-\u096F]{1,3})\s*[-–]?\s*([A-Za-z\u0A85-\u0AB9]{0,2})\s*\.?\s*$")
 _DIGITS = {ord(c): str(i) for base in (0x0AE6, 0x0966) for i, c in enumerate(map(chr, range(base, base + 10)))}
@@ -287,6 +294,8 @@ def inspect(path: Path, root: Path, mode: str) -> dict:
         secret = looks_secret(path)
         if secret:
             entry["possible_secret"] = secret          # no content facts are recorded for such a file
+        elif PERSONAL_NAME.search(relative):
+            entry["possible_personal_data"] = "the name suggests data about people (complaints, users, chats…)"
         elif suffix in {".csv", ".tsv"}:
             entry.update(inspect_csv(path, "\t" if suffix == ".tsv" else ","))
         elif suffix in {".json", ".jsonl", ".ndjson"}:
@@ -394,6 +403,8 @@ def _facts(e: dict) -> str:
                                                      if s["gujarati_letter_suffixes"] else ""))
     if e.get("possible_secret"):
         bits.append("**POSSIBLE SECRET — not inspected, never packaged**")
+    if e.get("possible_personal_data"):
+        bits.append("**POSSIBLE PERSONAL DATA — not inspected, never packaged**")
     if e.get("error"):
         bits.append("error: " + e["error"])
     return "; ".join(bits).replace("|", "\\|") or "—"
@@ -461,9 +472,12 @@ Nobody but you knows these facts. Without them the text can be imported only as 
 """
 
 
-def build_package(report: dict, dest: Path, max_mb: float, include_databases: bool) -> dict:
+def build_package(report: dict, dest: Path, max_mb: float, include_databases: bool, include_archives: bool = False) -> dict:
     if dest.exists() and any(dest.iterdir()):
         raise SystemExit(f"{dest} already exists and is not empty. Choose a new folder name; nothing was changed.")
+    for existing in (Path(str(dest) + ".tar.gz"), Path(str(dest) + ".tar.gz.sha256")):
+        if existing.exists():
+            raise SystemExit(f"{existing} already exists and will not be overwritten. Choose a new folder name; nothing was changed.")
     dest.mkdir(parents=True, exist_ok=True)
     (dest / PACKAGE_MARKER).write_text("Created by scripts/inventory_local_data.py. Copies only; originals untouched.\n", encoding="utf-8")
     copied, skipped, manifest, used = [], [], [], set()
@@ -472,6 +486,10 @@ def build_package(report: dict, dest: Path, max_mb: float, include_databases: bo
         reason = None
         if entry.get("possible_secret"):
             reason = "possible secret: " + entry["possible_secret"]
+        elif entry.get("possible_personal_data"):
+            reason = "possible personal data: " + entry["possible_personal_data"]
+        elif "." + entry["format"] in ARCHIVES and not include_archives:
+            reason = "archive: its contents cannot be checked by this tool; unpack it and list the folder, or use --include-archives"
         elif entry["format"] in {s.lstrip(".") for s in DATABASES} and not include_databases:
             reason = "database (may hold personal or complaint data); use --include-databases only if it holds Constitution data alone"
         elif entry.get("error") and "sha256" not in entry:
@@ -508,7 +526,7 @@ def finish_package(report: dict, dest: Path, manifest: list[str]) -> None:
     package = report["package"]
     (dest / "inventory.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (dest / "INVENTORY.md").write_text(render_markdown(report), encoding="utf-8")
-    for extra in ("inventory.json", "INVENTORY.md", "SOURCE_INFO.md"):
+    for extra in ("inventory.json", "INVENTORY.md"):
         manifest.append(f"{sha256(dest / extra)}  {extra}")
     (dest / "MANIFEST.sha256").write_text("\n".join(manifest) + "\n", encoding="utf-8")
     with tarfile.open(archive, "w:gz") as tar:
@@ -535,10 +553,11 @@ def verify_package(folder: Path) -> int:
             print(f"MISMATCH  {name}")
     listed = {line.split("  ", 1)[1] for line in manifest.read_text(encoding="utf-8").splitlines() if line.strip()}
     extra = sorted(str(p.relative_to(folder).as_posix()) for p in folder.rglob("*") if p.is_file()
-                   and p.relative_to(folder).as_posix() not in listed | {"MANIFEST.sha256", PACKAGE_MARKER})
+                   and p.relative_to(folder).as_posix() not in listed | {"MANIFEST.sha256", PACKAGE_MARKER, OWNER_NOTES})
     for name in extra:
         print(f"NOT IN MANIFEST  {name}")
     print(f"{total - bad} of {total} files match the manifest; {len(extra)} unlisted file(s)")
+    print(f"({OWNER_NOTES} is your own notes file: it may be edited and is not checksummed.)")
     return 0 if not bad and not extra else 1
 
 
@@ -553,6 +572,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--package", type=Path, metavar="NEW_DIR", help="also COPY the listed files into this new folder and make NEW_DIR.tar.gz")
     parser.add_argument("--max-file-mb", type=float, default=25, help="do not copy files larger than this into the package (0 = no limit; default 25)")
     parser.add_argument("--include-databases", action="store_true", help="copy SQLite databases into the package too")
+    parser.add_argument("--include-archives", action="store_true", help="copy .zip/.gz files into the package too (their contents are not checked)")
     parser.add_argument("--verify-package", type=Path, metavar="DIR", help="check a package folder against MANIFEST.sha256 and exit")
     args = parser.parse_args(argv)
     if args.verify_package:
@@ -590,7 +610,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     manifest: list[str] = []
     if args.package:
-        manifest = build_package(report, args.package, args.max_file_mb, args.include_databases)["manifest"]
+        manifest = build_package(report, args.package, args.max_file_mb, args.include_databases, args.include_archives)["manifest"]
     report["originals"] = unchanged(files, rehash=bool(args.package))
     if args.package:
         finish_package(report, args.package, manifest)
@@ -614,7 +634,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  package: {p['folder']}  ({p['files_copied']} files copied, {len(p['not_packaged'])} listed but not copied)")
             print(f"  archive: {p['archive']}  ({_size(p['archive_size_bytes'])})")
             print(f"  archive sha256: {p['archive_sha256']}")
-    return 0 if report["originals"]["unchanged"] else 1
+            for item in p["not_packaged"]:
+                print(f"  NOT COPIED: {item['path']} ({_size(item['size_bytes'])}) — {item['reason']}")
+            if not p["copies_verified"]:
+                print("  ERROR: a copy differs from its original (did a file change during the run?). Do not send this package.", file=sys.stderr)
+    copies_ok = not args.package or report["package"]["copies_verified"]
+    return 0 if report["originals"]["unchanged"] and copies_ok else 1
 
 
 if __name__ == "__main__":

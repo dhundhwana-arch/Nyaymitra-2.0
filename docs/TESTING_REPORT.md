@@ -195,3 +195,7 @@ Backend `pytest`: **443 passed** (54 new in `backend/tests/test_phase4_import.py
 ## Update 2026-11-14 — Phase 4A
 
 Backend `pytest`: **454 passed** (11 new in `backend/tests/test_data_recovery.py`: read-only inventory, privacy, package manifest, importer dry-run on recovered-style files). Synthetic data and temporary databases only.
+
+## Update 2026-11-14 — Phase 4A final readiness audit
+
+Backend `pytest`: **460 passed** (6 more in `backend/tests/test_data_recovery.py` covering the defects fixed in inventory tool 2.1). Synthetic data and temporary databases only.
