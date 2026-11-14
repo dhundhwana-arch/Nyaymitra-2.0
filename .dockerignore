@@ -1,0 +1,17 @@
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+node_modules
+data/nyaymitra.db*
+data/nyaymitra.db-wal
+data/nyaymitra.db-shm
+data/raw/*
+!data/raw/README.md
+data/legacy/*
+backups/
+storage/
+frontend/legacy
+docs

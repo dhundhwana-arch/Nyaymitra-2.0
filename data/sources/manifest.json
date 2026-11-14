@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "constitution-en": {
+      "language": "en",
+      "publisher": "Legislative Department, Ministry of Law and Justice, Government of India",
+      "url": "https://www.legislative.gov.in/static/uploads/2025/08/b9a933fb88c0a5afba254256bc55a3f0.pdf",
+      "local_path": "data/raw/constitution-of-india-en.pdf",
+      "claimed_edition": "As on 10 September 2026",
+      "claimed_amendments_incorporated": "Up to the Constitution (One Hundred and Sixth Amendment) Act, 2023",
+      "claims_verified_against_document": false,
+      "last_attempt_at": "2026-11-12T11:29:26Z",
+      "last_attempt_status": "failed",
+      "last_attempt_error": "URLError: <urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>",
+      "existing_file_preserved": false,
+      "acquired": false,
+      "retrieved_at": null,
+      "sha256": null,
+      "size_bytes": null,
+      "page_count": null,
+      "pdf_metadata": null
+    },
+    "constitution-gu": {
+      "language": "gu",
+      "publisher": "Legislative Department, Ministry of Law and Justice, Government of India",
+      "url": "https://www.legislative.gov.in/static/uploads/2025/07/316140f5938919bbbce4c22f1bf3d5ff.pdf",
+      "local_path": "data/raw/samvidhan-gu.pdf",
+      "claimed_edition": "Fifth edition, February 2026",
+      "claimed_amendments_incorporated": "Up to the Constitution (One Hundred and Sixth Amendment) Act, 2023",
+      "claims_verified_against_document": false,
+      "last_attempt_at": "2026-11-12T11:29:26Z",
+      "last_attempt_status": "failed",
+      "last_attempt_error": "URLError: <urlopen error TLS/SSL connection has been closed (EOF) (_ssl.c:992)>",
+      "existing_file_preserved": false,
+      "acquired": false,
+      "retrieved_at": null,
+      "sha256": null,
+      "size_bytes": null,
+      "page_count": null,
+      "pdf_metadata": null
+    }
+  }
+}

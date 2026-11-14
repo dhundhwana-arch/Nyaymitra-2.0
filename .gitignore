@@ -1,8 +1,51 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.db
-.env
+.venv/
 venv/
 env/
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# Local databases & backups (never commit citizen data)
+*.db
+*.db-wal
+*.db-shm
+data/nyaymitra.db*
+backups/
+
+# Uploaded documents (private)
+storage/
+
+# Supplied legal source documents (large, may be copyrighted; keep locally)
+data/raw/*
+!data/raw/README.md
+
+# Environment / secrets
+.env
+.env.local
+*.pem
+
+# Editor / OS
 .DS_Store
+.idea/
+.vscode/
+
+# Node (optional jsdom smoke test)
+node_modules/
+package-lock.json
+
+# Android build outputs (keep source, ignore generated binaries)
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# Capacitor native plugin templates (generated)
+android/capacitor-cordova-android-plugins/
+
+# Phase 3C acquisition temp files
+data/raw/*.part
