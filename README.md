@@ -38,7 +38,7 @@ guarantee results, and it never presents unverified material as official law.
 | Dependency vulnerability audit | **COMPLETE** — `pip-audit` clean after upgrading 3 packages |
 | Authoritative Article text in Gujarati/English | **BLOCKED** — no source file or extraction exists in the repository; the owner's local files have not been supplied (see [`docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md`](docs/LOCAL_DATA_RECOVERY_AND_IMPORT_PLAN.md)) |
 | Legal accuracy of every explanation, helpline and department entry | **REQUIRES HUMAN VERIFICATION** (queue in `/admin`) |
-| Automated test suite | **389 backend tests + 15 source-tool tests, all passing**; 43-step jsdom end-to-end script passing in both hosting layouts |
+| Automated test suite | **443 backend tests + 15 source-tool tests, all passing**; 43-step jsdom end-to-end script passing in both hosting layouts |
 
 The corpus ships with **9 human-written article explanations and 0 authoritative texts**. The API
 says so on every answer, and the UI shows a warning banner. See
@@ -55,7 +55,7 @@ Browser ── web/ (static single-page app, no build step, no CDN)
 FastAPI  backend/app  ── /api/v1/…   (CORS only for NYAYMITRA_ALLOWED_ORIGINS)
    │   constitution · library · ai (assistant) · departments · complaints · documents · admin
    ▼
-SQLite   NYAYMITRA_DB_PATH   schema = backend/migrations/001–005
+SQLite   NYAYMITRA_DB_PATH   schema = backend/migrations/001–006
    ▲
 data/seed/*.json  (loaded idempotently at start-up)      data/raw/*.pdf → scripts/ingest_constitution.py
 ```
@@ -131,7 +131,7 @@ backend/app/          FastAPI application (factory `create_app`)
   services/           constitution search, textsearch, complaints, documents, departments,
                       triage, glossary, seeding, ingestion, monitoring
 backend/migrations/   versioned SQL with down-migrations
-backend/tests/        389 pytest tests
+backend/tests/        443 pytest tests
 web/                  self-hosted SPA (no CDN) + admin console; config.js sets the API address
 web/locales/          interface text: one JSON catalogue per language + index.json (registry)
 data/seed/            curated seed JSON (sources, 9 articles, departments, triage, glossary)
@@ -154,7 +154,7 @@ not served.
 ## Tests
 
 ```bash
-python -m pytest                                  # 389 passed
+python -m pytest                                  # 443 passed
 python -m pytest tests                            # 15 passed (ingestion/ source-quality tool)
 python -m pytest -q --cov=backend/app             # coverage report
 node --check web/app.js web/admin.js              # frontend syntax
@@ -192,6 +192,8 @@ Detailed, honest results — including what is *not* covered — are in
 | [FINAL_COMPLETION_REPORT.md](docs/FINAL_COMPLETION_REPORT.md) | Task register, results, completion percentage |
 | [NYAYMITRA_DATA_ACTIVATION_REPORT.md](docs/NYAYMITRA_DATA_ACTIVATION_REPORT.md) | Every dataset found, what is displayed, what is missing |
 | [NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md](docs/NYAYMITRA_FRONTEND_BACKEND_CONNECTION_REPORT.md) | Why the live site was empty, what was fixed, test results |
+| [PHASE4_DATA_IMPORT_REPORT.md](docs/PHASE4_DATA_IMPORT_REPORT.md) | Importing the owner's English/Gujarati article files: formats, quality report, diglot and OCR status, Termux transfer |
+| [LOCALE_QUALITY_AUDIT.md](docs/LOCALE_QUALITY_AUDIT.md) | Generated audit of the 23 interface catalogues |
 | [MULTILINGUAL_IMPLEMENTATION_REPORT.md](docs/MULTILINGUAL_IMPLEMENTATION_REPORT.md) | The 23-language architecture, database/API/frontend changes, tests, limits |
 | [LANGUAGE_AVAILABILITY_MATRIX.md](docs/LANGUAGE_AVAILABILITY_MATRIX.md) | What really exists in each language (generated) |
 | [DATA_SOURCE_REGISTER.md](docs/DATA_SOURCE_REGISTER.md) | Official sources located, with provenance and what is still unknown |

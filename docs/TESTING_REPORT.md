@@ -187,3 +187,7 @@ were deprecation notices about the actions' Node runtime, not failures.
 ## Update 2026-11-12 — multilingual milestone
 
 Backend suite: **389 passed** (was 262). Source-quality tool: 15 passed. End-to-end (jsdom): **43/43** on one site and 43/43 with frontend and backend on separate origins. These are simulated-browser tests; real-device rendering of the 23 scripts is not tested. Details and gaps: [MULTILINGUAL_IMPLEMENTATION_REPORT.md](MULTILINGUAL_IMPLEMENTATION_REPORT.md) §9.
+
+## Update 2026-11-13 — Phase 4 (data import)
+
+Backend `pytest`: **443 passed** (54 new in `backend/tests/test_phase4_import.py`). `pytest tests`: 15 passed. jsdom e2e 43/43, smoke OK (simulations, not a real browser). All import tests use synthetic sample sentences; no real Constitution file, real diglot PDF or real OCR output has been tested. Details: `docs/PHASE4_DATA_IMPORT_REPORT.md` §8.

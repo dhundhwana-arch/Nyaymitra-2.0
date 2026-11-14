@@ -143,3 +143,15 @@ behaviour), (b) switch `ingestion/pdfio.py` to a permissive PDF library, or (c) 
 Artifex commercial licence. `scripts/license_audit.py --all` reports this correctly as
 `1 copyleft (pymupdf) + 2 unknown (pymupdf4llm, pymupdf_layout)`; those two "unknown" entries are
 transitive companions of pymupdf and are likewise absent from runtime.
+
+---
+
+## Update 2026-11-13 — Phase 4 (data import)
+
+* Still no official Constitution text in the database (English 0, Gujarati 0); the importer is ready but the owner's files have not been received.
+* Diglot separation and Gujarati OCR checks are verified on synthetic data only.
+* Rule-based OCR checks find layout damage (detached vowel signs, broken conjuncts), not wrongly recognised characters.
+* Article numbers with a non-Latin letter suffix are rejected until a mapping is confirmed from the edition.
+* Legacy non-Unicode Gujarati font encodings are not converted.
+* `body_normalized` is stored but not displayed.
+* The diglot option needs PyMuPDF, which is not in `requirements.txt` (tool-only; AGPL licence — review before bundling).

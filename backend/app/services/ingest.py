@@ -91,9 +91,16 @@ class ParsedArticle:
     part_no: str | None = None
     part_title: str | None = None
     chapter_title: str | None = None
+    # Set by the structured importer (CSV/JSON); None for text parsed from a document.
+    pages: str | None = None            # page reference exactly as supplied, e.g. "45-46"
+    locator: str | None = None          # where in the file this record came from
+    normalized_body: str | None = None  # derived copy; ``body`` is always the original
+    normalization: list | None = None   # operations that produced ``normalized_body``
 
     @property
     def pages_label(self) -> str:
+        if self.pages is not None:
+            return self.pages
         if self.page_end and self.page_end != self.page_start:
             return f"{self.page_start}-{self.page_end}"
         return str(self.page_start)
@@ -124,6 +131,7 @@ class IngestReport:
     warnings: list[str] = field(default_factory=list)
     quality_ok: bool = True
     blocking_reasons: list[str] = field(default_factory=list)
+    run_id: int | None = None
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -266,7 +274,8 @@ def parse_articles(text_or_pages: str | list[str]) -> tuple[list[ParsedArticle],
             title = f"Article {number}"
 
         page_start = lines[index][0]
-        page_end = lines[body_end - 1][0] if body_end - 1 >= index else page_start
+        # Page of the last line that has text (a blank line at the top of the next page is not content).
+        page_end = next((lines[i][0] for i in range(body_end - 1, index, -1) if lines[i][1].strip()), page_start)
         articles.append(
             ParsedArticle(
                 article_no=number,
@@ -344,6 +353,242 @@ def assess_quality(report: IngestReport) -> None:
         reasons.append("many_short_bodies")
     report.blocking_reasons = reasons
     report.quality_ok = not reasons
+
+
+JOURNAL_ARTICLE_COLUMNS = (
+    "text_en", "text_gu", "title_en", "title_gu", "part_no", "part_title", "chapter_title",
+    "text_status", "source_id", "source_locator", "source_pages", "updated_at",
+)
+
+
+def rollback_run(conn: sqlite3.Connection, run_id: int, *, force: bool = False) -> dict:
+    """Undo exactly what one import run wrote, using its journal.
+
+    A text that was changed again after the run (its checksum no longer matches what the run
+    wrote) is left alone and reported as a conflict unless ``force``. Owner explanations are
+    never touched: they are not in the journal.
+    """
+    run = conn.execute("SELECT id, status FROM ingest_runs WHERE id = ?", (run_id,)).fetchone()
+    if run is None:
+        raise ValueError(f"no import run with id {run_id}")
+    if run["status"] == "rolled_back":
+        raise ValueError(f"run {run_id} has already been rolled back")
+    changes = conn.execute("SELECT * FROM import_changes WHERE run_id = ? ORDER BY id DESC", (run_id,)).fetchall()
+    result = {"run_id": run_id, "changes": len(changes), "restored": 0, "removed_texts": 0,
+              "removed_articles": 0, "conflicts": []}
+    for change in changes:
+        current = conn.execute("SELECT content_sha256 FROM article_texts WHERE article_id = ? AND language = ?",
+                               (change["article_id"], change["language"])).fetchone()
+        if (current is None or current["content_sha256"] != change["new_sha256"]) and not force:
+            result["conflicts"].append({"article_no": change["article_no"], "language": change["language"],
+                                        "reason": "changed_after_this_run"})
+            continue
+        conn.execute("DELETE FROM article_texts WHERE article_id = ? AND language = ?",
+                     (change["article_id"], change["language"]))
+        if change["prev_text_json"]:
+            prev = json.loads(change["prev_text_json"])
+            columns = ", ".join(prev)
+            conn.execute(f"INSERT INTO article_texts ({columns}) VALUES ({', '.join('?' for _ in prev)})",
+                         tuple(prev.values()))
+            result["restored"] += 1
+        else:
+            result["removed_texts"] += 1
+        if change["created_article"]:
+            row = conn.execute(
+                "SELECT (SELECT COUNT(*) FROM article_texts WHERE article_id = a.id) AS texts,"
+                " TRIM(COALESCE(citizen_explanation_en,'') || COALESCE(citizen_explanation_gu,'')) AS summary"
+                " FROM constitution_articles a WHERE id = ?", (change["article_id"],)).fetchone()
+            if row is not None and row["texts"] == 0 and not row["summary"]:
+                conn.execute("DELETE FROM constitution_articles WHERE id = ?", (change["article_id"],))
+                result["removed_articles"] += 1
+        elif change["prev_article_json"]:
+            prev = json.loads(change["prev_article_json"])
+            conn.execute(
+                f"UPDATE constitution_articles SET {', '.join(k + ' = ?' for k in prev)} WHERE id = ?",
+                (*prev.values(), change["article_id"]))
+    if not result["conflicts"]:
+        conn.execute("UPDATE ingest_runs SET status = 'rolled_back' WHERE id = ?", (run_id,))
+    return result
+
+
+def write_articles(
+    conn: sqlite3.Connection,
+    articles: list[ParsedArticle],
+    report,
+    *,
+    source_key: str,
+    source_file: str,
+    language: str,
+    replace_existing: bool = False,
+    extraction_method: str = "text_layer",
+    edition: str | None = None,
+    run_id: int | None = None,
+) -> None:
+    """The one place that writes article text (used by the document and structured importers).
+
+    Rules: never 'verified'; never touches owner explanations; identical text is 'unchanged';
+    different text is a conflict unless ``replace_existing``; a human-verified row is skipped;
+    each language keeps its own provenance. ``report`` needs the articles_* counters.
+    """
+    source = conn.execute(
+        "SELECT id, source_type FROM legal_sources WHERE source_key = ?", (source_key,)
+    ).fetchone()
+    if source is None:
+        raise ValueError(f"unknown source_key {source_key!r}: add it to data/seed/sources.json first")
+    source_id = source["id"]
+    content_status = content_status_for(extraction_method)
+    if content_status == "OFFICIAL_SOURCE" and source["source_type"] != "official":
+        raise ValueError(
+            f"source {source_key!r} is registered as {source['source_type']!r}, not 'official': "
+            "its text cannot be stored as OFFICIAL_SOURCE"
+        )
+
+    core = language in ("en", "gu")          # languages that also have legacy columns
+    text_column = "text_gu" if language == "gu" else "text_en"
+    title_column = "title_gu" if language == "gu" else "title_en"
+
+    def upsert_text(article_id: int, article: ParsedArticle, body: str, locator: str) -> None:
+        conn.execute(
+            """INSERT INTO article_texts
+                 (article_id, language, title, body, part_title, chapter_title, source_id,
+                  source_locator, source_pages, edition, extraction_method, content_status,
+                  verification_status, content_sha256, body_normalized, normalization_json)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'requires_human_verification',?,?,?)
+               ON CONFLICT(article_id, language) DO UPDATE SET
+                 title = excluded.title, body = excluded.body, part_title = excluded.part_title,
+                 chapter_title = excluded.chapter_title, source_id = excluded.source_id,
+                 source_locator = excluded.source_locator, source_pages = excluded.source_pages,
+                 edition = excluded.edition, extraction_method = excluded.extraction_method,
+                 content_status = excluded.content_status,
+                 verification_status = 'requires_human_verification',
+                 content_sha256 = excluded.content_sha256,
+                 body_normalized = excluded.body_normalized,
+                 normalization_json = excluded.normalization_json, updated_at = datetime('now')""",
+            (article_id, language, article.title, body, article.part_title, article.chapter_title,
+             source_id, locator, article.pages_label or None, edition, extraction_method, content_status,
+             hashlib.sha256(body.encode("utf-8")).hexdigest(), article.normalized_body,
+             json.dumps(article.normalization, ensure_ascii=False) if article.normalization else None),
+        )
+
+    seen_numbers: set[str] = set()
+    for article in articles:
+        if article.article_no in seen_numbers:
+            continue
+        seen_numbers.add(article.article_no)
+        existing = conn.execute(
+            f"SELECT id, verification_status, {text_column} AS legacy_text, text_en"
+            " FROM constitution_articles WHERE article_no = ?",
+            (article.article_no,),
+        ).fetchone()
+        prior = None
+        if existing:
+            prior = conn.execute(
+                "SELECT body, verification_status FROM article_texts WHERE article_id = ? AND language = ?",
+                (existing["id"], language),
+            ).fetchone()
+        prev_article = prev_text = None
+        if run_id is not None and existing:
+            prev_article = {k: v for k, v in dict(conn.execute(
+                "SELECT * FROM constitution_articles WHERE id = ?", (existing["id"],)).fetchone()).items()
+                if k in JOURNAL_ARTICLE_COLUMNS}
+            full = conn.execute("SELECT * FROM article_texts WHERE article_id = ? AND language = ?",
+                                (existing["id"], language)).fetchone()
+            prev_text = dict(full) if full else None
+        payload_body = article.body[:20000]
+        locator = article.locator or f"pages {article.pages_label} of {source_file} (line {article.line_no})"
+
+        if (existing and core and existing["verification_status"] == "verified") or (
+            prior and prior["verification_status"] == "verified"
+        ):
+            report.articles_skipped_verified += 1
+            continue
+        existing_text = ((existing["legacy_text"] if core else None) if existing else None) or (
+            prior["body"] if prior else None
+        ) or ""
+        if existing_text.strip():
+            if existing_text.strip() == payload_body.strip():
+                if prior is None:      # imported before migration 005: add the provenance record
+                    upsert_text(existing["id"], article, payload_body, locator)
+                report.articles_unchanged += 1
+                continue
+            if not replace_existing:
+                report.articles_conflicting += 1
+                continue
+        if existing and core:
+            # The single legacy source slot follows English; another language only fills it
+            # when no English text is present. Per-language provenance lives in article_texts.
+            owns_slot = language == "en" or not (existing["text_en"] or "").strip()
+            conn.execute(
+                f"""UPDATE constitution_articles
+                    SET {text_column} = COALESCE(NULLIF(?, ''), {text_column}),
+                        {title_column} = COALESCE(NULLIF(?, ''), {title_column}),
+                        part_no = COALESCE(part_no, ?),
+                        part_title = CASE WHEN ? THEN COALESCE(?, part_title) ELSE COALESCE(part_title, ?) END,
+                        chapter_title = CASE WHEN ? THEN COALESCE(?, chapter_title) ELSE COALESCE(chapter_title, ?) END,
+                        text_status = 'verified_source_text',
+                        source_id = CASE WHEN ? THEN ? ELSE source_id END,
+                        source_locator = CASE WHEN ? THEN ? ELSE source_locator END,
+                        source_pages = CASE WHEN ? THEN ? ELSE source_pages END,
+                        updated_at = datetime('now')
+                    WHERE id = ?""",
+                (
+                    payload_body, article.title, article.part_no,
+                    language == "en", article.part_title, article.part_title,
+                    language == "en", article.chapter_title, article.chapter_title,
+                    owns_slot, source_id, owns_slot, locator, owns_slot, article.pages_label,
+                    existing["id"],
+                ),
+            )
+            article_id = existing["id"]
+        elif existing:
+            article_id = existing["id"]
+        else:
+            cursor = conn.execute(
+                """INSERT INTO constitution_articles
+                   (article_key, article_no, article_label, part_no, part_title, chapter_title,
+                    title_en, title_gu, text_en, text_gu, text_status, verification_status,
+                    source_id, source_locator, source_pages, source_url, sort_order, notes)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,'requires_human_verification',
+                           ?,?,?,?,?,?)""",
+                (
+                    f"article-{article.article_no.lower()}",
+                    article.article_no,
+                    f"Article {article.article_no}",
+                    article.part_no,
+                    article.part_title if language == "en" else None,
+                    article.chapter_title if language == "en" else None,
+                    article.title if language == "en" else None,
+                    article.title if language == "gu" else None,
+                    payload_body if language == "en" else None,
+                    payload_body if language == "gu" else None,
+                    "verified_source_text" if core else "not_available",
+                    source_id if core else None,
+                    locator if core else None,
+                    article.pages_label if core else None,
+                    None,
+                    int(m.group()) if (m := re.match(r"\d+", article.article_no)) else 0,
+                    (
+                        "Imported from the supplied source document. text_status "
+                        "'verified_source_text' only means the text came from that document; "
+                        "see article_texts.content_status for how it was extracted. The article "
+                        "has NOT been checked by a legal professional: verification_status stays "
+                        "requires_human_verification."
+                    ),
+                ),
+            )
+            article_id = cursor.lastrowid
+        upsert_text(article_id, article, payload_body, locator)
+        if run_id is not None:
+            conn.execute(
+                """INSERT INTO import_changes (run_id, article_id, article_no, language, created_article,
+                                               prev_article_json, prev_text_json, new_sha256)
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (run_id, article_id, article.article_no, language, 0 if existing else 1,
+                 json.dumps(prev_article, ensure_ascii=False) if prev_article else None,
+                 json.dumps(prev_text, ensure_ascii=False) if prev_text else None,
+                 hashlib.sha256(payload_body.encode("utf-8")).hexdigest()),
+            )
+        report.articles_written += 1
 
 
 def ingest_text(
@@ -432,158 +677,27 @@ def ingest_text(
     if dry_run:
         return report
 
-    source = conn.execute(
-        "SELECT id, source_type FROM legal_sources WHERE source_key = ?", (source_key,)
-    ).fetchone()
-    if source is None:
-        raise ValueError(f"unknown source_key {source_key!r}: add it to data/seed/sources.json first")
-    source_id = source["id"]
-    content_status = content_status_for(extraction_method)
-    if content_status == "OFFICIAL_SOURCE" and source["source_type"] != "official":
-        raise ValueError(
-            f"source {source_key!r} is registered as {source['source_type']!r}, not 'official': "
-            "its text cannot be stored as OFFICIAL_SOURCE"
-        )
-
-    core = language in ("en", "gu")          # languages that also have legacy columns
-    text_column = "text_gu" if language == "gu" else "text_en"
-    title_column = "title_gu" if language == "gu" else "title_en"
-
-    def upsert_text(article_id: int, article: ParsedArticle, body: str, locator: str) -> None:
-        conn.execute(
-            """INSERT INTO article_texts
-                 (article_id, language, title, body, part_title, chapter_title, source_id,
-                  source_locator, source_pages, edition, extraction_method, content_status,
-                  verification_status, content_sha256)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'requires_human_verification',?)
-               ON CONFLICT(article_id, language) DO UPDATE SET
-                 title = excluded.title, body = excluded.body, part_title = excluded.part_title,
-                 chapter_title = excluded.chapter_title, source_id = excluded.source_id,
-                 source_locator = excluded.source_locator, source_pages = excluded.source_pages,
-                 edition = excluded.edition, extraction_method = excluded.extraction_method,
-                 content_status = excluded.content_status,
-                 verification_status = 'requires_human_verification',
-                 content_sha256 = excluded.content_sha256, updated_at = datetime('now')""",
-            (article_id, language, article.title, body, article.part_title, article.chapter_title,
-             source_id, locator, article.pages_label, edition, extraction_method, content_status,
-             hashlib.sha256(body.encode("utf-8")).hexdigest()),
-        )
-
-    seen_numbers: set[str] = set()
-    for article in articles:
-        if article.article_no in seen_numbers:
-            continue
-        seen_numbers.add(article.article_no)
-        existing = conn.execute(
-            f"SELECT id, verification_status, {text_column} AS legacy_text, text_en"
-            " FROM constitution_articles WHERE article_no = ?",
-            (article.article_no,),
-        ).fetchone()
-        prior = None
-        if existing:
-            prior = conn.execute(
-                "SELECT body, verification_status FROM article_texts WHERE article_id = ? AND language = ?",
-                (existing["id"], language),
-            ).fetchone()
-        payload_body = article.body[:20000]
-        locator = f"pages {article.pages_label} of {source_file} (line {article.line_no})"
-
-        if (existing and core and existing["verification_status"] == "verified") or (
-            prior and prior["verification_status"] == "verified"
-        ):
-            report.articles_skipped_verified += 1
-            continue
-        existing_text = ((existing["legacy_text"] if core else None) if existing else None) or (
-            prior["body"] if prior else None
-        ) or ""
-        if existing_text.strip():
-            if existing_text.strip() == payload_body.strip():
-                if prior is None:      # imported before migration 005: add the provenance record
-                    upsert_text(existing["id"], article, payload_body, locator)
-                report.articles_unchanged += 1
-                continue
-            if not replace_existing:
-                report.articles_conflicting += 1
-                continue
-        if existing and core:
-            # The single legacy source slot follows English; another language only fills it
-            # when no English text is present. Per-language provenance lives in article_texts.
-            owns_slot = language == "en" or not (existing["text_en"] or "").strip()
-            conn.execute(
-                f"""UPDATE constitution_articles
-                    SET {text_column} = COALESCE(NULLIF(?, ''), {text_column}),
-                        {title_column} = COALESCE(NULLIF(?, ''), {title_column}),
-                        part_no = COALESCE(part_no, ?),
-                        part_title = CASE WHEN ? THEN COALESCE(?, part_title) ELSE COALESCE(part_title, ?) END,
-                        chapter_title = CASE WHEN ? THEN COALESCE(?, chapter_title) ELSE COALESCE(chapter_title, ?) END,
-                        text_status = 'verified_source_text',
-                        source_id = CASE WHEN ? THEN ? ELSE source_id END,
-                        source_locator = CASE WHEN ? THEN ? ELSE source_locator END,
-                        source_pages = CASE WHEN ? THEN ? ELSE source_pages END,
-                        updated_at = datetime('now')
-                    WHERE id = ?""",
-                (
-                    payload_body, article.title, article.part_no,
-                    language == "en", article.part_title, article.part_title,
-                    language == "en", article.chapter_title, article.chapter_title,
-                    owns_slot, source_id, owns_slot, locator, owns_slot, article.pages_label,
-                    existing["id"],
-                ),
-            )
-            article_id = existing["id"]
-        elif existing:
-            article_id = existing["id"]
-        else:
-            cursor = conn.execute(
-                """INSERT INTO constitution_articles
-                   (article_key, article_no, article_label, part_no, part_title, chapter_title,
-                    title_en, title_gu, text_en, text_gu, text_status, verification_status,
-                    source_id, source_locator, source_pages, source_url, sort_order, notes)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,'requires_human_verification',
-                           ?,?,?,?,?,?)""",
-                (
-                    f"article-{article.article_no.lower()}",
-                    article.article_no,
-                    f"Article {article.article_no}",
-                    article.part_no,
-                    article.part_title if language == "en" else None,
-                    article.chapter_title if language == "en" else None,
-                    article.title if language == "en" else None,
-                    article.title if language == "gu" else None,
-                    payload_body if language == "en" else None,
-                    payload_body if language == "gu" else None,
-                    "verified_source_text" if core else "not_available",
-                    source_id if core else None,
-                    locator if core else None,
-                    article.pages_label if core else None,
-                    None,
-                    int(re.match(r"\d+", article.article_no).group()),
-                    (
-                        "Imported from the supplied source document. text_status "
-                        "'verified_source_text' only means the text came from that document; "
-                        "see article_texts.content_status for how it was extracted. The article "
-                        "has NOT been checked by a legal professional: verification_status stays "
-                        "requires_human_verification."
-                    ),
-                ),
-            )
-            article_id = cursor.lastrowid
-        upsert_text(article_id, article, payload_body, locator)
-        report.articles_written += 1
+    run_id = conn.execute(
+        "INSERT INTO ingest_runs (source_key, source_file, status) VALUES (?,?,'running')",
+        (source_key, source_file),
+    ).lastrowid
+    report.run_id = run_id
+    write_articles(conn, articles, report, source_key=source_key, source_file=source_file,
+                   language=language, replace_existing=replace_existing,
+                   extraction_method=extraction_method, edition=edition, run_id=run_id)
 
     conn.execute(
-        """INSERT INTO ingest_runs (source_key, source_file, finished_at, articles_found,
-                                    articles_written, duplicates, missing_numbers, report_json, status)
-           VALUES (?,?,datetime('now'),?,?,?,?,?, ?)""",
+        """UPDATE ingest_runs SET finished_at = datetime('now'), articles_found = ?,
+                                  articles_written = ?, duplicates = ?, missing_numbers = ?,
+                                  report_json = ?, status = ? WHERE id = ?""",
         (
-            source_key,
-            source_file,
             report.articles_found,
             report.articles_written,
             len(report.duplicates),
             json.dumps(report.missing_numbers),
             json.dumps(report.as_dict(), ensure_ascii=False),
             "completed" if report.quality_ok else "completed_with_warnings",
+            run_id,
         ),
     )
     return report
