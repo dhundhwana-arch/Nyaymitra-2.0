@@ -4,7 +4,7 @@ Three release stages are possible. Each gate is either satisfied today (with evi
 not — nothing here is aspirational.
 
 **Revision note (2026-11-12):** the numbers below were re-measured on the reconciled branch after
-the Phase 4 importer was integrated, and corrected where the previous revision had drifted (test
+the Phase 4 importer and the Phase 4A recovery tooling were integrated, and corrected where the previous revision had drifted (test
 count, migration count, coverage, PR reference, deployment state). Every figure here is
 reproducible with the command named beside it. Merging this branch is an *engineering* gate and
 nothing more: **the software is not production-ready** — Stage B and Stage C remain blocked on
@@ -21,8 +21,8 @@ Legend: ✅ done and evidenced · ⚠️ done with a documented limitation · �
 | Backend imports and starts from a clean checkout | ✅ | `uvicorn backend.app.main:app`, `/health` |
 | Database bootstraps from nothing | ✅ | CI step + `scripts/init_db.py --info` |
 | Migrations apply and roll back (6 migrations) | ✅ | `test_migrations_are_idempotent`, `test_rollback_and_reapply`, `test_migration_002_rolls_back_cleanly`; a full `006 → 001` rollback was run and leaves only `schema_migrations` |
-| Full test suite green | ✅ | `443 passed` backend (`389` canonical + `54` Phase 4) and `15 passed` source-tool tests — **458 total**; re-run on the integrated branch |
-| Coverage ≥ 85 % | ✅ | 92 % (3932 statements, 328 missed) |
+| Full test suite green | ✅ | `460 passed` backend (`389` canonical + `54` Phase 4 + `17` Phase 4A) and `15 passed` source-tool tests — **475 total**; re-run on the integrated branch |
+| Coverage ≥ 85 % | ✅ | 92 % (statements vary slightly as tooling grows; see the coverage report) |
 | Changeset manifest verified (tree + extracted archive) | ✅ | `scripts/verify_changeset.py`; see `docs/HANDOVER.md` §2 |
 | Live model verified end to end | ❌ | `scripts/verify_ai_provider.py` exits 3: no provider available here |
 | Frontend syntax checks | ✅ | `node --check` on 5 files: `web/app.js`, `web/admin.js`, `web/config.js`, `scripts/smoke_web.mjs`, `scripts/e2e_activation.mjs` |
@@ -88,7 +88,7 @@ Everything in Stage B, plus:
 
 ## Pre-merge checklist (copy into the PR)
 
-- [x] `python -m pytest backend/tests` → 443 passed
+- [x] `python -m pytest backend/tests` → 460 passed
 - [x] `python -m pytest tests` → 15 passed (needs `requirements-ingestion.txt`)
 - [x] `python -m pytest --cov=backend/app` → 92 % (3932 statements, 328 missed)
 - [x] `node --check web/app.js web/admin.js web/config.js scripts/smoke_web.mjs scripts/e2e_activation.mjs`
