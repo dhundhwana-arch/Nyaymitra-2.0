@@ -13,10 +13,10 @@ the result.
 
 | | |
 |---|---|
-| **Canonical branch** | `arena/08f8f3c5-nyaymitra-2-0` |
-| **Canonical HEAD** | `72e5139` (2026-11-12T15:11:10Z) |
-| **Reconciled branch** | `arena/2497125a-nyaymitra-2-0` → see `git log` for current HEAD |
-| **Files tracked** | 315 |
+| **Source branch chosen** (upstream content) | `arena/08f8f3c5-nyaymitra-2-0` |
+| **Source HEAD at decision time** | `72e5139` (2026-11-12T15:11:10Z) |
+| **Canonical deliverable** (what merges to `main`) | `arena/2497125a-nyaymitra-2-0` → proposed as **PR #2**; see `git log` for current HEAD |
+| **Files tracked** | 315 at decision time (the delivered branch carries more) |
 | **Product version / API version** | 2.0 / `2.1.0` |
 
 The canonical implementation was **not** chosen because it has the highest test count. It was

@@ -9,9 +9,10 @@ guarantee results, and it never presents unverified material as official law.
 
 **Created & Developed by Bambhaniya Divyesh Nonghanbhai**
 
-> **Where the current work is:** branch `arena/08f8f3c5-nyaymitra-2-0`. It contains the full rebuild
-> (both earlier rebuild branches merged in) plus the data-activation work. `main` still holds the
-> original 4 November prototype; nothing has been merged into it. See
+> **Where the current work is:** branch `arena/2497125a-nyaymitra-2-0`, proposed to `main` as
+> **PR #2**. It contains the full rebuild (both earlier rebuild branches merged in), the
+> data-activation work, and the Phase 4 Constitution importer. `main` still holds the original
+> 4 November prototype; **nothing has been merged into it and nothing is deployed.** See
 > [`docs/REPOSITORY_AND_PRODUCTION_READINESS.md`](docs/REPOSITORY_AND_PRODUCTION_READINESS.md).
 
 ---
@@ -201,6 +202,7 @@ Detailed, honest results — including what is *not* covered — are in
 | [REPOSITORY_AND_PRODUCTION_READINESS.md](docs/REPOSITORY_AND_PRODUCTION_READINESS.md) | Branch state and the deployment checklist |
 | [REMAINING_BLOCKERS.md](docs/REMAINING_BLOCKERS.md) | The three external blockers and who owns them |
 | [RELEASE_READINESS_CHECKLIST.md](docs/RELEASE_READINESS_CHECKLIST.md) | Gate-by-gate release decision |
+| [REPOSITORY_IDENTITY.md](docs/REPOSITORY_IDENTITY.md) | Corrected repository description (owner action) |
 
 ---
 
