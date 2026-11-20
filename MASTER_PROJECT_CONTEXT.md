@@ -60,7 +60,7 @@ This has **not** been run. It requires the owner's explicit approval, and the PR
 
 ## 3. Latest commit
 
-**Recorded at writing:** `510f62f9fdf4f8ea18062e8262bbbbfb7d8f1a83` — *docs: update the release checklist to the post-Phase-4A test counts*
+**Recorded at writing:** `342103eca3e209e10bd705a2ac5c48225c9afe13` — the final-preservation commit that added `PROJECT_FINAL_STATUS.md`, `COMPLETED_WORK_INVENTORY.md`, `GEMINI_HANDOVER.md` and `docs/INDEX.md`.
 
 **Always re-verify rather than trusting this line:**
 
@@ -72,6 +72,8 @@ git fetch origin && git log -1 --format='%H %s' origin/arena/2497125a-nyaymitra-
 
 | SHA | Subject |
 |---|---|
+| `342103e` | docs: preserve the HackIndia readiness and project status audit |
+| `23a4908` | docs: add master project context and conversation consolidation report |
 | `510f62f` | docs: update the release checklist to the post-Phase-4A test counts |
 | `ea82500` | Integrate Phase 4A read-only recovery tooling (5922fe4) |
 | `a15bf7e` | docs: correct stale release-readiness and identity claims |
@@ -152,20 +154,25 @@ Measured on `510f62f`, isolated `/tmp` databases, **no API key, no network depen
 
 ## 6. Test results
 
-| Suite | Command | Result |
-|---|---|---|
-| Backend | `pytest backend/tests -o addopts="" -q` | **460 passed** |
-| Source tools | `pytest tests -o addopts="" -q` | **15 passed** |
-| **Total** | | **475 passed** |
-| Coverage | `--cov=backend/app` | **92 %** (3,932 statements, 328 missed) |
-| E2E (jsdom) | `node scripts/e2e_activation.mjs <fe> <be>` | **43/43**, 143 calls, 0 blocked |
-| Smoke | `node scripts/smoke_web.mjs <url>` | **OK** |
-| Migrations | `scripts/init_db.py --info` | 6 applied, 0 failed |
-| DB integrity | `scripts/check_db.py` | `RESULT: OK`, 30 indexes, 0 missing |
-| Dependency audit | `pip-audit -r backend/requirements.txt` | **no known vulnerabilities** |
-| Frontend syntax | `node --check` ×5 | OK |
-| CI | GitHub Actions | green on Python **3.11 and 3.12** |
-| **Real device / AT test** | — | **NEVER PERFORMED** |
+**Provenance matters.** The rows marked **NEW** were executed during the final-preservation session on 2026-11-12 against the tree now at `342103e`. Rows marked **HIST** were executed in an earlier session and were **not re-run** during final preservation.
+
+| Suite | Command | Result | Run |
+|---|---|---|---|
+| Backend | `pytest backend/tests -o addopts=""` | **460 passed** | **NEW** |
+| Source tools | `pytest tests -o addopts=""` | **15 passed** | **NEW** |
+| **Total** | | **475 passed**, 0 failed | **NEW** |
+| Coverage | `--cov=backend/app` | **92 %** (3,932 statements, 328 missed) | **NEW** |
+| DB bootstrap | `scripts/init_db.py` on empty `/tmp` DB | 22 tables, 30 indexes, seeds loaded | **NEW** |
+| DB integrity | `scripts/check_db.py` | `RESULT: OK`, 30 indexes, 0 missing | **NEW** |
+| Collection | `pytest --collect-only` | 460 collected (342 test functions + parametrisation) | **NEW** |
+| E2E (jsdom) | `node scripts/e2e_activation.mjs <fe> <be>` | 43/43, 143 calls, 0 blocked | HIST |
+| Smoke | `node scripts/smoke_web.mjs <url>` | OK | HIST |
+| Dependency audit | `pip-audit -r backend/requirements.txt` | no known vulnerabilities | HIST |
+| Frontend syntax | `node --check` ×5 | OK | HIST |
+| CI | GitHub Actions | green on Python **3.11 and 3.12** | HIST |
+| **Real device / AT test** | — | **NEVER PERFORMED** | — |
+
+Re-run the HIST rows before any demo or submission. Their commands are in `GEMINI_HANDOVER.md` §6.
 
 **Traps when reproducing:**
 * `pytest.ini` sets `addopts = -q`; a second `-q` hides the summary. Always pass `-o addopts=""`.
@@ -256,7 +263,17 @@ Translate the remaining 21 locales; native-speaker review of Gujarati copy; real
 | **Offline provider is the default** | Deterministic, template-composed, structurally incapable of inventing a provision. The live provider is optional and never tested. |
 | **`pymupdf` (AGPL-3.0) kept out of runtime** | Ingestion tooling only; the shipped application and image contain no AGPL code. |
 | **23 languages, statuses kept distinct** | `UI_READY`, `UI_PARTIAL`, `SAMPLE_CONTENT_AVAILABLE`, `OFFICIAL_TEXT_AVAILABLE`, `HUMAN_VERIFIED`, `ASSISTANT_SUPPORTED` are never collapsed into one claim. |
-| **Phase 4 / 4A integrated as separate reviewable commits** | Preserves provenance (`667fa78`, `5922fe4` remain reachable) and allows independent revert. |
+  | **Phase 4 / 4A integrated as separate reviewable commits** | Preserves provenance (`667fa78`, `5922fe4` remain reachable) and allows independent revert. |
+
+### 11.1 Which document to read
+
+| Question | Document |
+|---|---|
+| What state is the project really in? | [`PROJECT_FINAL_STATUS.md`](PROJECT_FINAL_STATUS.md) |
+| What exactly has been built, with evidence? | [`COMPLETED_WORK_INVENTORY.md`](COMPLETED_WORK_INVENTORY.md) |
+| How do I continue without rebuilding anything? | [`GEMINI_HANDOVER.md`](GEMINI_HANDOVER.md) |
+| Where is every document? | [`docs/INDEX.md`](docs/INDEX.md) |
+| How was canonical chosen, and what was lost? | [`CONVERSATION_CONSOLIDATION_REPORT.md`](CONVERSATION_CONSOLIDATION_REPORT.md) |
 
 ---
 

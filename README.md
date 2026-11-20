@@ -14,6 +14,11 @@ guarantee results, and it never presents unverified material as official law.
 > data-activation work, and the Phase 4 Constitution importer. `main` still holds the original
 > 4 November prototype; **nothing has been merged into it and nothing is deployed.** See
 > [`docs/REPOSITORY_AND_PRODUCTION_READINESS.md`](docs/REPOSITORY_AND_PRODUCTION_READINESS.md).
+>
+> **For the current state of the project, read [`PROJECT_FINAL_STATUS.md`](PROJECT_FINAL_STATUS.md)
+> first**, then [`MASTER_PROJECT_CONTEXT.md`](MASTER_PROJECT_CONTEXT.md). If you are an AI or a
+> developer continuing this work, start with [`GEMINI_HANDOVER.md`](GEMINI_HANDOVER.md).
+> All documentation is mapped in [`docs/INDEX.md`](docs/INDEX.md).
 
 ---
 
@@ -21,7 +26,7 @@ guarantee results, and it never presents unverified material as official law.
 
 | Area | Status |
 |---|---|
-| Backend API (41 operations in the OpenAPI schema), database, 5 migrations, seeds | **COMPLETE AND TESTED** |
+| Backend API (41 operations in the OpenAPI schema), database, 6 migrations, seeds | **COMPLETE AND TESTED** |
 | Retrieval-before-generation, citation validation, offline grounded answers | **COMPLETE AND TESTED** |
 | Complaint intake with deterministic summary, review gate, one-time token | **COMPLETE AND TESTED** |
 | Document upload (PDF/image), extraction status, owner-token download | **COMPLETE AND TESTED** |
