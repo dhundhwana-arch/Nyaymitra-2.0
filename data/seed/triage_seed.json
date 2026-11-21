@@ -1,0 +1,152 @@
+{
+  "_note": "Triage guides answer 'where do I go next?' — never 'what will the court decide?'. They are navigation content, not legal advice, and each carries its source + verification status. Steps deliberately describe the next human/system interaction rather than predicting an outcome.",
+  "guides": [
+    {
+      "guide_key": "cyber-fraud",
+      "category_en": "Online financial fraud / cyber crime",
+      "category_gu": "ઓનલાઇન નાણાકીય છેતરપિંડી / સાયબર ગુનો",
+      "summary_en": "For money taken from a bank account or UPI/wallet without your authorisation, the first hours matter most: report immediately so the transfer can be stopped and the account flagged.",
+      "summary_gu": "તમારી મંજૂરી વિના બેંક ખાતા કે UPI/વોલેટમાંથી પૈસા ગયા હોય તો શરૂઆતનો સમય સૌથી મહત્વનો છે: તરત ફરિયાદ કરો જેથી ટ્રાન્સફર અટકે અને ખાતું ફ્લેગ થાય.",
+      "steps_en": [
+        "Call the national cyber-fraud helpline 1930 and give the transaction details (amount, time, reference number).",
+        "Ask your bank to block the card/net-banking and to mark the transaction as disputed; keep the complaint number they give you.",
+        "File the incident on cybercrime.gov.in so it is recorded in writing.",
+        "Take a written application with your bank statement to the nearest cyber police station or police station if the bank or portal does not respond."
+      ],
+      "steps_gu": [
+        "રાષ્ટ્રીય સાયબર ફ્રોડ હેલ્પલાઇન ૧૯૩૦ પર કૉલ કરીને ટ્રાન્ઝેક્શનની વિગત (રકમ, સમય, સંદર્ભ નંબર) આપો.",
+        "તમારી બેંકને કાર્ડ/નેટ-બેંકિંગ બ્લોક કરવા અને વ્યવહારને વિવાદિત (disputed) તરીકે નોંધવા જણાવો; તેમના આપેલા ફરિયાદ નંબર સાચવો.",
+        "cybercrime.gov.in પર ઘટના નોંધાવો જેથી લેખિત નોંધ રહે.",
+        "બેંક કે પોર્ટલ તરફથી જવાબ ન મળે તો બેંક સ્ટેટમેન્ટ સાથે લેખિત અરજી લઈને નજીકના સાયબર પોલીસ સ્ટેશન કે પોલીસ સ્ટેશન જાઓ."
+      ],
+      "documents_en": [
+        "Bank statement / passbook page showing the disputed debit",
+        "Transaction reference numbers and screenshots of suspicious SMS/WhatsApp/calls",
+        "Photo ID (Aadhaar / voter ID)",
+        "The acknowledgement or complaint number from 1930 / the portal"
+      ],
+      "documents_gu": [
+        "વિવાદિત ઉપાડ દર્શાવતું બેંક સ્ટેટમેન્ટ / પાસબુક પાનું",
+        "ટ્રાન્ઝેક્શન સંદર્ભ નંબર અને શંકાસ્પદ SMS/WhatsApp/કૉલના સ્ક્રીનશોટ",
+        "ફોટો ઓળખ (આધાર / ચૂંટણી કાર્ડ)",
+        "૧૯૩૦ કે પોર્ટલ તરફથી મળેલી પહોંચ અથવા ફરિયાદ નંબર"
+      ],
+      "keywords": ["સાયબર", "બેંક", "ઓનલાઇન", "પૈસા", "ઓટીપી", "છેતરપિંડી", "ઉપાડ", "otp", "cyber", "fraud", "scam", "bank", "upi", "money", "online", "साइबर", "धोखाधड़ी", "बैंक"],
+      "department_key": "cyber-crime"
+    },
+    {
+      "guide_key": "land-boundary",
+      "category_en": "Land records, boundary and measurement disputes",
+      "category_gu": "જમીન રેકોર્ડ, સીમા અને માપણી વિવાદ",
+      "summary_en": "Boundary disputes are handled by the revenue administration: obtain the current record extract, then apply for an official measurement. Any dispute about the entry itself is a separate revenue proceeding.",
+      "summary_gu": "સીમા વિવાદ મહેસૂલ વહીવટ હેઠળ આવે છે: પહેલા ચાલુ રેકોર્ડ ઉતારો મેળવો, પછી સત્તાવાર માપણી માટે અરજી કરો. નોંધ અંગેનો વિવાદ અલગ મહેસૂલી કાર્યવાહી છે.",
+      "steps_en": [
+        "Download the current 7/12 and 8-A extracts from AnyRoR for the survey number in question.",
+        "Apply at your taluka/district revenue office (DILR / measurement section) for official boundary measurement, paying the prescribed fee and keeping the receipt.",
+        "Attend the measurement date: adjoining holders are usually served notice, and the measurement record (panchnama) becomes the evidence.",
+        "If an entry in the record is wrong, or a dispute remains, ask the Mamlatdar office (or a lawyer/legal aid) about the correct revenue proceeding — the choice of proceeding is a legal question, not a portal step."
+      ],
+      "steps_gu": [
+        "પ્રશ્નમાં રહેલા સર્વે નંબર માટે AnyRoR પરથી ચાલુ ૭/૧૨ અને ૮-અ ઉતારા ડાઉનલોડ કરો.",
+        "સત્તાવાર હદ માપણી માટે તમારી તાલુકા/જિલ્લા મહેસૂલ કચેરી (DILR / માપણી વિભાગ) ખાતે નિયત ફી ભરીને અરજી કરો અને રસીદ સાચવો.",
+        "માપણીની તારીખે હાજર રહો: સામેના ખાતેદારને સામાન્ય રીતે નોટિસ જાય છે અને માપણીનો પંચનામો પુરાવો બને છે.",
+        "રેકોર્ડની નોંધ ખોટી હોય કે વિવાદ ચાલુ રહે તો મામલતદાર કચેરી (અથવા વકીલ/કાનૂની સહાય) પાસે યોગ્ય મહેસૂલી કાર્યવાહી પૂછો — કઈ કાર્યવાહી કરવી તે કાનૂની પ્રશ્ન છે, પોર્ટલનું પગલું નથી."
+      ],
+      "documents_en": [
+        "Current 7/12 and 8-A extracts",
+        "Village Form No. 6 (rights record / hakka patrak)",
+        "Cadastral map or Tippani copy for the survey number",
+        "Photo ID and the fee receipt for the measurement application"
+      ],
+      "documents_gu": [
+        "ચાલુ ૭/૧૨ અને ૮-અ ઉતારા",
+        "ગામ નમૂનો નં. ૬ (હક્ક પત્રક)",
+        "સર્વે નંબરનો નકશો અથવા ટીપણી ઉતારો",
+        "ફોટો ઓળખ અને માપણી અરજીની ફી રસીદ"
+      ],
+      "keywords": ["જમીન", "ખેતર", "માપણી", "સીમા", "પાડોશી", "વિવાદ", "મામલતદાર", "રેવન્યુ", "૭/૧૨", "dilr", "land", "survey", "boundary", "revenue", "7/12", "ज़मीन", "खेत", "सीमा"],
+      "department_key": "dilr-land-records"
+    },
+    {
+      "guide_key": "legal-aid",
+      "category_en": "Free legal aid and finding a lawyer",
+      "category_gu": "મફત કાનૂની સહાય અને વકીલ મેળવવો",
+      "summary_en": "If you cannot afford a lawyer, the legal services system exists for exactly this. Eligibility criteria are set by section 12 of the Legal Services Authorities Act, 1987 — the DLSA decides your application.",
+      "summary_gu": "વકીલની ફી ચૂકવી શકતા ન હોવ તો કાનૂની સેવા વ્યવસ્થા આ માટે જ છે. પાત્રતાના માપદંડ કાનૂની સેવા સત્તા મંડળ અધિનિયમ, ૧૯૮૭ની કલમ ૧૨ માં છે — તમારી અરજી પર નિર્ણય DLSA લે છે.",
+      "steps_en": [
+        "Call 15100 for initial legal advice, or visit a CSC centre and ask about Tele-Law consultation.",
+        "Go to the DLSA / TLSC office at your district or taluka court and ask for the free legal aid application form.",
+        "Attach the proof the office asks for (income, category, or the court notice) and get an acknowledgement.",
+        "Follow up with the DLSA on the application status; ask which panel advocate is assigned."
+      ],
+      "steps_gu": [
+        "શરૂઆતની કાનૂની સલાહ માટે ૧૫૧૦૦ પર કૉલ કરો, અથવા CSC કેન્દ્ર પર જઈને ટેલી-લૉ પરામર્શ વિશે પૂછો.",
+        "તમારા જિલ્લા કે તાલુકા કોર્ટ ખાતેની DLSA / TLSC કચેરીમાં જઈને મફત કાનૂની સહાય અરજી ફોર્મ માંગો.",
+        "કચેરી જે પુરાવો માંગે તે જોડો (આવક, કેટેગરી, અથવા કોર્ટ નોટિસ) અને પહોંચ લો.",
+        "અરજીની સ્થિતિ માટે DLSA નો સંપર્ક કરો; કયા પેનલ વકીલ નિમાયા તે પૂછો."
+      ],
+      "documents_en": [
+        "Photo ID (Aadhaar / voter ID)",
+        "Income certificate, ration card or category certificate if available",
+        "Any court notice, summons or FIR copy you have received",
+        "A short written note of what happened, with dates"
+      ],
+      "documents_gu": [
+        "ફોટો ઓળખ (આધાર / ચૂંટણી કાર્ડ)",
+        "હોય તો આવક પ્રમાણપત્ર, રાશન કાર્ડ કે જાતિ પ્રમાણપત્ર",
+        "તમને મળેલી કોર્ટ નોટિસ, સમન્સ કે FIR ની નકલ",
+        "શું થયું તેની તારીખો સાથેની ટૂંકી લેખિત નોંધ"
+      ],
+      "keywords": ["મફત", "વકીલ", "કાનૂની સહાય", "કોર્ટ", "ગરીબ", "પૈસા નથી", "legal aid", "lawyer", "nalsa", "dlsa", "free", "court", "वकील", "मुफ्त"],
+      "department_key": "nalsa-legal-aid"
+    },
+    {
+      "guide_key": "consumer-complaint",
+      "category_en": "Defective goods or poor service (consumer complaint)",
+      "category_gu": "ખામીયુક્ત સામાન કે નબળી સેવા (ગ્રાહક ફરિયાદ)",
+      "summary_en": "Consumer disputes normally start with a written complaint to the seller and then, if unresolved, a complaint before a consumer commission. Limits, fees and time limits depend on the value and the date of purchase — check them before filing.",
+      "summary_gu": "ગ્રાહક વિવાદ સામાન્ય રીતે વેચનારને લેખિત ફરિયાદથી શરૂ થાય છે અને ન સુધરે તો ગ્રાહક આયોગમાં ફરિયાદ થાય છે. મર્યાદા, ફી અને સમયમર્યાદા રકમ અને ખરીદીની તારીખ પર આધારિત છે — અરજી પહેલા ચકાસો.",
+      "steps_en": [
+        "Write to the seller/service provider describing the defect, the date of purchase and what you want (repair, replacement or refund). Keep proof of sending.",
+        "Keep the invoice, warranty card, and any service-centre job sheets.",
+        "If there is no resolution, file on e-Daakhil or approach the district consumer commission; check the pecuniary limit and limitation period first.",
+        "For help with the form or the limit, contact legal aid (15100) before filing."
+      ],
+      "steps_gu": [
+        "વેચનાર/સેવા આપનારને લેખિતમાં ખામી, ખરીદીની તારીખ અને તમે શું ઈચ્છો છો (રિપેર, બદલી કે રિફંડ) જણાવો. મોકલ્યાનો પુરાવો સાચવો.",
+        "બિલ, વોરંટી કાર્ડ અને સર્વિસ સેન્ટરની જોબ શીટ સાચવો.",
+        "ઉકેલ ન આવે તો e-Daakhil પર અરજી કરો અથવા જિલ્લા ગ્રાહક આયોગનો સંપર્ક કરો; પહેલા નાણાકીય મર્યાદા અને સમયમર્યાદા ચકાસો.",
+        "ફોર્મ કે મર્યાદા અંગે મદદ માટે અરજી કરતાં પહેલા કાનૂની સહાય (૧૫૧૦૦) નો સંપર્ક કરો."
+      ],
+      "documents_en": ["Invoice / bill", "Warranty or guarantee card", "Written complaint to the seller and proof of sending", "Service centre reports or photographs of the defect"],
+      "documents_gu": ["બિલ / ઇન્વોઇસ", "વોરંટી કે ગેરંટી કાર્ડ", "વેચનારને લેખિત ફરિયાદ અને મોકલ્યાનો પુરાવો", "સર્વિસ સેન્ટરના રિપોર્ટ કે ખામીના ફોટા"],
+      "keywords": ["ગ્રાહક", "વોશિંગ", "વોરંટી", "ખામી", "દુકાન", "રિફંડ", "consumer", "warranty", "defective", "refund", "shop", "ग्राहक", "वारंटी"],
+      "department_key": "e-daakhil-consumer"
+    },
+    {
+      "guide_key": "government-grievance",
+      "category_en": "Government application or grievance not being disposed of",
+      "category_gu": "સરકારી અરજી કે ફરિયાદનો નિકાલ ન થવો",
+      "summary_en": "When a department does not act on your application, the remedy is usually an escalation: use the state grievance system for state departments, CPGRAMS for central departments, and an RTI request if you need to know what happened to your file.",
+      "summary_gu": "વિભાગ તમારી અરજી પર કાર્યવાહી ન કરે તો સામાન્ય રીતે ઉપરના સ્તરે ફરિયાદ કરવાનો રસ્તો છે: રાજ્યના વિભાગ માટે રાજ્યની ફરિયાદ પ્રણાલી, કેન્દ્રના વિભાગ માટે CPGRAMS, અને તમારી ફાઇલનું શું થયું તે જાણવા RTI અરજી.",
+      "steps_en": [
+        "Note the date, office and diary/receipt number of your original application.",
+        "For a Gujarat state department, register the grievance on the state grievance system / 1076 helpline.",
+        "For a central department, register on CPGRAMS and keep the registration number.",
+        "If you need the file's status and the department does not reply, consider an RTI application (central authorities: rtionline.gov.in; state authorities: the state RTI portal).",
+        "If the matter is a legal right rather than an administrative delay, get advice from legal aid before starting any court proceeding."
+      ],
+      "steps_gu": [
+        "તમારી મૂળ અરજીની તારીખ, કચેરી અને ડાયરી/રસીદ નંબર નોંધો.",
+        "ગુજરાત સરકારના વિભાગ માટે રાજ્યની ફરિયાદ પ્રણાલી / ૧૦૭૬ હેલ્પલાઇન પર ફરિયાદ નોંધાવો.",
+        "કેન્દ્ર સરકારના વિભાગ માટે CPGRAMS પર નોંધાવો અને નોંધણી નંબર સાચવો.",
+        "ફાઇલની સ્થિતિ જોઈએ અને વિભાગ જવાબ ન આપે તો RTI અરજી વિચારો (કેન્દ્ર: rtionline.gov.in; રાજ્ય: રાજ્યનું RTI પોર્ટલ).",
+        "બાબત કાનૂની અધિકારની હોય, વહીવટી વિલંબની ન હોય, તો કોર્ટની કાર્યવાહી શરૂ કરતાં પહેલા કાનૂની સહાયમાંથી સલાહ લો."
+      ],
+      "documents_en": ["Copy of the original application with its receipt/diary number", "Any reminder letters you sent", "Grievance registration numbers", "Relevant order or notice you received"],
+      "documents_gu": ["મૂળ અરજીની નકલ અને તેની રસીદ/ડાયરી નંબર", "તમે મોકલેલા રિમાઇન્ડર પત્રો", "ફરિયાદ નોંધણી નંબર", "તમને મળેલો સંબંધિત હુકમ કે નોટિસ"],
+      "keywords": ["અરજી", "જવાબ નથી", "વિલંબ", "તાલુકા", "પંચાયત", "કચેરી", "rti", "cpgrams", "grievance", "delay", "application", "आवेदन", "शिकायत"],
+      "department_key": "cpgrams"
+    }
+  ]
+}

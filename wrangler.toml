@@ -1,0 +1,16 @@
+# Cloudflare Pages configuration for NYAYMITRA 2.0 frontend
+# Free tier static hosting — backend must be hosted separately
+
+name = "nyaymitra-frontend"
+compatibility_date = "2026-11-09"
+
+[build]
+command = "echo 'No build step needed — static files served directly'"
+publish = "web"
+
+[[routes]]
+pattern = "/*"
+custom = true
+
+[env.production]
+name = "nyaymitra-frontend"

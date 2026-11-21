@@ -1,0 +1,29 @@
+# The same service with a persistent disk. This is the shape to use if the project is ever
+# funded or a sponsor provides hosting: a paid instance plus a disk keeps SQLite and the
+# document store across deploys.
+services:
+  - type: web
+    name: nyaymitra
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/ready
+    autoDeploy: false
+    disk:
+      name: nyaymitra-data
+      mountPath: /data
+      sizeGB: 5
+    envVars:
+      - key: NYAYMITRA_ENV
+        value: production
+      - key: NYAYMITRA_DB_PATH
+        value: /data/nyaymitra.db
+      - key: NYAYMITRA_STORAGE_DIR
+        value: /data/documents
+      - key: NYAYMITRA_BACKUP_DIR
+        value: /data/backups
+      - key: NYAYMITRA_ADMIN_TOKEN
+        sync: false
+      - key: NYAYMITRA_MONITOR_TOKEN
+        sync: false

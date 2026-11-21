@@ -1,0 +1,11 @@
+{
+  "_comment": "Only needed when 'inspect' answers MAPPING REQUIRED. Left side: field. Right side: the column name exactly as it appears in your file. Delete the lines you do not have.",
+  "article_no": "<column with the article number>",
+  "text": "<column with the article text>",
+  "title": "<column with the title>",
+  "part_no": "<column with the Part>",
+  "chapter": "<column with the Chapter>",
+  "pages": "<column with the PDF page>",
+  "language": "<column with the language, if one file holds several>",
+  "constants": { "source": "name-of-the-pdf.pdf", "edition": "as printed on the title page" }
+}

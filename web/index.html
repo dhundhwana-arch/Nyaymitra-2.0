@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="NYAYMITRA 2.0 — legal information, complaint drafting and department navigation for citizens of India. Not a court, not a lawyer.">
+  <meta name="theme-color" content="#070c18">
+  <title>NYAYMITRA 2.0 — ન્યાયમિત્ર | Justice Access & Navigation</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content / મુખ્ય ભાગ પર જાઓ</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#/home" aria-label="NYAYMITRA home">
+        <span class="brand-mark" aria-hidden="true">न्या</span>
+        <span class="brand-text">
+          <span class="brand-name">NYAYMITRA<span>-AI</span></span>
+          <span class="brand-tag" id="brandTag">Justice access &amp; navigation</span>
+        </span>
+      </a>
+
+      <nav class="nav" id="primaryNav" aria-label="Main navigation">
+        <a href="#/home" data-nav="home">Home</a>
+        <a href="#/assistant" data-nav="assistant">Assistant</a>
+        <a href="#/complaint" data-nav="complaint">Complaint</a>
+        <a href="#/library" data-nav="library">Constitution</a>
+        <a href="#/legal" data-nav="legal">Library</a>
+        <a href="#/departments" data-nav="departments">Departments</a>
+        <a href="#/glossary" data-nav="glossary">Glossary</a>
+        <a href="#/about" data-nav="about">About</a>
+      </nav>
+
+      <div class="lang-picker">
+        <label for="langSelect" id="langSelectLabel" class="sr-only">Language / ભાષા</label>
+        <select id="langSelect" aria-describedby="langNotice"></select>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <div class="wrap">
+
+      <!-- global status banner (populated from /meta) -->
+      <!-- says honestly when the interface is machine-translated or content falls back -->
+      <div id="langNotice" class="notice small lang-notice" role="status" lang="en" dir="ltr" hidden></div>
+
+      <div id="statusRegion" class="stack" aria-live="polite"></div>
+
+      <!-- the single view container; app.js renders one view at a time -->
+      <div id="view" class="stack"></div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <strong>NYAYMITRA 2.0</strong> — <span id="footerLine">AI-powered inclusive justice access and navigation.</span>
+      <ul id="footerDisclaimers">
+        <li>NYAYMITRA is not an AI judge. It does not decide cases, declare anyone guilty or innocent, or guarantee an outcome.</li>
+        <li>Legal content is labelled with its verification status. Unverified content must not be treated as law.</li>
+        <li>Final legal decisions rest with authorised human professionals and institutions.</li>
+      </ul>
+      <p class="tiny" id="footerVersion"></p>
+      <p class="attribution">Created &amp; Developed by Bambhaniya Divyesh Nonghanbhai</p>
+      <p class="tiny"><a href="#/about">About</a> · <a href="/admin">Administration</a></p>
+    </div>
+  </footer>
+
+  <div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
+
+  <script src="/config.js" defer></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>

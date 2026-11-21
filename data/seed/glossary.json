@@ -1,0 +1,150 @@
+{
+  "_note": "Plain-language glossary, written by the project team. These are everyday explanations of terms citizens meet at a police station, court or government office. They are NOT statutory definitions and do not replace the definition in the relevant Act; the API returns that caveat with every entry. Kept short on purpose so it can be reviewed quickly by a legal professional (docs/LEGAL_VERIFICATION_CHECKLIST.md).",
+  "verification_status": "requires_human_verification",
+  "terms": [
+    {
+      "key": "fir",
+      "match": ["fir", "એફઆઈઆર", "પ્રથમ માહિતી અહેવાલ"],
+      "term_en": "FIR (First Information Report)",
+      "term_gu": "એફઆઈઆર (પ્રથમ માહિતી અહેવાલ)",
+      "explanation_en": "The first written record police make of information about a cognizable offence. Ask for a copy: it is normally free of cost, and the number on it is what you quote in every later step.",
+      "explanation_gu": "કોગ્નિઝેબલ ગુનાની માહિતી પોલીસ સૌપ્રથમ લેખિતમાં નોંધે તેને એફઆઈઆર કહેવાય. તેની નકલ માંગો: સામાન્ય રીતે તે મફત મળે છે, અને તેનો નંબર આગળના દરેક પગલામાં કામ આવે છે."
+    },
+    {
+      "key": "cognizable",
+      "match": ["cognizable", "કોગ્નિઝેબલ"],
+      "term_en": "Cognizable offence",
+      "term_gu": "કોગ્નિઝેબલ ગુનો",
+      "explanation_en": "An offence for which police may register a case and investigate without a magistrate's permission. Whether an offence is cognizable depends on the law that creates it.",
+      "explanation_gu": "એવો ગુનો જેમાં પોલીસ મેજિસ્ટ્રેટની પરવાનગી વિના કેસ નોંધી તપાસ કરી શકે. ગુનો કોગ્નિઝેબલ છે કે નહીં તે તે ગુનો બનાવનાર કાયદા પર આધારિત છે."
+    },
+    {
+      "key": "bail",
+      "match": ["bail", "જામીન"],
+      "term_en": "Bail",
+      "term_gu": "જામીન",
+      "explanation_en": "Release of an accused person from custody, usually with conditions, while the case continues. Whether bail is available, and on what conditions, is decided by the court.",
+      "explanation_gu": "કેસ ચાલુ રહેતો હોય ત્યારે આરોપીને શરતો સાથે કસ્ટડીમાંથી મુક્ત કરવો તે જામીન. જામીન મળશે કે નહીં અને કઈ શરતે, તે અદાલત નક્કી કરે છે."
+    },
+    {
+      "key": "summons",
+      "match": ["summons", "સમન્સ", "કોર્ટ નોટિસ"],
+      "term_en": "Summons",
+      "term_gu": "સમન્સ",
+      "explanation_en": "A court order telling a person to appear before it on a stated date. Do not ignore it: missing a date can have legal consequences. Take legal advice before the date.",
+      "explanation_gu": "નક્કી તારીખે અદાલતમાં હાજર થવાનો સત્તાવાર આદેશ. તેને અવગણશો નહીં: તારીખ ચૂકવવાના કાનૂની પરિણામ આવી શકે. તારીખ પહેલાં કાનૂની સલાહ લો."
+    },
+    {
+      "key": "affidavit",
+      "match": ["affidavit", "સોગંદનામું"],
+      "term_en": "Affidavit",
+      "term_gu": "સોગંદનામું",
+      "explanation_en": "A written statement of facts sworn before a person authorised to administer an oath (often a notary or an officer of the court).",
+      "explanation_gu": "સોગંદ લેવાની સત્તા ધરાવતી વ્યક્તિ (સામાન્ય રીતે નોટરી કે કોર્ટ અધિકારી) સમક્ષ સોગંદ લઈને લખાયેલ હકીકતોનું લેખિત નિવેદન."
+    },
+    {
+      "key": "vakalatnama",
+      "match": ["vakalatnama", "વકાલતનામું"],
+      "term_en": "Vakalatnama",
+      "term_gu": "વકાલતનામું",
+      "explanation_en": "The document by which you authorise an advocate to act and appear for you in a case.",
+      "explanation_gu": "કેસમાં તમારા વતી હાજર થવા અને કાર્યવાહી કરવા વકીલને અધિકાર આપતું દસ્તાવેજ."
+    },
+    {
+      "key": "limitation",
+      "match": ["limitation", "મર્યાદા", "સમયમર્યાદા"],
+      "term_en": "Limitation period",
+      "term_gu": "મર્યાદા અવધિ",
+      "explanation_en": "The time limit fixed by law within which a case or appeal must be filed. If it lapses, the case can become time-barred, so check the limit for your specific matter early.",
+      "explanation_gu": "કાયદા દ્વારા નક્કી કરેલો સમય, જેમાં કેસ કે અપીલ દાખલ કરવી પડે. તે વીતી જાય તો કેસ સમયાંતરે બહાર ગણાઈ શકે, તેથી તમારી બાબતની મર્યાદા વહેલી તપાસો."
+    },
+    {
+      "key": "jurisdiction",
+      "match": ["jurisdiction", "અધિકારક્ષેત્ર"],
+      "term_en": "Jurisdiction",
+      "term_gu": "અધિકારક્ષેત્ર",
+      "explanation_en": "Which court or office has the authority to hear your matter — usually decided by place, subject and the amount involved.",
+      "explanation_gu": "તમારી બાબત સાંભળવાની સત્તા કઈ અદાલત કે કચેરીને છે તે — સામાન્ય રીતે સ્થળ, વિષય અને રકમ પરથી નક્કી થાય છે."
+    },
+    {
+      "key": "writ",
+      "match": ["writ", "રિટ"],
+      "term_en": "Writ",
+      "term_gu": "રિટ",
+      "explanation_en": "A formal order issued by the Supreme Court (Article 32) or a High Court (Article 226) directing an authority to do, or stop doing, something.",
+      "explanation_gu": "સુપ્રીમ કોર્ટ (કલમ ૩૨) કે હાઈકોર્ટ (કલમ ૨૨૬) દ્વારા અધિકારીને કંઈક કરવા કે બંધ કરવા આપેલો સત્તાવાર આદેશ."
+    },
+    {
+      "key": "lok-adalat",
+      "match": ["lok adalat", "લોક અદાલત"],
+      "term_en": "Lok Adalat",
+      "term_gu": "લોક અદાલત",
+      "explanation_en": "A settlement forum where disputes (often bank, insurance, utility, matrimonial or labour matters) are resolved by agreement. There is normally no court fee, and an agreed settlement is recorded as an award.",
+      "explanation_gu": "સમાધાનનું મંચ, જ્યાં વિવાદો (ઘણી વાર બેંક, વીમા, ઉપયોગિતા, કૌટુંબિક કે શ્રમ બાબતો) સંમતિથી ઉકેલાય છે. સામાન્ય રીતે કોર્ટ ફી નથી હોતી અને સંમત સમાધાન ચુકાદા (award) તરીકે નોંધાય છે."
+    },
+    {
+      "key": "legal-aid",
+      "match": ["legal aid", "કાનૂની સહાય", "મફત વકીલ"],
+      "term_en": "Free legal aid",
+      "term_gu": "મફત કાનૂની સહાય",
+      "explanation_en": "A lawyer's help at government expense for people who qualify under the Legal Services Authorities Act, 1987. Apply at the DLSA office in your district court, or start with the 15100 helpline.",
+      "explanation_gu": "કાનૂની સેવા સત્તા મંડળ અધિનિયમ, ૧૯૮૭ હેઠળ પાત્ર લોકોને સરકારી ખર્ચે વકીલની મદદ. તમારા જિલ્લા કોર્ટની DLSA કચેરીમાં અરજી કરો, અથવા ૧૫૧૦૦ હેલ્પલાઇનથી શરૂ કરો."
+    },
+    {
+      "key": "rti",
+      "match": ["rti", "માહિતી અધિકાર"],
+      "term_en": "RTI request",
+      "term_gu": "RTI અરજી",
+      "explanation_en": "An application under the Right to Information Act, 2005 asking a public authority for information it holds. A fee is normally payable and the authority has a fixed time to reply.",
+      "explanation_gu": "માહિતી અધિકાર અધિનિયમ, ૨૦૦૫ હેઠળ જાહેર સત્તાધિકારી પાસે તેની પાસેની માહિતી માંગતી અરજી. સામાન્ય રીતે ફી ભરવી પડે અને જવાબ આપવાનો નિયત સમય હોય છે."
+    },
+    {
+      "key": "seven-twelve",
+      "match": ["7/12", "૭/૧૨", "record of rights"],
+      "term_en": "7/12 extract (record of rights)",
+      "term_gu": "૭/૧૨ ઉતારો (હક્ક પત્રક)",
+      "explanation_en": "Gujarat's land record showing who holds a survey-number parcel and on what terms. It is the starting document for almost every land dispute.",
+      "explanation_gu": "ગુજરાતનો જમીન રેકોર્ડ, જે દર્શાવે છે કે સર્વે નંબરની જમીન કોની પાસે અને કઈ શરતે છે. લગભગ દરેક જમીન વિવાદનું પ્રથમ દસ્તાવેજ આ છે."
+    },
+    {
+      "key": "panchnama",
+      "match": ["panchnama", "પંચનામું"],
+      "term_en": "Panchnama",
+      "term_gu": "પંચનામું",
+      "explanation_en": "A written record prepared by an authorised officer in the presence of witnesses — for example the record of a land measurement or of the scene of an incident.",
+      "explanation_gu": "સાક્ષીઓની હાજરીમાં સત્તાવાર અધિકારી તૈયાર કરેલો લેખિત રેકોર્ડ — દા.ત. જમીન માપણીનો કે ઘટનાસ્થળનો રેકોર્ડ."
+    },
+    {
+      "key": "dilr",
+      "match": ["dilr"],
+      "term_en": "DILR (District Inspector of Land Records)",
+      "term_gu": "DILR (જિલ્લા જમીન દફતર નિરીક્ષક)",
+      "explanation_en": "The revenue office responsible for land records and government measurement of land in a district.",
+      "explanation_gu": "જિલ્લામાં જમીન રેકોર્ડ અને સરકારી જમીન માપણી માટે જવાબદાર મહેસૂલ કચેરી."
+    },
+    {
+      "key": "mamlatdar",
+      "match": ["mamlatdar", "મામલતદાર"],
+      "term_en": "Mamlatdar",
+      "term_gu": "મામલતદાર",
+      "explanation_en": "The taluka-level revenue officer (executive magistrate in revenue matters). Certain revenue and land disputes are heard by the Mamlatdar's court.",
+      "explanation_gu": "તાલુકા કક્ષાનો મહેસૂલી અધિકારી (મહેસૂલી બાબતોમાં એક્ઝિક્યુટિવ મેજિસ્ટ્રેટ). અમુક મહેસૂલી અને જમીન વિવાદ મામલતદાર કોર્ટમાં સંભળાય છે."
+    },
+    {
+      "key": "chargesheet",
+      "match": ["chargesheet", "ચાર્જશીટ", "આરોપપત્ર"],
+      "term_en": "Charge-sheet",
+      "term_gu": "ચાર્જશીટ (આરોપપત્ર)",
+      "explanation_en": "The document police file in court after investigation, listing the accused and the allegations. A copy is given to the accused.",
+      "explanation_gu": "તપાસ પૂરી થયા પછી પોલીસ અદાલતમાં જે દસ્તાવેજ દાખલ કરે છે, જેમાં આરોપી અને આરોપો દર્શાવેલા હોય. તેની નકલ આરોપીને આપવામાં આવે છે."
+    },
+    {
+      "key": "interim-order",
+      "match": ["interim order", "વચગાળાનો હુકમ", "સ્ટે"],
+      "term_en": "Interim order / stay",
+      "term_gu": "વચગાળાનો હુકમ / સ્ટે",
+      "explanation_en": "A temporary order passed while the case is still pending, for example to stop an action until the next hearing.",
+      "explanation_gu": "કેસ ચાલુ હોય ત્યારે પસાર થતો કામચલાઉ હુકમ, દા.ત. આગામી સુનાવણી સુધી કોઈ કાર્યવાહી રોકવા માટે."
+    }
+  ]
+}

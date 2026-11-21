@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-11-12T12:32:39Z",
+  "checksums": {
+    "constitution-en": {
+      "ok": false,
+      "reason": "not acquired (no checksum in manifest)"
+    },
+    "constitution-gu": {
+      "ok": false,
+      "reason": "not acquired (no checksum in manifest)"
+    }
+  },
+  "extraction_errors": {},
+  "text_quality": {},
+  "coverage": {},
+  "numbering_comparison": {
+    "status": "not_run",
+    "reason": "both languages must be extracted first"
+  },
+  "gates": {
+    "constitution-en:checksum": {
+      "passed": false,
+      "detail": "not acquired (no checksum in manifest)"
+    },
+    "constitution-en:extraction": {
+      "passed": false,
+      "detail": "not extracted (source not acquired)"
+    },
+    "constitution-gu:checksum": {
+      "passed": false,
+      "detail": "not acquired (no checksum in manifest)"
+    },
+    "constitution-gu:extraction": {
+      "passed": false,
+      "detail": "not extracted (source not acquired)"
+    }
+  },
+  "all_gates_passed": false,
+  "import": {
+    "mode": "none",
+    "rows_written": 0,
+    "note": "this tool does not write to any database; use scripts/ingest_constitution.py"
+  }
+}

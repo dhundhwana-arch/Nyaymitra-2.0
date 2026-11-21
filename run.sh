@@ -1,20 +1,26 @@
-#!/bin/bash
-echo "=========================================================="
-echo " Starting JARVIS AI Justice Access & Navigation System    "
-echo " Developer: Divyesh Bambhaniya                            "
-echo "=========================================================="
+#!/usr/bin/env bash
+# NYAYMITRA 2.0 — local launcher.
+# Usage: ./run.sh [port]      (defaults to 8000; binds 0.0.0.0 so containers/previews work)
+set -euo pipefail
 
-# Start backend if python is available
-cd backend
-if command -v python3 &> /dev/null; then
-    echo "Installing backend requirements..."
-    pip install -r requirements.txt
-    echo "Starting FastAPI Server on http://127.0.0.1:8000..."
-    python3 main.py &
-    BACKEND_PID=$!
+PORT="${1:-8000}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT"
+
+if [ ! -d .venv ]; then
+  echo "==> creating virtual environment"
+  python3 -m venv .venv
 fi
+# shellcheck disable=SC1091
+source .venv/bin/activate
 
-cd ..
-echo "Starting Frontend Web Server on http://localhost:3000..."
-cd frontend
-python3 -m http.server 3000
+echo "==> installing dependencies"
+pip install --quiet --upgrade pip
+pip install --quiet -r backend/requirements.txt
+
+echo "==> migrating database"
+python scripts/init_db.py --json >/dev/null
+
+echo "==> NYAYMITRA listening on http://0.0.0.0:${PORT}"
+echo "    OpenAPI schema: http://127.0.0.1:${PORT}/api/openapi.json  (Swagger UI is intentionally disabled: it needs a CDN)"
+exec uvicorn backend.app.main:app --host 0.0.0.0 --port "$PORT"

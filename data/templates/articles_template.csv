@@ -1,0 +1,4 @@
+article_no,part_no,part_title,chapter,language,title,text,page_start,page_end,source,extraction_method
+14,III,PLACEHOLDER PART TITLE,,en,PLACEHOLDER TITLE (replace),"PLACEHOLDER — replace with the text exactly as printed. Do not correct it.",45,45,my-file.pdf,text_layer
+21A,III,PLACEHOLDER PART TITLE,,en,PLACEHOLDER TITLE (replace),"PLACEHOLDER — a second English row.",52,53,my-file.pdf,text_layer
+૧૪,૩,,,gu,PLACEHOLDER શીર્ષક (બદલો),"PLACEHOLDER — અહીં OCR માંથી મળેલું લખાણ જેમ છે તેમ મૂકો. સુધારશો નહીં.",61,61,my-gujarati.pdf,ocr

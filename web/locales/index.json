@@ -1,0 +1,432 @@
+{
+ "default_language": "gu",
+ "fallback_language": "en",
+ "essential_ui_keys": [
+  "navHome",
+  "navAssistant",
+  "navComplaint",
+  "navLibrary",
+  "navLegal",
+  "navDepartments",
+  "navGlossary",
+  "navAbout",
+  "search",
+  "langLabel"
+ ],
+ "languages": [
+  {
+   "code": "as",
+   "tag": "as",
+   "english_name": "Assamese",
+   "native_name": "অসমীয়া",
+   "script": "Beng",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "bn",
+   "tag": "bn",
+   "english_name": "Bengali",
+   "native_name": "বাংলা",
+   "script": "Beng",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "brx",
+   "tag": "brx-Deva",
+   "english_name": "Bodo",
+   "native_name": "बर'",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 4,
+    "essential_complete": false,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "low"
+   }
+  },
+  {
+   "code": "doi",
+   "tag": "doi-Deva",
+   "english_name": "Dogri",
+   "native_name": "डोगरी",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 9,
+    "essential_complete": false,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "low"
+   }
+  },
+  {
+   "code": "gu",
+   "tag": "gu",
+   "english_name": "Gujarati",
+   "native_name": "ગુજરાતી",
+   "script": "Gujr",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "gu",
+   "ui": {
+    "catalogue": true,
+    "keys": 153,
+    "essential_complete": true,
+    "translation_status": "PROJECT_AUTHORED",
+    "review": "none",
+    "confidence": "high"
+   }
+  },
+  {
+   "code": "hi",
+   "tag": "hi",
+   "english_name": "Hindi",
+   "native_name": "हिन्दी",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "kn",
+   "tag": "kn",
+   "english_name": "Kannada",
+   "native_name": "ಕನ್ನಡ",
+   "script": "Knda",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "ks",
+   "tag": "ks-Arab",
+   "english_name": "Kashmiri",
+   "native_name": "کٲشُر",
+   "script": "Arab",
+   "direction": "rtl",
+   "script_note": "Perso-Arabic script used here; Kashmiri is also written in Devanagari.",
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 10,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "low"
+   }
+  },
+  {
+   "code": "kok",
+   "tag": "kok-Deva",
+   "english_name": "Konkani",
+   "native_name": "कोंकणी",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": "Devanagari used here; Konkani is also written in Roman and Kannada scripts.",
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 10,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "low"
+   }
+  },
+  {
+   "code": "mai",
+   "tag": "mai-Deva",
+   "english_name": "Maithili",
+   "native_name": "मैथिली",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "ml",
+   "tag": "ml",
+   "english_name": "Malayalam",
+   "native_name": "മലയാളം",
+   "script": "Mlym",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "mni",
+   "tag": "mni-Beng",
+   "english_name": "Manipuri",
+   "native_name": "মৈতৈলোন্",
+   "script": "Beng",
+   "direction": "ltr",
+   "script_note": "Bengali script used here; Meetei Mayek (Mtei) input is detected but no Meetei Mayek interface text exists.",
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 4,
+    "essential_complete": false,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "low"
+   }
+  },
+  {
+   "code": "mr",
+   "tag": "mr",
+   "english_name": "Marathi",
+   "native_name": "मराठी",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "ne",
+   "tag": "ne",
+   "english_name": "Nepali",
+   "native_name": "नेपाली",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "or",
+   "tag": "or",
+   "english_name": "Odia",
+   "native_name": "ଓଡ଼ିଆ",
+   "script": "Orya",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "pa",
+   "tag": "pa-Guru",
+   "english_name": "Punjabi",
+   "native_name": "ਪੰਜਾਬੀ",
+   "script": "Guru",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "sa",
+   "tag": "sa",
+   "english_name": "Sanskrit",
+   "native_name": "संस्कृतम्",
+   "script": "Deva",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "sat",
+   "tag": "sat-Olck",
+   "english_name": "Santali",
+   "native_name": "ᱥᱟᱱᱛᱟᱲᱤ",
+   "script": "Olck",
+   "direction": "ltr",
+   "script_note": "Ol Chiki script used here.",
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 4,
+    "essential_complete": false,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "low"
+   }
+  },
+  {
+   "code": "sd",
+   "tag": "sd-Arab",
+   "english_name": "Sindhi",
+   "native_name": "سنڌي",
+   "script": "Arab",
+   "direction": "rtl",
+   "script_note": "Perso-Arabic script used here; Sindhi in India is also written in Devanagari.",
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 11,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "low"
+   }
+  },
+  {
+   "code": "ta",
+   "tag": "ta",
+   "english_name": "Tamil",
+   "native_name": "தமிழ்",
+   "script": "Taml",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "te",
+   "tag": "te",
+   "english_name": "Telugu",
+   "native_name": "తెలుగు",
+   "script": "Telu",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "ur",
+   "tag": "ur",
+   "english_name": "Urdu",
+   "native_name": "اردو",
+   "script": "Arab",
+   "direction": "rtl",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 12,
+    "essential_complete": true,
+    "translation_status": "MACHINE_TRANSLATED",
+    "review": "none",
+    "confidence": "medium"
+   }
+  },
+  {
+   "code": "en",
+   "tag": "en",
+   "english_name": "English",
+   "native_name": "English",
+   "script": "Latn",
+   "direction": "ltr",
+   "script_note": null,
+   "content_language": "en",
+   "ui": {
+    "catalogue": true,
+    "keys": 157,
+    "essential_complete": true,
+    "translation_status": "PROJECT_AUTHORED",
+    "review": "none",
+    "confidence": "high"
+   }
+  }
+ ]
+}

@@ -1,0 +1,37 @@
+# Render blueprint (free-tier evaluation only).
+#
+# IMPORTANT — the free plan has NO persistent disk. On free tier the SQLite database and
+# uploaded documents live in the container filesystem and are lost on every deploy, restart
+# and idle spin-down. That is acceptable for a read-only demo of the public pages; it is NOT
+# acceptable for anything that accepts complaints or documents.
+#
+# For a durable deployment on Render, switch `plan: free` to a paid instance and add the
+# `disk:` block from deploy/render.persistent.yaml, or self-host (deploy/nyaymitra.service),
+# which costs nothing and keeps SQLite on local disk.
+services:
+  - type: web
+    name: nyaymitra-demo
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/ready
+    autoDeploy: false
+    envVars:
+      - key: NYAYMITRA_ENV
+        value: production
+      - key: NYAYMITRA_SERVE_WEB
+        value: "true"
+      - key: NYAYMITRA_AI_PROVIDER
+        value: offline
+      - key: NYAYMITRA_AUTO_SEED
+        value: "true"
+      # If the frontend is hosted elsewhere (e.g. Cloudflare Pages), set this in the Render
+      # dashboard to that website's origin, e.g. https://nyaymitra-frontend.pages.dev
+      - key: NYAYMITRA_ALLOWED_ORIGINS
+        sync: false
+      # Set these in the Render dashboard, never in this file.
+      - key: NYAYMITRA_ADMIN_TOKEN
+        sync: false
+      - key: NYAYMITRA_MONITOR_TOKEN
+        sync: false

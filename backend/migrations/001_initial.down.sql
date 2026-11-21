@@ -1,0 +1,20 @@
+-- Down migration for 001_initial.sql
+-- Destructive by design; only used by `scripts/init_db.py --rollback-to 0`.
+DROP TRIGGER IF EXISTS constitution_ftsi;
+DROP TRIGGER IF EXISTS constitution_ftsd;
+DROP TRIGGER IF EXISTS constitution_ftsu;
+DROP TABLE IF EXISTS constitution_fts;
+DROP TABLE IF EXISTS article_sources;
+DROP TABLE IF EXISTS constitution_articles;
+DROP TABLE IF EXISTS triage_guides;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS documents;
+DROP TABLE IF EXISTS complaints;
+DROP TABLE IF EXISTS ai_answers;
+DROP TABLE IF EXISTS query_logs;
+DROP TABLE IF EXISTS feedback;
+DROP TABLE IF EXISTS error_log;
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS legacy_import_chunks;
+DROP TABLE IF EXISTS ingest_runs;
+DROP TABLE IF EXISTS legal_sources;
